@@ -1,5 +1,5 @@
 {
-  "name": "doers-force",
+  "name": "deploy-battle-simplified",
   "version": "1.0.0",
   "description": "DEPLOY BATTLE - multiplayer tank battle by DOERS DF (arcade web version)",
   "main": "server/index.js",
