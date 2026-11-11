@@ -26,7 +26,8 @@ export function registerSockets(io, slots, { arena, arenas = [arena], cfg, rng, 
   // Partida pública (sin anfitrión): mapa y dificultad por votación de las pantallas (roomVotes.js). Por defecto, ALEATORIO y MEDIA.
   const votes = publicMode && !managed ? createRoomVotes({ rng: typeof rng === 'function' ? rng : Math.random, mapCount: arenas.length }) : null;
   // Quién puede elegir mapa y dificultad y reiniciar: en el stand cualquier pantalla (solo hay una, la del portátil); en la pública, la anfitriona o el modo dev.
-  const mayManage = (socket) => !publicMode || (managed && publicRoom.isHost(socket)) || debugOk(socket);
+  // Arcade (cfg.anyStart): mapa siempre aleatorio y bots en MEDIA; la primera pantalla de la sala sigue siendo "anfitriona", pero no elige nada.
+  const mayManage = (socket) => !publicMode || (managed && !cfg.anyStart && publicRoom.isHost(socket)) || debugOk(socket);
   // Reiniciar la sala (echa a todos): en la partida pública, entre desconocidos, el anfitrión solo elige mapa y dificultad; reiniciar, solo el modo dev.
   const publicMatch = room?.type === 'quick' && !room.private;
   const mayReset = (socket) => (publicMatch ? debugOk(socket) : mayManage(socket));
@@ -91,7 +92,7 @@ export function registerSockets(io, slots, { arena, arenas = [arena], cfg, rng, 
     if (rankSolo) { // versión pública: solo puntúa en el ranking global el 1 contra 3 bots (el resto pica con el marcador de la sala)
       for (const s of result.scores) s.rank = null;
       const player = result.scores[0];
-      if (mode === 'solo' && player && !player.bot && /^[A-Z]{3}$/.test(player.initials ?? '') && player.score > 0) {
+      if (mode === 'solo' && player && !player.bot && !player.tni && /^[A-Z]{3}$/.test(player.initials ?? '') && player.score > 0) {
         const won = (result.winners ?? []).includes(1);
         // La puntuación que ve el jugador es la del ranking (con el multiplicador de dificultad y el extra de rapidez).
         try { Object.assign(player, await rankSolo({ initials: player.initials, score: player.score, accuracy: player.accuracy, difficulty: session.difficulty, won, elapsed: result.elapsed })); } catch (err) { console.error('No se pudo guardar en el ranking global:', err.message); }
