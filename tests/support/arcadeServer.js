@@ -5,6 +5,9 @@
 import { io as connect } from 'socket.io-client';
 import { EVENTS } from '../../shared/events.js';
 
+// Corte de red (cable arrancado, Wi-Fi caída): se cierra el transporte sin despedirse. socket.disconnect() es otra cosa: la página que se va
+// (roomSocket.js lo hace al salir) y el servidor libera el hueco al momento.
+export const cut = (socket) => socket.io.engine.close();
 export const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 export const until = async (fn, ms = 6000) => { const end = Date.now() + ms; while (Date.now() < end) { if (fn()) return true; await sleep(25); } return Boolean(fn()); };
 export const waitFor = (socket, event, ms = 5000) => new Promise((resolve, reject) => {

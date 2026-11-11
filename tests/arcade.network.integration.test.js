@@ -1,8 +1,8 @@
 // Versión arcade: cortes de red y reconexiones en cada fase (AGENTS.md, sección 11). Un "corte" es desconectar el socket sin avisar (cable
-// arrancado, Wi-Fi caída); "SALIR" es PLAYER_QUIT. El token vive en sessionStorage: sobrevive a una recarga y se copia al duplicar la pestaña.
+// arrancado, Wi-Fi caída: cut()); irse de la página es disconnect() (roomSocket.js); "SALIR" es PLAYER_QUIT. El token vive en sessionStorage: sobrevive a una recarga y se copia al duplicar la pestaña.
 import { test, before, after, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
-import { start, sleep, until, waitFor, EVENTS } from './support/arcadeServer.js';
+import { start, sleep, until, waitFor, cut, EVENTS } from './support/arcadeServer.js';
 
 let h;
 // introS > 0: la presentación (READY) dura lo bastante para cortar la conexión en medio.
@@ -23,8 +23,8 @@ test('corte durante la intro (nombres + 2, 1): la presentación NO se cancela pa
   const b = await h.player(code, 'BBB');
   a.pad.emit(EVENTS.PLAYER_READY);
   assert.ok(await until(() => serverPhase(code) === 'READY'));
-  b.pad.disconnect();
-  b.screen.disconnect();
+  cut(b.pad);
+  cut(b.screen);
   assert.ok(await until(() => serverPhase(code) === 'PLAYING'), 'la partida empieza igualmente (no vuelve todo el mundo a la sala)');
   assert.ok(await until(() => a.screen.lastResult, 6000), 'acaba la partida');
   assert.equal(a.screen.lastResult.reason, 'forfeit');
@@ -37,7 +37,7 @@ test('corte en plena partida y vuelta con su token dentro de la gracia: recupera
   const b = await h.player(code, 'BBB');
   await startMatch(code, a);
   const slotB = b.slot;
-  b.pad.disconnect();
+  cut(b.pad);
   await sleep(300); // menos que reconnectGraceS (0,8 s)
   const back = await h.join(code, 'BBB', b.token, b.screenId);
   assert.equal(back.slot, slotB, 'misma plaza');
@@ -52,8 +52,8 @@ test('corte en un duelo sin volver: pasada la gracia gana el rival por abandono 
   const a = await h.player(code, 'AAA');
   const b = await h.player(code, 'BBB');
   await startMatch(code, a);
-  b.pad.disconnect();
-  b.screen.disconnect();
+  cut(b.pad);
+  cut(b.screen);
   assert.ok(await until(() => a.screen.lastResult, 4000));
   assert.equal(a.screen.lastResult.reason, 'forfeit');
   assert.deepEqual(a.screen.lastResult.winners, [a.slot]);
@@ -67,8 +67,8 @@ test('corte en una partida de 3 sin volver: el caído queda eliminado y la parti
   const b = await h.player(code, 'BBB');
   const c = await h.player(code, 'CCC');
   await startMatch(code, a);
-  c.pad.disconnect();
-  c.screen.disconnect();
+  cut(c.pad);
+  cut(c.screen);
   await sleep(1100); // más que la gracia (0,8 s)
   assert.equal(serverPhase(code), 'PLAYING', 'la partida sigue');
   assert.equal(a.screen.lastState.tanks[c.slot - 1][3], 0, 'el que se fue, sin vidas');
@@ -82,8 +82,8 @@ test('corte durante los resultados: al volver a la sala solo queda el otro, ya c
   await startMatch(code, a);
   assert.ok(await until(() => serverPhase(code) === 'GAME_OVER', 6000));
   const moved = waitFor(b.pad, EVENTS.SLOT_ASSIGNED);
-  a.pad.disconnect();
-  a.screen.disconnect();
+  cut(a.pad);
+  cut(a.screen);
   assert.equal((await moved).slot, 1, 'B pasa a ser P1');
   assert.ok(await until(() => serverPhase(code) === 'LOBBY'));
   assert.equal(room(code).slots.count(), 1);
@@ -130,7 +130,7 @@ test('un corte breve en la sala con la cuenta atrás en marcha: vuelve con su to
     const b = await slow.player(code, 'BBB');
     a.pad.emit(EVENTS.PLAYER_READY);
     await sleep(1300);
-    b.pad.disconnect();
+    cut(b.pad);
     await sleep(150); // menos que lobbyGraceS (0,4 s)
     const back = await slow.join(code, 'BBB', b.token, b.screenId);
     assert.equal(back.slot, b.slot);
@@ -146,7 +146,7 @@ test('si solo se cae la pantalla (host) y el teclado sigue conectado, no pierde 
   const { code } = await h.quick();
   const a = await h.player(code, 'AAA');
   await h.player(code, 'BBB');
-  a.screen.disconnect();
+  cut(a.screen);
   await sleep(600);
   assert.equal(room(code).slots.count(), 2);
 });
@@ -157,7 +157,7 @@ test('volver con su token después de haber perdido por abandono (partida de 3) 
   await h.player(code, 'BBB');
   const c = await h.player(code, 'CCC');
   await startMatch(code, a);
-  c.pad.disconnect();
+  cut(c.pad);
   await sleep(1100);
   const back = await h.join(code, 'CCC', c.token, c.screenId);
   assert.equal(back.slot, c.slot);
@@ -180,7 +180,7 @@ test('si se caen todos en plena partida, la partida se cierra por abandono y la 
   const a = await h.player(code, 'AAA');
   const b = await h.player(code, 'BBB');
   await startMatch(code, a);
-  for (const s of [a.pad, a.screen, b.pad, b.screen]) s.disconnect();
+  for (const s of [a.pad, a.screen, b.pad, b.screen]) cut(s);
   assert.ok(await until(() => serverPhase(code) === 'LOBBY', 5000));
   assert.equal(room(code).slots.count(), 0);
   assert.equal(room(code).session.joinLeft, null, 'sin cuenta atrás fantasma');
@@ -207,4 +207,36 @@ test('conexión muerta sin detectar (no llega NADA del teclado): a los 4 s su ta
       assert.ok(!stops.includes(a.slot), 'al que sigue mandando no se le toca');
     } finally { clearInterval(keepAlive); }
   } finally { await long.stop(); }
+});
+
+// --- Irse de la página a propósito (SALIR al título, otro enlace, cerrar la pestaña): la página cierra sus conexiones (roomSocket.js, pagehide).
+// Sin esto, Chrome guardaba la página congelada con los WebSocket abiertos y los demás veían un fantasma ~20 s (ping + gracia). ---
+test('irse de la página en la sala: el hueco queda libre AL MOMENTO (sin los 6 s de gracia de un corte)', async () => {
+  const { code } = await h.quick();
+  const a = await h.player(code, 'AAA');
+  const b = await h.player(code, 'BBB');
+  b.pad.disconnect(); b.screen.disconnect();
+  assert.ok(await until(() => h.humans(a) === 1, 250), 'liberado en menos de 250 ms');
+});
+
+test('irse de la página en plena partida = abandono inmediato: en un duelo el otro gana al momento (no a los 10 s)', async () => {
+  const { code } = await h.quick();
+  const a = await h.player(code, 'AAA');
+  const b = await h.player(code, 'BBB');
+  await startMatch(code, a);
+  b.pad.disconnect(); b.screen.disconnect();
+  assert.ok(await until(() => a.screen.lastResult, 400), 'resultado casi al instante');
+  assert.equal(a.screen.lastResult.reason, 'forfeit');
+  assert.ok(await until(() => serverPhase(code) === 'LOBBY', 3000));
+  assert.ok(await until(() => h.humans(a) === 1), 'y en la sala ya no está');
+});
+
+test('un corte de red (no a propósito) sigue teniendo su gracia: en la sala no se libera antes de tiempo', async () => {
+  const { code } = await h.quick();
+  const a = await h.player(code, 'AAA');
+  const b = await h.player(code, 'BBB');
+  cut(b.pad);
+  await sleep(200);
+  assert.equal(h.humans(a), 2, 'a los 200 ms sigue su hueco (puede volver con su token)');
+  assert.ok(await until(() => h.humans(a) === 1, 2000), 'pasada la gracia, se libera');
 });

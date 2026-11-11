@@ -168,7 +168,7 @@ test('un corte de red de otro jugador durante la cuenta atrás: pasada la gracia
   const b = await player(code, 'BBB');
   a.pad.emit(EVENTS.PLAYER_READY);
   assert.ok(await until(() => counting(a)));
-  b.pad.disconnect(); // sin PLAYER_QUIT: como un cable arrancado
+  b.pad.io.engine.close(); // sin PLAYER_QUIT ni despedirse: como un cable arrancado
   assert.ok(await until(() => a.screen.lastLobby.plan?.humans === 1, 3000), 'tras la gracia se libera su hueco');
   assert.ok(await until(() => state(a) === 'PLAYING'));
   assert.equal(a.screen.lastLobby.plan.kind, 'solo');

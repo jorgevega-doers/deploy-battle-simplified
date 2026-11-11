@@ -43,7 +43,7 @@ test('un corte breve en el lobby no quita la plaza ni el LISTO ni reinicia la cu
   assert.ok(left !== null && left <= 19, `la cuenta atrás corre (${left})`);
 
   // Corte de A y vuelta con su token antes de lobbyGraceS
-  a.s.disconnect();
+  a.s.io.engine.close(); // corte de red (sin despedirse)
   await sleep(300);
   assert.equal(app.slots.count(), 2, 'durante el corte la plaza sigue reservada');
   const back = await player('AAA', 'token-aaaaaaaaaaaaaaaaaaaa');
@@ -52,7 +52,7 @@ test('un corte breve en el lobby no quita la plaza ni el LISTO ni reinicia la cu
   assert.ok(app.session.joinLeft !== null && app.session.joinLeft <= left, `la cuenta atrás NO vuelve a empezar (${left} → ${app.session.joinLeft})`);
 
   // Corte de B sin volver: pasado lobbyGraceS se libera y, como A sigue en LISTO y ahora está solo, la cuenta vuelve a empezar (1 contra bots)
-  b.s.disconnect();
+  b.s.io.engine.close(); // corte de red (sin despedirse)
   await sleep(300);
   assert.equal(app.slots.count(), 2, 'durante la gracia sigue reservada');
   await sleep(1200);
@@ -79,7 +79,7 @@ test('un corte breve durante la presentación (READY) no la cancela: la partida 
     a.s.emit(EVENTS.PLAYER_READY); b.s.emit(EVENTS.PLAYER_READY);
     for (let i = 0; i < 40 && app2.session.phase !== 'READY'; i++) await sleep(100);
     assert.equal(app2.session.phase, 'READY', 'llega la presentación');
-    a.s.disconnect();
+    a.s.io.engine.close(); // corte de red (sin despedirse)
     await sleep(300);
     assert.equal(app2.session.phase, 'READY', 'el corte no cancela la presentación');
     const back = await join2('AAA', 'token-a2aaaaaaaaaaaaaaaaaa');

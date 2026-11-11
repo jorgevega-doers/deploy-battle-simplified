@@ -571,14 +571,21 @@ export function registerSockets(io, slots, { arena, arenas = [arena], cfg, rng, 
       }
     });
 
-    socket.on('disconnect', () => {
+    socket.on('disconnect', (reason) => {
       clearTimeout(idleTimer);
       hostScreens.delete(socket.id);
       publicRoom?.leave(socket); // si era la anfitriona, otra pantalla lo será si no vuelve pronto
       const after = votes?.forget(socket.id); // su voto deja de contar (solo se aplica en la sala de espera)
       if (after && session.phase === 'LOBBY') { session.setMapChoice(after.map); session.setDifficulty(after.level); }
       const entry = slots.get(socket.id);
-      if (entry && session.phase === 'PLAYING') {
+      // Se ha ido a propósito (la página cerró la conexión al salir: roomSocket.js), no es un corte de red: no hay gracia que esperar. En partida
+      // es un abandono (como SALIR); en la sala o en la intro deja su hueco al momento (como player_quit).
+      const left = reason === 'client namespace disconnect';
+      if (entry && left && session.phase === 'PLAYING') {
+        session.quit(entry.slot);
+      } else if (entry && left && (session.phase === 'LOBBY' || session.phase === 'READY')) {
+        releaseSlot(socket.id);
+      } else if (entry && session.phase === 'PLAYING') {
         session.playerDisconnected(entry.slot); // la plaza queda reservada: si no vuelve, pierde por abandono
       } else if (entry && session.phase === 'GAME_OVER') {
         // la plaza se libera sola al terminar la pantalla de resultados

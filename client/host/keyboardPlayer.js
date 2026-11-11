@@ -25,6 +25,7 @@ export function createKeyboardPlayer({ connect, initials: startName, token, scre
   let aim = null;          // ángulo actual del ratón respecto al tanque (radianes, eje Y del juego hacia arriba)
   let mouse = null;        // posición del ratón en coordenadas normalizadas (-1..1)
   let firing = false;
+  let shotQueued = false;  // un clic más corto que un fotograma (toque de trackpad) también dispara: queda en cola hasta el siguiente fotograma
   let fireAt = 0;
   let lastPing = 0;
   // Con qué se controla ahora: 'keyboard' (teclado y ratón) o 'pad' (un mando conectado a este PC). Cambia solo con lo último que se toque.
@@ -49,13 +50,20 @@ export function createKeyboardPlayer({ connect, initials: startName, token, scre
   function useSource(next) {
     if (source === next) return;
     source = next;
-    held.clear(); firing = false; padPrev.moving = false;
+    held.clear(); firing = false; shotQueued = false; padPrev.moving = false;
     if (active()) link.releaseMove(); // al cambiar, el tanque se para: nada se queda pulsado del control anterior
     onSource(source);
   }
   const join = () => socket.emit(EVENTS.JOIN_ROOM, { role: 'player', initials, keyboard: true, screen, token }); // initials: el nombre de ahora
 
-  socket.on('connect', join);
+  socket.on('connect', () => { rejected = 0; join(); });
+  // Servidor reiniciado (despliegue): si esta conexión llega antes que la de la pantalla, la sala aún no está restaurada y el servidor la rechaza
+  // ("Invalid namespace"). Socket.io no reintenta solo tras un rechazo: se reintenta aquí unos segundos (la pantalla la restaura enseguida; si la
+  // sala ya no existe, la pantalla vuelve al título por su cuenta). Sin esto, el jugador se quedaba en la sala sin plaza.
+  let rejected = 0;
+  socket.on('connect_error', (err) => {
+    if (/^(Invalid namespace|room_restored)$/.test(err?.message) && rejected++ < 20) setTimeout(() => { if (!socket.connected) socket.connect(); }, 500);
+  });
   socket.on(EVENTS.SLOT_ASSIGNED, (data) => {
     slot = data.slot;
     if (data.initials) { initials = data.initials; onName(initials); } // el nombre que el servidor ha aceptado (al entrar o tras EDITAR): se guarda
@@ -80,7 +88,7 @@ export function createKeyboardPlayer({ connect, initials: startName, token, scre
   const menuOpen = () => Boolean(pauseMenu?.open);
   function openPause() {
     if (!pauseMenu || !isPlaying() || slot === null) return;
-    held.clear(); firing = false; padPrev.moving = false; link.releaseMove();
+    held.clear(); firing = false; shotQueued = false; padPrev.moving = false; link.releaseMove();
     pauseMenu.show({ slot, socket, onQuit });
   }
   function updatePad(pad, now) {
@@ -99,7 +107,7 @@ export function createKeyboardPlayer({ connect, initials: startName, token, scre
       } else selectSince = null;
     }
     if (pad.select && pauseMenu && slot !== null && isPlaying()) { // en partida: SELECT = salir, con confirmación
-      held.clear(); firing = false; padPrev.moving = false; link.releaseMove();
+      held.clear(); firing = false; shotQueued = false; padPrev.moving = false; link.releaseMove();
       pauseMenu.show({ slot, socket, onQuit, leave: true, lobby: !isPlaying() });
       return;
     }
@@ -167,7 +175,7 @@ export function createKeyboardPlayer({ connect, initials: startName, token, scre
     if (Object.values(KEYS).flat().includes(event.code)) { event.preventDefault(); held.add(event.code); sendMove(); }
   });
   window.addEventListener('keyup', (event) => { if (held.delete(event.code)) sendMove(); });
-  window.addEventListener('blur', () => { held.clear(); firing = false; if (active()) link.releaseMove(); }); // al cambiar de ventana no se queda andando
+  window.addEventListener('blur', () => { held.clear(); firing = false; shotQueued = false; if (active()) link.releaseMove(); }); // al cambiar de ventana no se queda andando
   window.addEventListener('pointermove', (event) => {
     // Capturado: la mira se mueve con el desplazamiento del ratón y nunca sale de la ventana. Libre: donde esté el cursor.
     if (locked) {
@@ -180,6 +188,7 @@ export function createKeyboardPlayer({ connect, initials: startName, token, scre
     if (!active() || !isPlaying() || source !== 'keyboard' || event.button !== 0 || event.target.closest?.('button, a, input, #dev-menu, #leave, #pause')) return;
     requestLock(); // el primer clic de la partida captura el ratón (y dispara)
     firing = true;
+    shotQueued = true;
     fireAt = 0; // dispara ya en el próximo fotograma
   });
   window.addEventListener('pointerup', (event) => { if (event.button === 0) firing = false; });
@@ -210,7 +219,7 @@ export function createKeyboardPlayer({ connect, initials: startName, token, scre
           if (aim === null || Math.abs(Math.atan2(Math.sin(angle - aim), Math.cos(angle - aim))) > 0.01) { aim = angle; link.setAim(angle); }
         }
       }
-      if (firing && isPlaying() && now - fireAt >= REFIRE_MS) { fireAt = now; link.fire(aim); }
+      if ((firing || shotQueued) && isPlaying() && now - fireAt >= REFIRE_MS) { fireAt = now; shotQueued = false; link.fire(aim); }
     },
     get initials() { return initials; },
     // El botón SALIR (ESC) de la partida (arcade) abre el mismo menú que la tecla ESC.

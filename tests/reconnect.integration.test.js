@@ -48,7 +48,7 @@ test('un mando que vuelve con su token recupera su plaza y la partida sigue; con
   p2.emit(EVENTS.PLAYER_READY);
   while (app.session.phase !== 'PLAYING') await sleep(20);
 
-  p1.disconnect(); // corte de red
+  p1.io.engine.close(); // corte de red (sin despedirse; disconnect() sería irse a propósito)
   await sleep(300);
   const back = newClient();
   await connected(back);

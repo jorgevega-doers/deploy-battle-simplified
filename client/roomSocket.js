@@ -57,9 +57,24 @@ export function setHostKey(code, key) { try { if (ID.test(key)) localStorage.set
 // asScreen = es una PANTALLA: manda el tipo de sala (y su llave) para que el servidor pueda restaurarla tras un reinicio. Un mando no la manda.
 export function connectToRoom(io, { asScreen = false } = {}) {
   const options = { transports: ['websocket'], reconnectionDelay: 250, reconnectionDelayMax: 1500, timeout: 8000 };
-  if (!roomCode) return io(options);
+  if (!roomCode) return closeOnLeave(io(options));
   // auth como función: se vuelve a leer en cada reconexión (la llave puede llegar después).
-  return io(`/r/${roomCode}`, { ...options, ...(asScreen ? { auth: (cb) => cb({ type: roomType, hostKey: getHostKey() ?? undefined, solo: roomSolo || undefined, private: roomPrivate || undefined }) } : {}) });
+  return closeOnLeave(io(`/r/${roomCode}`, { ...options, ...(asScreen ? { auth: (cb) => cb({ type: roomType, hostKey: getHostKey() ?? undefined, solo: roomSolo || undefined, private: roomPrivate || undefined }) } : {}) }));
+}
+
+// Al irse de la página (SALIR, el enlace SOBRE DOERS, cerrar la pestaña...) Chrome puede guardarla CONGELADA en la caché de atrás/adelante con los
+// WebSocket abiertos: el servidor no se enteraba hasta que fallaba el ping (~15 s) y los demás veían un jugador fantasma en la sala. Se cierran a
+// mano (el servidor lo sabe al instante y libera el hueco). Si se vuelve con "atrás" a esa página congelada, se recarga: sus conexiones ya no valen.
+const openSockets = new Set();
+let leaveHooked = false;
+function closeOnLeave(socket) {
+  openSockets.add(socket);
+  if (!leaveHooked) {
+    leaveHooked = true;
+    window.addEventListener('pagehide', () => { for (const s of openSockets) s.disconnect(); });
+    window.addEventListener('pageshow', (event) => { if (event.persisted) window.location.reload(); });
+  }
+  return socket;
 }
 // Partida rápida: el QR de cada pantalla lleva el token de SU jugador; el móvil que lo escanea se convierte en su mando (mismas iniciales y plaza).
 export const bindLink = (token) => `${window.location.origin}/play/?room=${roomCode}&screen=${screenId}&bind=${encodeURIComponent(token)}`;

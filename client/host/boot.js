@@ -71,10 +71,14 @@ async function startTitle() {
   $('title-msg').textContent = note;
 
   // --- PULSA PARA EMPEZAR + intro: solo al abrir la web o recargarla. Al volver de una sala (SALIR), directamente el título. ---
-  const intro = createLogoIntro({ $, sfx: sfx ?? silent, withCto: false });
+  // onReveal: en el destello final el título ya se ve debajo; desde ese momento JUGAR responde (si no, el clic de quien pulsa en cuanto lo ve se
+  // perdía durante el ~0,5 s que tarda en retirarse el blanco).
+  const intro = createLogoIntro({ $, sfx: sfx ?? silent, withCto: false, onReveal: () => { ready = true; } });
+  let gate = null; // el nombre (más abajo): titleReady puede llamarse antes de crearlo (sin intro)
   let ready = false; // el título ya acepta JUGAR (no mientras suena la intro)
-  // Durante la intro solo se ve el mapa (sin logo, frase ni botones): se muestran al acabar.
-  const titleReady = () => { ready = true; document.body.classList.remove('intro-on'); $('title-play').focus({ preventScroll: true }); };
+  // Durante la intro solo se ve el mapa (sin logo, frase ni botones): se muestran al acabar. Si ya se abrió el nombre, el foco se queda en él
+  // (si no, ENTER con el nombre ya relleno no hacía nada).
+  const titleReady = () => { ready = true; document.body.classList.remove('intro-on'); if (!gate?.open) $('title-play').focus({ preventScroll: true }); };
   const skipIntro = takeSkip() || params.get('intro') === '0'; // takeSkip() gasta el aviso: se llama una sola vez
   if (!skipIntro) document.body.classList.add('intro-on');
   if (skipIntro) { intro.disable(); titleReady(); }
@@ -87,7 +91,7 @@ async function startTitle() {
   // --- JUGAR -> nombre -> sala ---
   let busy = false;
   const savedName = () => { try { const n = localStorage.getItem('df.initials'); return /^[A-Z]{3}$/.test(n ?? '') ? n : ''; } catch { return ''; } };
-  const gate = createNameGate({ initial: savedName(), startHidden: true, button: '¡A JUGAR!', onSubmit: (name) => enter(name), onCancel: () => { $('title-play').focus({ preventScroll: true }); } });
+  gate = createNameGate({ initial: savedName(), startHidden: true, button: '¡A JUGAR!', onSubmit: (name) => enter(name), onCancel: () => { $('title-play').focus({ preventScroll: true }); } });
   function play() {
     if (!ready || busy || gate.open) return;
     sfx?.play('ready');
