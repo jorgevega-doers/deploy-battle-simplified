@@ -33,8 +33,9 @@ export async function start(options = {}) {
   app.startLoop();
   const sockets = [];
 
-  const quick = async (headers = {}) => {
-    const res = await fetch(`${base}/api/quick`, { method: 'POST', headers: { 'content-type': 'application/json', ...headers }, body: '{}' });
+  // body: lo que manda el título ({ token } desde la versión con reservas con dueño; {} = cliente antiguo).
+  const quick = async (headers = {}, body = {}) => {
+    const res = await fetch(`${base}/api/quick`, { method: 'POST', headers: { 'content-type': 'application/json', ...headers }, body: JSON.stringify(body) });
     return { status: res.status, ...(await res.json().catch(() => ({}))) };
   };
   // Una conexión a la sala; guarda el último lobby_state / state_update y cuenta los state_update recibidos.

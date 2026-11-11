@@ -9,9 +9,9 @@ import { config } from './config.js';
 import { registerSockets } from './net/sockets.js';
 import { createSlots } from './net/slots.js';
 import { createAuth, createRateLimiter } from './net/auth.js';
-import { createRoomRegistry, CODE_RE } from './net/rooms.js';
+import { createRoomRegistry, CODE_RE, reserve } from './net/rooms.js';
 import { newHostKey } from './net/publicRoom.js';
-import { parseScreenId } from './net/validate.js';
+import { parseScreenId, parseToken } from './net/validate.js';
 import { openGlobalRanking, createNullRanking } from './db/globalRanking.js';
 import { openPadConfigs } from './db/padConfigs.js';
 import { registerPadRoutes } from './net/padRoutes.js';
@@ -160,12 +160,15 @@ export function setupOnline({ app, io, distDir, arena, arenas, cfg, rng, devPass
     const priv = !solo && req.body?.private === true;
     const open = (room) => room.session.phase === 'LOBBY';
     const players = (room) => room.slots.count();
-    let room = solo || priv ? null : rooms.findQuick({ dev, players, open });
+    // El token de la pestaña (el mismo con el que entrará): la reserva es SUYA y, si ya tiene plaza en una sala (recargó), vuelve a esa.
+    const token = parseToken(req.body?.token);
+    const holds = (room, t) => room.slots.holds(t);
+    let room = solo || priv ? null : rooms.findQuick({ dev, players, open, token, holds });
     if (!room) {
       if (!roomLimiter(req.ip)) return res.status(429).json({ error: 'too_many_rooms' });
       room = rooms.create('quick', { dev, solo, private: priv, hostKey: priv ? newHostKey() : null });
       if (!room) return res.status(503).json({ error: 'rooms_full' });
-      if (!room.private) room.pending.push(now ? now() : Date.now()); // el que la crea ya cuenta: los siguientes de la cola entran aquí
+      if (!room.private) reserve(room, token, now ? now() : Date.now()); // el que la crea ya cuenta: los siguientes de la cola entran aquí
     }
     res.json({ code: room.code, type: 'quick', solo: room.solo, private: room.private, ...(priv ? { hostKey: room.hostKey } : {}) });
   });

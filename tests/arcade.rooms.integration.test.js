@@ -138,3 +138,55 @@ test('restauración: una pantalla que vuelve a una sala que ya no existe (reinic
   assert.equal((await new Promise((resolve) => bad.once('connect_error', resolve))).message, 'Invalid namespace');
   assert.equal(h.app.rooms.get('ZZZZZ'), null);
 });
+
+// --- Reservas con dueño: /api/quick lleva el token de la pestaña; la reserva se gasta cuando ESE jugador entra. ---
+const reserved = (code) => h.app.rooms.get(code).pending.size;
+
+test('recargar dentro de la sala no deja una reserva fantasma: los dos siguientes de la cola caben en esa sala', async () => {
+  const { code } = await h.quick({}, { token: 'token-de-AAA-1234567890' });
+  await h.player(code, 'AAA', { token: 'token-de-AAA-1234567890' });
+  const b = await h.player(code, 'BBB', { token: 'token-de-BBB-1234567890' });
+  b.pad.disconnect(); b.screen.disconnect(); // recarga...
+  const again = await h.quick({}, { token: b.token }); // ...y JUGAR otra vez
+  assert.equal(again.code, code, 'vuelve a SU sala');
+  await h.player(code, 'BBB', { token: b.token, screenId: b.screenId });
+  assert.equal(reserved(code), 0, 'sin reservas colgando');
+  for (const name of ['CCC', 'DDD']) {
+    const r = await h.quick({}, { token: `token-de-${name}-1234567890` });
+    assert.equal(r.code, code, `${name} cabe en la sala (hay 2 huecos de verdad)`);
+    await h.player(code, name, { token: `token-de-${name}-1234567890` });
+  }
+  assert.equal(h.app.rooms.get(code).slots.count(), 4);
+  assert.notEqual((await h.quick({}, { token: 'token-de-EEE-1234567890' })).code, code, 'ahora sí está llena');
+});
+
+test('una reconexión (corte breve) NO se gasta la reserva de otro que está entrando: nunca se mandan 5 personas a 4 plazas', async () => {
+  const { code } = await h.quick({}, { token: 'token-de-AAA-1234567890' });
+  await h.player(code, 'AAA', { token: 'token-de-AAA-1234567890' });
+  const b = await h.player(code, 'BBB', { token: 'token-de-BBB-1234567890' });
+  assert.equal((await h.quick({}, { token: 'token-de-CCC-1234567890' })).code, code); // C reserva y tarda en abrir su pantalla
+  b.pad.disconnect();
+  await h.join(code, 'BBB', b.token, b.screenId); // B vuelve antes de que entre C
+  assert.equal(reserved(code), 1, 'la reserva de C sigue');
+  assert.equal((await h.quick({}, { token: 'token-de-DDD-1234567890' })).code, code, 'D: el último hueco');
+  assert.notEqual((await h.quick({}, { token: 'token-de-EEE-1234567890' })).code, code, 'E va a otra sala');
+});
+
+test('la reserva se gasta al entrar su dueño; pedir sala dos veces con el mismo token no reserva dos huecos', async () => {
+  const { code } = await h.quick({}, { token: 'token-de-AAA-1234567890' });
+  await h.player(code, 'AAA', { token: 'token-de-AAA-1234567890' });
+  assert.equal(reserved(code), 0);
+  await h.quick({}, { token: 'token-de-BBB-1234567890' });
+  await h.quick({}, { token: 'token-de-BBB-1234567890' }); // doble clic en JUGAR
+  assert.equal(reserved(code), 1);
+  await h.player(code, 'BBB', { token: 'token-de-BBB-1234567890' });
+  assert.equal(reserved(code), 0);
+});
+
+test('compatibilidad: un título antiguo (sin token) sigue reservando y su entrada gasta una reserva anónima', async () => {
+  const { code } = await h.quick();
+  assert.equal(reserved(code), 1);
+  await h.player(code, 'AAA');
+  assert.equal(reserved(code), 0);
+  assert.equal((await h.quick({}, { token: 'no vale!' })).code, code, 'un token mal formado se trata como sin token');
+});

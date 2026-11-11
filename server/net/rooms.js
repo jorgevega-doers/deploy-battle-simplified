@@ -8,6 +8,21 @@ const ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // sin I, O, 0 ni 1
 export const CODE_RE = /^[A-HJ-NP-Z2-9]{5}$/;
 const PENDING_MS = 12000; // reserva de un hueco en la cola común mientras se abre la pantalla
 const QUICK_IDLE_MS = 30000; // una sala rápida sin nadie se borra pasado este tiempo
+let anonymous = 0; // reservas sin token (título antiguo): cada una con su propia clave
+
+// Reservas de la cola común: room.pending = Map(dueño -> cuándo). El dueño es el token de la pestaña que pidió sala (el mismo con el que luego
+// entra o recupera su plaza); sin token, una clave anónima. Así, al entrar alguien se gasta SU reserva y no la de otro que también está llegando.
+export function reserve(room, token, at) {
+  room.pending.set(token ?? `anon:${(anonymous += 1)}`, at);
+}
+// Alguien ha entrado en la sala: se gasta su reserva. fresh = entra por primera vez (no es una reconexión): si no tenía reserva con su token
+// (título antiguo), se gasta la anónima más vieja. Una reconexión nunca gasta reservas ajenas.
+export function claimReservation(room, token, { fresh = false } = {}) {
+  if (!room?.pending) return;
+  if (token && room.pending.delete(token)) return;
+  if (!fresh) return;
+  for (const key of room.pending.keys()) if (key.startsWith('anon:')) { room.pending.delete(key); return; }
+}
 
 // build(room) -> { ns, session, slots }: crea el espacio de nombres y la sesión de esa sala (lo hace app.js); recibe { code, type }.
 export function createRoomRegistry({ build, destroyNamespace, maxRooms, idleMs, now = () => Date.now() }) {
@@ -36,7 +51,7 @@ export function createRoomRegistry({ build, destroyNamespace, maxRooms, idleMs, 
       if (wanted !== null && (!CODE_RE.test(wanted) || rooms.has(wanted))) return null;
       const code = wanted ?? newCode();
       if (!code) return null;
-      const room = { code, type, dev, solo: type === 'quick' && solo, private: type === 'quick' && (solo || priv), hostKey, hostScreen: null, createdAt: now(), emptySince: null, screens: () => 0, pending: [] };
+      const room = { code, type, dev, solo: type === 'quick' && solo, private: type === 'quick' && (solo || priv), hostKey, hostScreen: null, createdAt: now(), emptySince: null, screens: () => 0, pending: new Map() };
       Object.assign(room, build(room));
       rooms.set(code, room);
       return room;
@@ -44,21 +59,23 @@ export function createRoomRegistry({ build, destroyNamespace, maxRooms, idleMs, 
     // Cola común (BUSCAR PARTIDA): la sala rápida pública que espera gente y tiene hueco. Se prefiere la más llena (así las partidas arrancan antes).
     // Cada búsqueda reserva un hueco durante PENDING_MS (lo que tarda la pantalla en abrirse), para no mandar a 5 personas a 4 plazas.
     // players(room) = jugadores dentro ahora; open(room) = la sala admite gente (fase de espera). Devuelve la sala (ya con la reserva) o null.
-    findQuick({ dev = false, players, open }) {
+    // token = el de la pestaña (o null). holds(room, token) = ya tiene plaza en esa sala (recargó la página dentro de ella).
+    findQuick({ dev = false, players, open, token = null, holds = () => false }) {
+      const candidates = [...rooms.values()].filter((room) => room.type === 'quick' && !room.private && room.dev === dev && open(room));
+      for (const room of candidates) for (const [key, t] of room.pending) if (now() - t >= PENDING_MS) room.pending.delete(key);
+      // Ya tiene plaza (recarga) o reserva (doble clic en JUGAR) en una sala: vuelve a ESA, sin ocupar otro hueco.
+      const own = token ? candidates.find((room) => holds(room, token) || room.pending.has(token)) : null;
+      if (own) { if (own.pending.has(token)) reserve(own, token, now()); return own; }
       let best = null;
       let bestCount = -1;
-      for (const room of rooms.values()) {
-        if (room.type !== 'quick' || room.private || room.dev !== dev || !open(room)) continue;
-        room.pending = room.pending.filter((t) => now() - t < PENDING_MS);
-        const count = players(room) + room.pending.length;
+      for (const room of candidates) {
+        const count = players(room) + room.pending.size;
         if (count < 1 || count >= 4) continue; // vacía (nadie la está usando) o llena
         if (count > bestCount) { best = room; bestCount = count; }
       }
-      best?.pending.push(now());
+      if (best) reserve(best, token, now());
       return best;
     },
-    // La pantalla reservada ya ha entrado: libera su reserva.
-    claim(room) { room.pending.shift(); },
     get: (code) => (typeof code === 'string' ? rooms.get(code.toUpperCase()) ?? null : null),
     all: () => [...rooms.values()],
     get size() { return rooms.size; },

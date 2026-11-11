@@ -11,6 +11,7 @@ import { restartTunnel } from './tunnel.js';
 import { createPublicRoom } from './publicRoom.js';
 import { createRoomVotes } from './roomVotes.js';
 import { registerPauseHandlers } from './pauseHandlers.js';
+import { claimReservation } from './rooms.js';
 
 // room (solo en las salas online) = { code, type: 'local' | 'online' }. canHost(socket) decide quién puede ser host (por defecto, el
 // propio portátil del stand; en online, quien tiene la cookie de acceso). allowDebug = eventos de pruebas del menú del stand.
@@ -437,6 +438,7 @@ export function registerSockets(io, slots, { arena, arenas = [arena], cfg, rng, 
           // Versión pública: el relevo puede ser de dispositivo (el móvil coge la plaza del teclado de la partida rápida, o el teclado la recupera).
           if (publicMode) slots.setDevice(socket.id, payload.gamepad === true ? 'pad' : payload.keyboard === true ? 'keyboard' : 'phone');
           session.playerReconnected(resumed.slot);
+          claimReservation(room, token); // recargó y volvió a pedir sala: su reserva (solo la suya) ya no hace falta
           socket.emit(EVENTS.SLOT_ASSIGNED, { slot: resumed.slot, initials: resumed.initials });
           broadcastLobby();
           return;
@@ -487,7 +489,7 @@ export function registerSockets(io, slots, { arena, arenas = [arena], cfg, rng, 
           return;
         }
         clearTimeout(idleTimer); // con plaza, el control de inactividad lo lleva el ping de Socket.io
-        if (room?.pending?.length) room.pending.shift(); // cola común: el hueco reservado ya está ocupado
+        claimReservation(room, token, { fresh: true }); // cola común: su hueco reservado ya está ocupado
         // Con plaza: se suma una partida a su contacto (ya estaba guardado al validar el email).
         if (email && contacts) contacts.save({ email, initials, consent: config.consentVersion, played: true }).catch((err) => console.error('No se pudo guardar el contacto:', err.message));
         socket.emit(EVENTS.SLOT_ASSIGNED, assigned);

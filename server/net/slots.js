@@ -45,6 +45,8 @@ export function createSlots(max = MAX_PLAYERS) {
       return { ...entry, oldSocketId };
     },
     get: (socketId) => bySocket.get(socketId) ?? null,
+    // ¿Alguna plaza es de este token? (la cola común devuelve a su sala a quien recarga la página)
+    holds: (token) => Boolean(token) && slots.some((s) => s?.token === token),
     // ¿La plaza de este socket tiene token? (el mando real siempre lo manda: con él puede volver tras un corte)
     hasToken: (socketId) => Boolean(slots[(bySocket.get(socketId)?.slot ?? 0) - 1]?.token),
     // Identificador del socket que ocupa la plaza (1..max), o null si está libre.

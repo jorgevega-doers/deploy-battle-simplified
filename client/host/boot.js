@@ -107,7 +107,9 @@ async function startTitle() {
     $('title-play').textContent = 'BUSCANDO SALA…';
     $('title-msg').textContent = '';
     try {
-      const res = await fetch('/api/quick', { method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}' });
+      // El token de esta pestaña: la reserva de hueco es suya (se gasta cuando entra) y, si recargó dentro de una sala, vuelve a la misma.
+      const { clientToken } = await import('../roomSocket.js');
+      const res = await fetch('/api/quick', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ token: clientToken }) });
       const data = await res.json().catch(() => ({}));
       if (!res.ok || !data.code) throw Object.assign(new Error('sin sala'), { status: res.status });
       // La sala va en la dirección: main.js (roomSocket.js) la lee al cargarse.
