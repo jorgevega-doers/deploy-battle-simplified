@@ -1,0 +1,38 @@
+/* Interfaz "cozy" compartida por el host y el mando (AGENTS.md, secciones 31 y 34): estilo de los juegos pixel nocturnos
+   (Alabaster Dawn y similares). Paneles negro azulado grisáceo con borde de píxeles de 9 piezas (esquinas escalonadas,
+   bisel claro arriba-izquierda y contorno casi negro), pestañas y botones en el azul de marca, texto blanco y gris azulado,
+   y la fuente pixel Tiny5. Los colores de acento son solo los de cada jugador y algún toque ámbar. Sin desenfoques ni redondeos.
+   Las páginas que lo usan ponen su propio fondo y el tamaño de letra; aquí solo van los componentes. */
+:root {
+  --ui-ink: #0f1320;      /* fondo de los paneles: negro azulado grisáceo, como la noche de la ciudad */
+  --ui-ink-2: #161c2d;    /* filas alternas y zonas interiores */
+  --ui-edge: #05070d;     /* contorno */
+  --ui-blue: #0003ad;     /* azul de marca */
+  --ui-blue-hi: #3346ff;
+  --ui-muted: #8e9abd;    /* texto secundario */
+  --ui-amber: #ffb45c;
+  --p1: #6f8cff;
+  --p2: #ff4fa3;
+  --p3: #2fe6d6;          /* bots 3 y 4 del modo de un jugador (acentos cian y ámbar) */
+  --p4: #ffc83a;
+  /* Bordes de 9 piezas dibujados en SVG (12 x 12 píxeles, se escalan x2 sin suavizar) */
+  --panel-img: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12' shape-rendering='crispEdges'%3E%3Cpath fill='%2305070d' d='M2 0h8v1H2zM2 11h8v1H2zM0 2h1v8H0zM11 2h1v8h-1zM1 1h1v1H1zM10 1h1v1h-1zM1 10h1v1H1zM10 10h1v1h-1z'/%3E%3Cpath fill='%232c3756' d='M2 1h8v1H2zM1 2h1v8H1z'/%3E%3Cpath fill='%230a0d17' d='M2 10h8v1H2zM10 2h1v8h-1z'/%3E%3Cpath fill='%230f1320' d='M2 2h8v8H2z'/%3E%3C/svg%3E");
+  --tab-img: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12' shape-rendering='crispEdges'%3E%3Cpath fill='%2305070d' d='M2 0h8v1H2zM2 11h8v1H2zM0 2h1v8H0zM11 2h1v8h-1zM1 1h1v1H1zM10 1h1v1h-1zM1 10h1v1H1zM10 10h1v1h-1z'/%3E%3Cpath fill='%233346ff' d='M2 1h8v1H2zM1 2h1v8H1z'/%3E%3Cpath fill='%2300027a' d='M2 10h8v1H2zM10 2h1v8h-1z'/%3E%3Cpath fill='%230003ad' d='M2 2h8v8H2z'/%3E%3C/svg%3E");
+  /* Las mismas piezas en fucsia (jugador 2): relleno fucsia profundo, bisel rosa claro y sombra granate. */
+  --tab-img-p2: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12' shape-rendering='crispEdges'%3E%3Cpath fill='%2305070d' d='M2 0h8v1H2zM2 11h8v1H2zM0 2h1v8H0zM11 2h1v8h-1zM1 1h1v1H1zM10 1h1v1h-1zM1 10h1v1H1zM10 10h1v1h-1z'/%3E%3Cpath fill='%23ff6fb5' d='M2 1h8v1H2zM1 2h1v8H1z'/%3E%3Cpath fill='%2370003a' d='M2 10h8v1H2zM10 2h1v8h-1z'/%3E%3Cpath fill='%23b0005e' d='M2 2h8v8H2z'/%3E%3C/svg%3E");
+}
+
+.ui-panel { border: 6px solid transparent; border-image: var(--panel-img) 3 fill / 6px / 0 stretch; }
+.ui-tab {
+  display: inline-block; border: 6px solid transparent; border-image: var(--tab-img) 3 fill / 6px / 0 stretch;
+  padding: 0 8px; font-weight: 700; font-size: 20px; letter-spacing: 1px; line-height: 1.25; color: var(--white);
+}
+/* Botón: la misma pieza azul que las pestañas; al pulsarlo se hunde 3 píxeles. */
+.ui-btn {
+  display: inline-block; border: 6px solid transparent; border-image: var(--tab-img) 3 fill / 6px / 0 stretch;
+  font-family: var(--font-ui); font-size: 26px; letter-spacing: 1px; line-height: 1.2; padding: 8px 22px; min-height: 56px;
+  color: var(--white); background: none; cursor: pointer; text-align: center;
+}
+.ui-btn[hidden] { display: none; }
+.ui-btn:active, .ui-btn.pressed { transform: translate(3px, 3px); }
+.ui-btn:disabled { opacity: .4; cursor: default; transform: none; }

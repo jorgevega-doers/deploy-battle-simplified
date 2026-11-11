@@ -1,0 +1,22 @@
+﻿node_modules/
+dist/
+bin/
+.vercel/
+*.db
+*.db-journal
+.env
+.update-token
+.claude/settings.local.json
+
+# Capturas de referencia visual (pesadas; las notas y las carpetas si se versionan)
+docs/referencias/*/*.png
+docs/referencias/*/*.jpg
+docs/referencias/*/*.jpeg
+.congelar
+
+# Notas internas de desarrollo (solo en local, no se publican; versión pública, 10-nov)
+AGENTS.md
+docs/
+.mcp.json
+layout-out/
+ui-check-out/

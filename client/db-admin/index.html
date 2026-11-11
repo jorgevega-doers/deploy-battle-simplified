@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <link rel="icon" href="data:,">
+  <meta name="robots" content="noindex">
+  <title>DEPLOY BATTLE · Desarrollador</title>
+  <link rel="stylesheet" href="../theme.css">
+  <link rel="stylesheet" href="../ui.css">
+  <style>
+    html, body { height: 100%; }
+    body.gate {
+      margin: 0; display: grid; place-items: center; padding: 16px; font-family: var(--font-ui); color: var(--white);
+      background-color: #070a14; background-image: repeating-conic-gradient(#0b1020 0 25%, transparent 0 50%); background-size: 8px 8px;
+    }
+    #card { width: min(420px, 100%); padding: 22px 22px 24px; display: flex; flex-direction: column; gap: 16px; text-align: center; }
+    .logo { font-family: var(--font-body); font-weight: 800; font-size: 30px; letter-spacing: -0.5px; }
+    .logo sup { font-size: 11px; }
+    h1 { margin: 0; font-size: 16px; letter-spacing: 2px; font-weight: 400; color: var(--ui-muted, #8e9abd); }
+    form { display: flex; flex-direction: column; gap: 12px; }
+    input[type=password] {
+      font-family: var(--font-ui); font-size: 20px; letter-spacing: 2px; text-align: center; color: var(--white); background: #0f1320;
+      border: 4px solid #2a3150; padding: 12px; outline: none;
+    }
+    input[type=password]:focus { border-color: var(--p1, #6f8cff); }
+    #msg { min-height: 20px; margin: 0; font-size: 14px; color: #ff4fa3; }
+  </style>
+</head>
+<body class="gate">
+  <main id="card" class="ui-panel">
+    <img class="doers-logo big" data-px="1" style="--dl: 1; margin: 0 auto 10px" src="../../assets/logo/logo-doers.png" alt="doers DF" draggable="false">
+    <h1>DEPLOY BATTLE · MODO DESARROLLADOR</h1>
+    <p id="dev-on" hidden>YA ESTÁS EN MODO DESARROLLADOR. <a href="/">IR AL INICIO</a></p>
+    <form id="form" autocomplete="off">
+      <input id="password" type="password" placeholder="CONTRASEÑA DE DESARROLLADOR" maxlength="200" autofocus aria-label="Contraseña de desarrollador" autocomplete="current-password">
+      <button class="ui-btn" id="go" type="submit">ENTRAR</button>
+      <p id="msg" role="alert"></p>
+    </form>
+  </main>
+  <script type="module" src="./main.js"></script>
+</body>
+</html>

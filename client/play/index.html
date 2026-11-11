@@ -1,0 +1,387 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="color-scheme" content="dark">
+  <meta name="supported-color-schemes" content="dark">
+  <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <link rel="icon" href="data:,">
+  <title>DEPLOY BATTLE · Mando</title>
+  <link rel="stylesheet" href="../theme.css">
+  <link rel="stylesheet" href="../ui.css">
+  <style>
+    /* Mando (AGENTS.md, sección 34): mismo estilo "cozy" que el host: paneles negro azulado con borde de píxeles,
+       pestañas y botones azules, fuente Tiny5 y el color del jugador (azul P1, rosa P2) en los detalles.
+       Todo con "body.play" para ganar a la regla de body de theme.css, que se carga después desde main.js. */
+    /* dvh: la altura VISIBLE (algunos navegadores móviles, como Vivaldi, tienen barras que se comen parte de la pantalla). */
+    html, body.play { height: 100%; margin: 0; }
+    body.play { height: 100vh; height: 100dvh; }
+    body.play {
+      --font-ui: 'Jersey 15', 'Tiny5', monospace; --font-pixel: 'Jersey 15', 'Tiny5', monospace; /* más legible en el móvil */
+      --pc: var(--p1); --pc-hi: #b3c2ff; --pc-lo: #2a3fd0;  /* color del jugador (por defecto P1) */
+      font-family: var(--font-ui); font-synthesis: none; -webkit-font-smoothing: auto; font-size: 20px; line-height: 1.35;
+      background: #070a14; color: var(--white);
+      touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;
+      overscroll-behavior: none; display: flex; flex-direction: column; overflow: hidden;
+    }
+    /* Jugador 2: TODO en fucsia con distintos tonos (pestañas, botones, sticks, sombras), igual que P1 es todo azul. */
+    body.play { --kn: #3346ff; --kn-hi: #9aa6ff; --kn-lo: #1424b8; --shade: var(--ui-blue); }
+    body.play[data-slot="2"] {
+      --pc: var(--p2); --pc-hi: #ffb8da; --pc-lo: #c4146a;
+      --kn: #e6007a; --kn-hi: #ff9ccc; --kn-lo: #8f0050; --shade: #70003a;
+      --tab-img: var(--tab-img-p2);
+    }
+
+    /* Jugadores 3 y 4 (combates de 3 o 4 tanques): cian y ámbar, los acentos permitidos. */
+    body.play[data-slot="3"] { --pc: var(--p3); --pc-hi: #b8fff6; --pc-lo: #0c8c82; --kn: #18d8c8; --kn-hi: #a6fff4; --kn-lo: #0a7a70; --shade: #0a5750; }
+    body.play[data-slot="4"] { --pc: var(--p4); --pc-hi: #ffe9a8; --pc-lo: #b87c00; --kn: #ffb81c; --kn-hi: #ffe39a; --kn-lo: #94610a; --shade: #6b4700; }
+
+    /* Logo y título siempre visibles arriba (AGENTS.md, sección 4). */
+    #brand { display: flex; align-items: center; gap: 14px; margin: 8px 10px 0; padding: 10px 12px 4px; position: relative; flex: none; }
+    #brand::before { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 3px; background: var(--pc); }
+    #brand .logo { font-family: var(--font-body); font-weight: 800; font-size: 24px; letter-spacing: -0.5px; line-height: 1; }
+    #brand .logo sup { font-size: 9px; margin-left: 1px; vertical-align: top; position: relative; top: 1px; }
+    #brand .sep { width: 2px; align-self: stretch; margin: 6px 0; background: #2c3756; }
+    #brand .title { font-size: 15px; line-height: 1.1; color: var(--ui-muted); }
+    #brand .title b { color: var(--white); font-weight: 400; }
+    #brand .me { margin-left: auto; font-size: 20px; color: var(--pc); letter-spacing: 1px; }
+    #brand .me:empty { display: none; }
+
+    main { flex: 1; position: relative; padding: 14px 16px 6px; overflow: hidden; display: flex; flex-direction: column; justify-content: center; }
+    section[hidden] { display: none !important; }
+
+    /* Pantallas de texto: una tarjeta centrada con su pestaña de título. */
+    main > section:not(#view-pads) { max-width: 520px; width: 100%; margin: 0 auto; padding: 12px 26px 16px; text-align: center; max-height: 100%; overflow: hidden; }
+    /* Los títulos de pantalla NO son botones (la pieza azul con borde es de los botones): texto grande a la izquierda con sombra dura y una barra del color del jugador. */
+    main > section:not(#view-pads) .ui-tab, #bars-gate .ui-tab, #fs-gate .ui-tab {
+      display: block; border: 0; border-image: none; padding: 0; margin: 0 0 14px; text-align: left; font-size: 30px; font-weight: 400; letter-spacing: 1px; line-height: 1.1;
+      color: var(--white); text-shadow: 3px 3px 0 var(--shade);
+    }
+    main > section:not(#view-pads) .ui-tab::after, #bars-gate .ui-tab::after, #fs-gate .ui-tab::after { content: ''; display: block; width: 44px; height: 4px; margin-top: 8px; background: var(--pc); }
+    p { margin: 0 0 12px; }
+    strong { color: var(--pc); font-weight: 400; }
+    .msg { color: var(--p2); min-height: 1.4em; font-size: 17px; margin: 10px 0 0; }
+    .big { font-size: 110px; line-height: 1; margin: 6px 0 14px; text-shadow: 4px 4px 0 var(--shade); }
+    #over-score { font-size: 64px; color: var(--pc); margin: 0 0 8px; }
+    #over-title { font-size: 32px; margin: 0 0 4px; }
+    #view-over p { margin-bottom: 6px; }
+    #over-detail { color: var(--ui-muted); font-size: 18px; }
+    .hint { color: var(--ui-muted); font-size: 17px; }
+    .modeline { color: var(--white); font-size: 18px; letter-spacing: 1px; margin: 0 0 8px; }
+    /* Logo completo del juego en la cabecera, reducido con suavizado (el mismo PNG que el lobby). */
+    #brand .title-logo { display: block; height: 46px; width: auto; image-rendering: auto; user-select: none; -webkit-user-drag: none; }
+
+    main > section#view-join { text-align: left; }
+    /* Entrada: iniciales + email (obligatorio en el stand) + consentimiento + SIGUIENTE. Iniciales, email y botón miden lo mismo (todo el ancho de la tarjeta). */
+    #join-form { display: flex; flex-direction: column; gap: 12px; text-align: left; }
+    #join-form.no-email .field-mail, #join-form.no-email .consent { display: none; }
+    .field { display: flex; flex-direction: column; gap: 4px; }
+    .field > span { font-size: 15px; letter-spacing: 1px; color: var(--ui-muted); }
+    input.mail, input.initials {
+      font-family: var(--font-ui); width: 100%; box-sizing: border-box; padding: 0 12px; color: var(--white); background: none;
+      border: 6px solid transparent; border-image: var(--panel-img) 3 fill / 6px / 0 stretch; outline: none; caret-color: var(--pc);
+    }
+    input.mail { font-size: 28px; height: 1.75em; text-transform: none; text-align: left; }
+    input.initials { font-size: 40px; height: 1.4em; letter-spacing: 8px; text-transform: uppercase; text-align: center; padding-left: 20px; /* el espaciado entre letras descentra la última: se compensa */ }
+    input.mail:focus, input.initials:focus { box-shadow: 0 0 0 4px var(--pc); }
+    /* El texto de los campos siempre blanco (29-oct): en algunos móviles el autorrelleno (-webkit-autofill) y el modo oscuro forzado del navegador lo pintaban oscuro
+       sobre fondo claro. Se fija el color de relleno del texto, el fondo del autorrelleno (sombra interior, que el navegador no puede sustituir) y el esquema oscuro. */
+    :root { color-scheme: dark; }
+    input.mail, input.initials { color-scheme: dark; -webkit-text-fill-color: #ffffff; opacity: 1; }
+    input.mail:-webkit-autofill, input.mail:-webkit-autofill:hover, input.mail:-webkit-autofill:focus,
+    input.initials:-webkit-autofill, input.initials:-webkit-autofill:hover, input.initials:-webkit-autofill:focus {
+      -webkit-text-fill-color: #ffffff; caret-color: var(--pc); -webkit-box-shadow: 0 0 0 1000px #0f1320 inset; box-shadow: 0 0 0 1000px #0f1320 inset;
+      transition: background-color 600000s 0s, color 600000s 0s;
+    }
+    input.mail:-webkit-autofill:focus, input.initials:-webkit-autofill:focus { box-shadow: 0 0 0 1000px #0f1320 inset, 0 0 0 4px var(--pc); }
+    input.mail::placeholder { color: #4a5680; -webkit-text-fill-color: #4a5680; }
+    @media (max-width: 360px) { input.mail { font-size: 22px; } } /* móviles muy estrechos (320 px): el email de ejemplo cabe entero */
+    .consent { display: flex; gap: 12px; align-items: flex-start; font-size: 18px; line-height: 1.25; color: var(--white); cursor: pointer; }
+    .consent input { -webkit-appearance: none; appearance: none; flex: none; width: 30px; height: 30px; margin: 0; border: 4px solid var(--pc); background: #05070d; cursor: pointer; border-radius: 0; }
+    .consent input:checked { background: var(--pc); box-shadow: inset 0 0 0 6px #05070d; }
+    .consent a { color: var(--pc-hi); text-decoration: underline; }
+    #join-btn { display: block; width: 100%; box-sizing: border-box; }
+    /* Horizontal y bajito (móvil de lado con las barras del navegador, ~316 px): dos columnas iguales y dos filas; a la izquierda iniciales y email, a la derecha consentimiento y, junto al email, el botón. */
+    @media (max-height: 480px) and (min-width: 641px) {
+      #join-form { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 18px; align-items: start; }
+      #join-form .field-initials { grid-column: 1; grid-row: 1; }
+      #join-form .field-mail { grid-column: 1; grid-row: 2; }
+      #join-form .consent { grid-column: 2; grid-row: 1; }
+      #join-form #join-btn { grid-column: 2; grid-row: 2; align-self: end; } /* a la altura del email: solo dos filas, así no baja del panel ni pisa el pie en pantallas bajas */
+      #join-form.no-email #join-btn { grid-row: 1; } /* sin email (versión pública): iniciales y SIGUIENTE en la misma fila */
+    }
+    #ready-btn.cancel { filter: saturate(0.55) brightness(0.8); } /* LISTO ya pulsado: el botón sirve para cancelar */
+    #join-count { margin: 2px 0 6px; }
+    /* Cuenta atrás de entrada (todos listos): número grande a la izquierda y CANCELAR LISTO a la derecha, para que quepa en horizontal. */
+    #view-slot.counting:not([hidden]) { display: grid !important; grid-template-columns: 1fr 1fr; align-items: center; column-gap: 20px; row-gap: 2px; }
+    #view-slot.counting .ui-tab { grid-column: 1 / -1; justify-self: start; margin-bottom: 4px; }
+    #view-slot.counting > p:not(.big):not(.join-label), #view-slot.counting #ready-hint { display: none; }
+    #view-slot.counting .join-label { grid-column: 1; grid-row: 2; margin: 0; font-size: 20px; letter-spacing: 2px; color: var(--ui-muted); }
+    #view-slot.counting .big { grid-column: 1; grid-row: 3; margin: 0; font-size: min(96px, 24vh); }
+    #view-slot.counting #ready-btn { grid-column: 2; grid-row: 2 / span 2; margin: 0; }
+
+    /* Pantalla de juego: pad de movimiento a la izquierda; dash y pad de apuntado a la derecha. */
+    /* Agarre natural (29-oct): los pulgares descansan hacia el centro y por debajo de la mitad, no pegados a las esquinas. --pad = lado de cada pad;
+       --edge = separación del borde lateral (más la zona segura del notch); --lift = separación del borde de abajo. */
+    #view-pads { position: absolute; inset: 0; padding: 0 !important; max-width: none !important; --pad: min(44vh, 28vw); --edge: calc(env(safe-area-inset-left, 0px) + 9vw); --edge-r: calc(env(safe-area-inset-right, 0px) + 9vw); --lift: 7vh; }
+    .pad {
+      position: absolute; bottom: var(--lift); width: var(--pad); height: var(--pad);
+      display: flex; align-items: center; justify-content: center;
+      border-image: var(--panel-img) 3 / 6px / 0 stretch; /* sin "fill": el fondo del pad (el damero) se ve por dentro */
+      background-color: var(--ui-ink); background-clip: padding-box;
+      /* damero tenue + cruz central: da la sensación de "mesa de mando" sin molestar */
+      background-image: repeating-conic-gradient(var(--ui-ink-2) 0 25%, transparent 0 50%); background-size: 16px 16px;
+    }
+    .pad::before, .pad::after { content: ''; position: absolute; background: #2c3756; pointer-events: none; }
+    .pad::before { left: 12%; right: 12%; top: calc(50% - 1px); height: 2px; }
+    .pad::after { top: 12%; bottom: 12%; left: calc(50% - 1px); width: 2px; }
+    #pad-move { left: var(--edge); }
+    #pad-aim { right: var(--edge-r); }
+    /* Esquinas del color del jugador (marcas de mira) */
+    .pad .tick { position: absolute; width: 14px; height: 14px; pointer-events: none; }
+    .pad .tick.tl { left: 6px; top: 6px; border-left: 4px solid var(--pc); border-top: 4px solid var(--pc); }
+    .pad .tick.tr { right: 6px; top: 6px; border-right: 4px solid var(--pc); border-top: 4px solid var(--pc); }
+    .pad .tick.bl { left: 6px; bottom: 6px; border-left: 4px solid var(--pc); border-bottom: 4px solid var(--pc); }
+    .pad .tick.br { right: 6px; bottom: 6px; border-right: 4px solid var(--pc); border-bottom: 4px solid var(--pc); }
+    /* Stick: disco de píxeles (octógono escalonado) con bisel claro/oscuro del color del jugador. */
+    .knob {
+      width: 38%; height: 38%; background: var(--pc); position: relative; z-index: 3; /* por encima del nombre del pad */
+      clip-path: polygon(25% 0, 75% 0, 75% 12.5%, 87.5% 12.5%, 87.5% 25%, 100% 25%, 100% 75%, 87.5% 75%, 87.5% 87.5%, 75% 87.5%, 75% 100%,
+        25% 100%, 25% 87.5%, 12.5% 87.5%, 12.5% 75%, 0 75%, 0 25%, 12.5% 25%, 12.5% 12.5%, 25% 12.5%);
+      box-shadow: inset 8px 8px 0 var(--pc-hi), inset -8px -8px 0 var(--pc-lo);
+    }
+    #pad-move .knob { background: var(--kn); box-shadow: inset 8px 8px 0 var(--kn-hi), inset -8px -8px 0 var(--kn-lo); }
+    /* Nombre del pad: pestaña en la parte alta */
+    .pad .label {
+      position: absolute; top: 12px; left: 50%; transform: translateX(-50%); white-space: nowrap; pointer-events: none;
+      /* El tamaño sale del ancho del pad: en un pad pequeño la etiqueta no se sale. */
+      font-size: max(9px, calc(var(--pad) * 0.07)); letter-spacing: 1px; padding: 0 6px; background: var(--ui-ink); color: var(--ui-muted); z-index: 1;
+      max-width: 94%; overflow: hidden;
+    }
+    /* Dash: botón azul grande con icono y nombre; se atenúa mientras se recarga. */
+    #dash-btn {
+      position: absolute; bottom: calc(var(--lift) + var(--pad) * 0.1); right: calc(var(--edge-r) + var(--pad) + 3vw);
+      width: min(36vh, 26vw); height: min(36vh, 26vw); padding: 0; font-size: 26px; line-height: 1.1;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+    }
+    #dash-btn svg { width: 52%; height: auto; }
+    #dash-btn.cooling { opacity: .4; }
+    #rotate-notice {
+      display: none; position: fixed; inset: 0; z-index: 10; background: #070a14; padding: 16px;
+      align-items: center; justify-content: center;
+    }
+    #rotate-notice .card { padding: 24px 34px 30px; text-align: center; font-size: 26px; line-height: 1.5; }
+    /* Siempre horizontal, salvo el formulario de entrada (iniciales y email), que se puede rellenar en vertical: en cuanto se pasa de ahí, el aviso tapa todo el mando. */
+    @media (orientation: portrait) { body:not(.formview) #rotate-notice { display: flex; } }
+    body.formview #fs-gate, body.formview #fs-btn { display: none; } /* la pantalla completa y el horizontal se exigen a partir del toque de SIGUIENTE, no antes */
+    #rotate-notice { z-index: 30; }
+    /* Botón de pantalla completa: arriba en el centro. Fuera de la partida enseña "PANTALLA COMPLETA"; en pantalla completa, "SALIR". */
+    #fs-btn { position: fixed; top: 4px; left: 50%; transform: translateX(-50%); z-index: 20; font-family: var(--font-ui); font-size: 12px; letter-spacing: 1px; color: var(--white); min-height: 26px; padding: 0 10px; cursor: pointer; white-space: nowrap; }
+    #fs-btn[hidden] { display: none; }
+    /* iPhone: pantalla más alta que la ventana; al deslizarla el navegador esconde sus barras (bars.js). */
+    html.scrollgate, html.scrollgate body.play { overflow: auto; overflow-x: hidden; touch-action: pan-y; }
+    #bars-gate { position: absolute; top: 0; left: 0; width: 100%; height: 260vh; z-index: 26; background: #070a14; }
+    #bars-gate[hidden] { display: none; }
+    #bars-gate .stick { position: sticky; top: 0; height: 100vh; height: 100dvh; display: flex; align-items: center; justify-content: center; padding: 8px; }
+    #bars-gate .card { padding: 10px 24px 14px; text-align: center; }
+    #bars-gate .card p { font-size: 18px; margin: 8px 0; }
+    #bars-gate .arrow { width: 28px; height: 20px; margin: 4px auto 8px; background: var(--pc); clip-path: polygon(50% 0, 100% 100%, 0 100%); animation: bars-up 0.9s steps(3) infinite; }
+    #bars-skip { font-size: 14px; min-height: 36px; margin-top: 6px; }
+    @keyframes bars-up { 0% { transform: translateY(6px); } 100% { transform: translateY(-6px); } }
+    #fs-gate { position: fixed; inset: 0; z-index: 25; background: #070a14; display: flex; align-items: center; justify-content: center; padding: 12px; }
+    #fs-gate[hidden] { display: none; }
+    #fs-gate .card { padding: 12px 26px 18px; text-align: center; max-width: 520px; }
+    #fs-gate .card p { font-size: 18px; margin: 10px 0 14px; }
+    #fs-gate-btn { font-size: 22px; min-height: 56px; padding: 4px 22px; }
+    html, body { overscroll-behavior: none; -ms-touch-action: none; }
+
+    /* Vidas, tiempo y power-ups entre los dos pads (arriba al centro). */
+    #hud { position: absolute; top: 4px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 4px; pointer-events: none; }
+    #hud-hearts { display: flex; gap: 6px; min-height: 22px; }
+    #hud-hearts .heart { width: 28px; height: 25px; }
+    #timer { font-size: 34px; line-height: 1.1; text-shadow: 3px 3px 0 var(--shade); }
+    #hud-fx { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; max-width: 46vw; }
+    .fx-chip { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; padding: 1px 6px 1px 4px; line-height: 1.4; background: var(--ui-ink-2); border: 2px solid currentColor; }
+    .fx-icon { width: 13px; height: 13px; }
+    .fx-double { color: #ffd400; } .fx-speed { color: #00f0ff; } .fx-aoe { color: #ff9a00; } .fx-shield { color: #5be38f; }
+    .fx-chip.ending .fx-icon { animation: fx-blink 0.5s steps(1) infinite; }
+    .fx-chip.last .fx-icon { animation-duration: 0.22s; }
+    @keyframes fx-blink { 50% { visibility: hidden; } }
+    /* Oscurece todo el mando al perder una vida o acabar la partida (con los pads bloqueados por el servidor). */
+    #dim { position: fixed; inset: 0; z-index: 4; background: rgba(5, 5, 12, 0.78); opacity: 0; pointer-events: none; transition: opacity 0.2s steps(3); }
+    #dim.on { opacity: 1; }
+    /* Estado de conexión: una pastilla con icono (conectado / desconectado), no texto suelto. No es un botón: sin relieve ni hundimiento. */
+    #footer { flex: none; align-self: center; margin: 0 0 8px; display: inline-flex; align-items: center; gap: 8px; padding: 2px 12px 2px 8px; font-size: 15px; line-height: 1.3; color: var(--ui-muted); background: var(--ui-ink); border: 2px solid #2c3756; white-space: nowrap; }
+    #footer .ico { width: 18px; height: 14px; flex: none; color: var(--ok); }
+    #footer .ico .x { display: none; }
+    #footer.off { border-color: var(--p2); } #footer.off .ico { color: var(--p2); } #footer.off .ico .bars { opacity: .35; } #footer.off .ico .x { display: block; }
+    #footer b { font-weight: 400; color: var(--white); }
+    body { --ok: #5be38f; }
+    /* Durante la partida solo se enseña el ping, arriba a la derecha (sobre la cabecera, a la altura de las iniciales, que se apartan). */
+    body.playing #footer { position: absolute; top: 12px; right: 18px; margin: 0; font-size: 13px; padding: 0 8px 0 6px; pointer-events: none; opacity: .85; z-index: 2; }
+    body.playing #footer .conn { display: none; }
+    body.playing #brand .me { margin-right: 96px; }
+
+    /* Pantallas bajas (móvil apaisado con barras del navegador: unos 300-420 px de alto visibles): todo se compacta. */
+    @media (max-height: 480px) {
+      #brand { margin: 4px 10px 0; padding: 6px 12px 2px; gap: 10px; }
+      #brand .logo { font-size: 20px; }
+      #brand .title { font-size: 12px; }
+      #brand .me { font-size: 16px; }
+      main { padding: 6px 12px 2px; }
+      main > section:not(#view-pads) { padding: 8px 22px 10px; }
+      main > section:not(#view-pads) .ui-tab, #bars-gate .ui-tab, #fs-gate .ui-tab { margin-bottom: 8px; font-size: 22px; }
+      main > section:not(#view-pads) .ui-tab::after { height: 3px; margin-top: 4px; }
+      p { margin-bottom: 6px; }
+      .big { font-size: min(110px, 22vh); margin: 2px 0 6px; }
+      #over-score { font-size: min(64px, 14vh); }
+      #over-title { font-size: min(32px, 7vh); }
+      #over-detail, .hint, .msg { font-size: 15px; }
+      input.initials { font-size: min(40px, 9vh); }
+      input.mail { font-size: min(28px, 8vh); }
+      .field > span { font-size: 13px; }
+      .consent { font-size: 16px; gap: 8px; }
+      .consent input { width: 24px; height: 24px; }
+      #footer { font-size: 13px; margin-bottom: 4px; }
+      #hud-hearts .heart { width: 24px; height: 21px; }
+      #timer { font-size: 28px; }
+    }
+    /* Versión pública (rama public): "SOBRE DOERS" y aviso legal, discretos. body.public lo pone main.js en las salas. */
+    .pub-only { display: none !important; }
+    body.public .about-btn.pub-only { display: inline-block !important; margin-top: 12px; font-size: 14px; letter-spacing: 1px; color: var(--ui-muted); text-decoration: underline; }
+    body.public .legal.pub-only { display: block !important; margin: 10px 0 0; font-size: 13px; color: var(--ui-muted); text-align: center; }
+    body.public .legal a { color: var(--ui-muted); }
+    #view-slot.counting .about-btn { display: none !important; }
+    /* Versión pública (10-nov): controles del móvil junto a LISTO, PAUSA en partida y SALIR en la sala de espera (phoneMenu.js). */
+    body.public .ctrl-help.pub-only { display: block !important; margin: 6px 0 0; font-size: 12px; white-space: nowrap; line-height: 1.4; letter-spacing: 1px; color: #c9d3ff; text-align: center; }
+    body.public .ctrl-help b { color: var(--white); font-weight: 400; }
+    #view-slot.counting .ctrl-help { display: none !important; }
+    #leave-btn { display: none; }
+    body.public #leave-btn { display: inline-block; vertical-align: baseline; margin: 12px 0 0 18px; padding: 4px 14px; font-family: inherit; font-size: 13px; letter-spacing: 2px; color: var(--ui-muted); background: none; border: 2px solid #2a3150; cursor: pointer; }
+    #pause-btn { display: none; }
+    body.public #pause-btn { display: flex; position: absolute; left: 50%; top: 70px; /* centrado, justo debajo de vidas y reloj */ transform: translateX(-50%); z-index: 5; width: 46px; height: 40px; min-height: 0; padding: 0; align-items: center; justify-content: center; }
+    #pause-btn svg { width: 16px; height: 18px; }
+    #pause-note { position: absolute; left: 50%; bottom: 2px; transform: translateX(-50%); z-index: 5; padding: 4px 10px; font-size: 14px; letter-spacing: 1px; color: var(--white); background: rgba(5, 5, 12, 0.85); white-space: nowrap; }
+    #pause-note[hidden] { display: none; }
+    #phone-menu { position: fixed; inset: 0; z-index: 60; display: flex; align-items: center; justify-content: center; background: rgba(5, 5, 12, 0.85); }
+    #phone-menu[hidden] { display: none; }
+    #phone-menu .card { width: min(420px, 88vw); padding: 14px 18px 16px; text-align: center; }
+    #phone-menu .pm-msg { margin: 10px 0 0; font-size: 15px; line-height: 1.35; color: #c9d1ee; }
+    #phone-menu .pm-actions { display: grid; gap: 10px; margin-top: 14px; }
+    #phone-menu .ui-btn { font-size: 18px; min-height: 48px; }
+    #phone-menu .ui-btn.danger { --tab-img: var(--tab-img-p2); }
+    /* SEGUIR (o NO) en gris: con el color del jugador 2 (fucsia) los dos botones eran iguales y no se distinguía el de salir. */
+    #phone-menu .ui-btn:not(.danger) { filter: grayscale(1) brightness(0.8); }
+  </style>
+</head>
+<body class="play">
+  <header id="brand" class="ui-panel">
+    <img class="doers-logo" data-px="2" src="../../assets/logo/logo-doers-small.png" alt="doers DF" draggable="false">
+    <span class="sep"></span>
+    <img class="title-logo" src="../../assets/logo/deploy-battle.png" alt="DEPLOY BATTLE" draggable="false">
+    <span class="me" id="me"></span>
+  </header>
+
+  <main>
+    <section id="view-join" class="ui-panel">
+      <div class="ui-tab" id="join-tab">ANTES DE JUGAR</div>
+      <form id="join-form" autocomplete="on" novalidate>
+        <label class="field field-initials"><span>TUS INICIALES (3 LETRAS)</span>
+          <input class="initials" id="initials" maxlength="3" autocapitalize="characters" autocorrect="off" spellcheck="false" inputmode="text" autocomplete="off" aria-label="Iniciales"></label>
+        <label class="field field-mail"><span>EMAIL PARA JUGAR</span>
+          <input class="mail" id="email" type="email" inputmode="email" autocomplete="email" autocapitalize="none" autocorrect="off" spellcheck="false" maxlength="254" placeholder="nombre@empresa.com" aria-label="Email"></label>
+        <!-- Texto provisional del consentimiento: lo da DOERS (AGENTS.md, sección 57). Si cambia, subir config.consentVersion. -->
+        <label class="consent"><input type="checkbox" id="consent"><span>He leído y estoy de acuerdo con el <a href="https://doersdf.com/es/aviso-legal" target="_blank" rel="noopener noreferrer">aviso legal y condiciones generales de uso</a></span></label>
+        <button class="ui-btn" id="join-btn" type="submit" disabled>SIGUIENTE</button>
+      </form>
+      <p id="join-msg" class="msg"></p>
+      <p class="legal pub-only"><a href="https://doersdf.com/es/aviso-legal" target="_blank" rel="noopener noreferrer">Aviso legal</a> · <a href="/end/" target="_blank" rel="noopener">Sobre DOERS</a></p>
+    </section>
+
+    <section id="view-slot" class="ui-panel" hidden>
+      <div class="ui-tab">CONECTADO</div>
+      <p>ERES EL JUGADOR <strong id="slot-number">-</strong> (<span id="slot-initials"></span>)</p>
+      <p class="modeline" id="mode-line"></p>
+      <button id="ready-btn" class="ui-btn" type="button">LISTO</button>
+      <p class="join-label" id="join-label" hidden>EMPIEZA EN</p>
+      <p class="big" id="join-count" hidden>10</p>
+      <p class="hint" id="ready-hint">PULSA LISTO CUANDO ESTÉS PREPARADO</p>
+      <!-- Versión pública: los controles del móvil, aquí mismo (en la pantalla grande se ven los del teclado o el mando) -->
+      <p class="ctrl-help pub-only"><b>IZQ.</b> MUEVE · <b>DCHA.</b> APUNTA Y SUELTA · <b>BOTÓN GRANDE</b> ACELERÓN</p>
+      <!-- Versión pública: la página de DOERS en otra pestaña (la partida sigue en esta) -->
+      <a class="about-btn pub-only" href="/end/" target="_blank" rel="noopener">SOBRE DOERS</a>
+    </section>
+
+    <section id="view-full" class="ui-panel" hidden>
+      <div class="ui-tab">PARTIDA LLENA</div>
+      <p>INTÉNTALO EN UN MOMENTO.</p>
+      <button class="ui-btn" id="retry-btn" type="button">REINTENTAR</button>
+    </section>
+
+    <!-- El servidor no responde (p. ej. se cerró el túnel y esta página venía de la caché): no se puede rellenar nada, hay que volver a escanear el QR -->
+    <section id="view-lost" class="ui-panel" hidden>
+      <div class="ui-tab">SIN CONEXIÓN</div>
+      <p id="lost-msg">NO SE PUEDE CONECTAR CON LA PARTIDA. EL ENLACE DE ESTE CÓDIGO QR YA NO FUNCIONA.</p>
+      <p class="hint" id="lost-hint">CIERRA ESTA PÁGINA Y VUELVE A ESCANEAR EL CÓDIGO QR DE LA PANTALLA.</p>
+    </section>
+
+    <section id="view-offline" class="ui-panel" hidden>
+      <div class="ui-tab">SIN CONEXIÓN</div>
+      <p id="offline-msg">CONEXIÓN PERDIDA.</p>
+      <button class="ui-btn" id="reconnect-btn" type="button">RECONECTAR</button>
+    </section>
+
+    <section id="view-ready" class="ui-panel" hidden>
+      <div class="ui-tab">PREPÁRATE</div>
+      <p class="big" id="countdown">3</p>
+      <p>ERES EL JUGADOR <strong id="ready-slot">-</strong></p>
+    </section>
+
+    <section id="view-pads" hidden>
+      <div id="hud">
+        <div id="hud-hearts"></div>
+        <div id="timer">--:--</div>
+        <div id="hud-fx"></div>
+      </div>
+      <div id="pad-move" class="pad ui-panel" aria-label="Movimiento">
+        <span class="tick tl"></span><span class="tick tr"></span><span class="tick bl"></span><span class="tick br"></span>
+        <span class="label">MOVER</span><div class="knob"></div>
+      </div>
+      <button class="ui-btn" id="dash-btn" type="button">
+        <svg viewBox="0 0 12 8" shape-rendering="crispEdges" fill="currentColor" aria-hidden="true">
+          <path d="M0 0h2v1h1v1h1v1h1v2H4v1H3v1H2v1H0V7h1V6h1V5h1V3H2V2H1V1H0zM6 0h2v1h1v1h1v1h1v2h-1v1H9v1H8v1H6V7h1V6h1V5h1V3H8V2H7V1H6z"/>
+        </svg>
+        ACELERÓN
+      </button>
+      <div id="pad-aim" class="pad ui-panel" aria-label="Apuntar">
+        <span class="tick tl"></span><span class="tick tr"></span><span class="tick bl"></span><span class="tick br"></span>
+        <span class="label">APUNTA Y SUELTA</span><div class="knob"></div>
+      </div>
+    </section>
+
+    <section id="view-over" class="ui-panel" hidden>
+      <div class="ui-tab">RESULTADO</div>
+      <h2 id="over-title">FIN</h2>
+      <p class="big" id="over-score">0</p>
+      <p id="over-detail"></p>
+      <p class="hint" id="over-hint">REDIRIGIENDO...</p>
+      <a class="about-btn pub-only" href="/end/" target="_blank" rel="noopener">SOBRE DOERS</a>
+    </section>
+  </main>
+
+  <div id="footer" role="status">
+    <svg class="ico" viewBox="0 0 9 7" shape-rendering="crispEdges" fill="currentColor" aria-hidden="true">
+      <path class="bars" d="M0 5h2v2H0zM3 3h2v4H3zM6 0h2v7H6z"/>
+      <path class="x" d="M5 0h1v1H5zM8 0h1v1H8zM6 1h2v1H6zM5 2h1v1H5zM8 2h1v1H8z" fill="#05070d"/>
+    </svg>
+    <span class="conn">CONEXIÓN: <b id="status">...</b> · </span><span>PING <b id="ping">-</b> MS</span>
+  </div>
+  <div id="dim"></div>
+  <div id="arcade"></div>
+  <button id="fs-btn" class="ui-btn" type="button" hidden>PANTALLA COMPLETA</button>
+  <div id="bars-gate" hidden><div class="stick"><div class="card ui-panel"><div class="ui-tab">MÁS ESPACIO</div><p>DESLIZA EL DEDO HACIA ARRIBA<br>PARA OCULTAR LAS BARRAS</p><div class="arrow"></div><button id="bars-skip" class="ui-btn" type="button">SEGUIR SIN OCULTAR</button></div></div></div>
+  <div id="fs-gate" hidden><div class="card ui-panel"><div class="ui-tab">PANTALLA COMPLETA</div><p>EL MANDO SE JUEGA EN PANTALLA COMPLETA Y EN HORIZONTAL.</p><button id="fs-gate-btn" class="ui-btn" type="button">TOCA PARA JUGAR</button></div></div>
+  <div id="rotate-notice"><div class="card ui-panel">GIRA EL MÓVIL<br>PARA JUGAR</div></div>
+  <script type="module" src="./main.js"></script>
+</body>
+</html>

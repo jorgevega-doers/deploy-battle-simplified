@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <link rel="icon" href="data:,">
+  <title>DOERS DF · The Badass Team</title>
+  <link rel="stylesheet" href="../theme.css">
+  <link rel="stylesheet" href="../ui.css">
+  <style>
+    /* Pantalla final (AGENTS.md, secciones 22 y 35): estilo "cozy" del juego, toda en la fuente pixel (Tiny5; solo el logotipo
+       "doers" lleva la tipografía de marca). Tiene que verse ENTERA, sin desplazarse, en el móvil en vertical y en horizontal:
+       el diseño es compacto y, si aun así no cupiera, main.js la encoge de forma uniforme hasta que quepa.
+       "body.end-page" y ".ui-btn.link-btn" ganan a theme.css y ui.css, que se cargan después de este estilo. */
+    html { -webkit-text-size-adjust: 100%; min-height: 100%; }
+    body.end-page {
+      --font-ui: 'Jersey 15', 'Tiny5', monospace; --font-pixel: 'Jersey 15', 'Tiny5', monospace; /* más legible en el móvil */
+      margin: 0; min-height: 100%; overflow-x: hidden; font-family: var(--font-ui); font-synthesis: none; -webkit-font-smoothing: auto; color: var(--white);
+      background-color: #070a14;
+      background-image: repeating-conic-gradient(#0b1020 0 25%, transparent 0 50%); background-size: 8px 8px; /* damero tenue */
+      padding: max(10px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(24px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
+    }
+    /* Una sola columna que se desplaza (desde el 29-oct hay más contenido: resultado, nave, presentación, servicios y botones). */
+    #page { max-width: 560px; margin: 0 auto; display: flex; flex-direction: column; gap: 12px; }
+
+    /* Logo (siempre arriba) con la franja azul de marca */
+    #brand { position: relative; display: flex; align-items: center; justify-content: center; gap: 12px; padding: 8px 12px 2px; }
+    #brand::before { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 3px; background: var(--p1); }
+    #brand .sep { width: 2px; align-self: stretch; margin: 5px 0; background: #2c3756; }
+    #brand .title-logo { display: block; height: 76px; width: auto; image-rendering: auto; user-select: none; -webkit-user-drag: none; } /* logo completo del juego, reducido */
+
+    /* Resultado de la partida (solo si la dirección trae uno válido) */
+    #result { padding: 8px 14px 10px; }
+    #result[hidden] { display: none; }
+    #result .row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    #result-outcome { font-size: 22px; color: var(--ui-amber); letter-spacing: 1px; }
+    #result-initials { font-size: 20px; background: var(--p1); color: var(--ui-edge); padding: 0 8px; line-height: 1.35; }
+    #result-initials[data-slot="2"] { background: var(--p2); } #result-initials[data-slot="3"] { background: var(--p3); } #result-initials[data-slot="4"] { background: var(--p4); }
+    #result .body { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 4px; }
+    #result-score { font-size: 56px; line-height: 1; text-shadow: 3px 3px 0 var(--ui-blue); }
+    #result-stats { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+    #result-stats span { font-size: 15px; padding: 0 8px; background: var(--ui-ink-2); border: 2px solid #2c3756; color: var(--ui-muted); line-height: 1.35; white-space: nowrap; }
+    #result-stats b { color: var(--white); font-weight: 400; }
+
+    /* Nave pixel art (GIF cuadrado 1:1) en su recuadro, con el lema al lado */
+    .since { display: flex; align-items: center; gap: 14px; padding: 8px 14px 8px 8px; }
+    .since .ship { flex: none; width: 96px; height: 96px; display: block; image-rendering: pixelated; background: #05050c; border: 2px solid #2c3756; user-select: none; -webkit-user-drag: none; }
+    .since h2 { margin: 0; font-size: clamp(24px, 7vw, 30px); line-height: 1.05; font-weight: 400; color: var(--white); text-shadow: 3px 3px 0 var(--ui-blue); }
+
+    /* Tarjeta de la empresa: titular, texto y los 5 servicios como etiquetas (estilo de las cifras 2002 / +300). Las palabras clave, en naranja. */
+    .about { padding: 12px 16px 16px; }
+    .about h3 { margin: 0 0 8px; font-size: 25px; line-height: 1.1; font-weight: 400; color: var(--white); }
+    .about p { margin: 0; font-size: 19px; line-height: 1.3; color: #c9d1ee; }
+    .about strong { color: var(--ui-amber); font-weight: 400; }
+    .facts { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: 14px 0 0; padding: 0; list-style: none; }
+    .facts li { padding: 2px 10px 3px; font-size: 16px; letter-spacing: 1px; line-height: 1.3; color: var(--ui-muted); text-transform: uppercase; background: var(--ui-ink-2); border: 2px solid #2c3756; }
+    .facts b { font-weight: 400; color: var(--ui-amber); }
+
+    /* Botones: los dos principales en fucsia y los demás en azul, uno debajo de otro */
+    #links { display: flex; flex-direction: column; gap: 10px; }
+    .ui-btn.link-btn { display: flex; align-items: center; justify-content: center; gap: 12px; width: 100%; min-height: 56px; font-size: 22px; text-decoration: none; padding-top: 4px; padding-bottom: 4px; box-sizing: border-box; }
+    .ui-btn.link-btn.primary { --tab-img: var(--tab-img-p2); font-size: 24px; min-height: 64px; }
+    .link-btn svg { width: 26px; height: 26px; flex: none; } /* icono de 17 píxeles */
+    .link-btn span { white-space: nowrap; }
+    /* Web y LinkedIn, uno al lado del otro: entre los dos ocupan el ancho de un botón normal, el texto puede pasar a dos líneas. */
+    .link-row { display: flex; gap: 10px; }
+    .vcf-hint { margin: -4px 2px 2px; font-size: 15px; line-height: 1.3; color: var(--ui-muted); text-align: center; } /* Android: cómo guardar la tarjeta descargada */
+    .link-row .ui-btn.link-btn { flex: 1 1 0; min-width: 0; width: auto; font-size: 19px; gap: 8px; padding-left: 12px; padding-right: 10px; }
+    .link-row .link-btn span { white-space: normal; text-align: center; line-height: 1.05; }
+    .link-row .link-btn svg { width: 22px; height: 22px; }
+    .foot { display: flex; align-items: center; justify-content: center; gap: 14px; flex-wrap: wrap; font-size: 14px; line-height: 1.3; color: var(--ui-muted); text-align: center; margin: 2px 0 0; }
+    .foot a { color: var(--ui-muted); }
+    .foot .foot-doers { line-height: 0; }
+    /* 11-nov: la página cabe entera en la pantalla, sin desplazarse (main.js la encoge si hace falta). */
+    html, body.end-page { overflow: hidden; height: 100%; }
+    body.end-page { box-sizing: border-box; display: flex; align-items: center; justify-content: center; }
+    #page { width: min(560px, 100%); transform-origin: center center; }
+
+    @media (max-width: 380px) {
+      .since .ship { width: 80px; height: 80px; }
+      .ui-btn.link-btn { font-size: 20px; gap: 9px; }
+      .ui-btn.link-btn.primary { font-size: 20px; }
+    }
+  </style>
+</head>
+<body class="end-page">
+  <main id="page">
+    <header id="brand" class="ui-panel" aria-label="DEPLOY BATTLE">
+      <img class="title-logo" src="../../assets/logo/deploy-battle.png" alt="DEPLOY BATTLE" draggable="false">
+    </header>
+
+    <section id="result" class="ui-panel" hidden aria-label="Tu resultado">
+      <div class="row"><span id="result-outcome"></span><span id="result-initials"></span></div>
+      <div class="body"><div id="result-score"></div><div id="result-stats"></div></div>
+    </section>
+
+    <section class="since ui-panel">
+      <img class="ship" src="../../assets/sprites/ship.gif" width="96" height="96" alt="" draggable="false">
+      <h2>Desplegando en producción desde 2002</h2>
+    </section>
+
+    <section class="about ui-panel">
+      <h3>El lugar donde lo imposible se vuelve <strong>posible</strong>.</h3>
+      <p>Estamos curtidos en <strong>mil deploys</strong>. Desde <strong>2002</strong> trabajando codo con codo con <strong>grandes marcas y empresas</strong>. No necesitas otro proveedor, necesitas un <strong>equipo comprometido</strong>, con experiencia y ambición. Somos diseñadores, desarrolladores, ingenieros de <strong>IA</strong>, data, SEO, GEO...</p>
+      <ul class="facts" aria-label="Qué hacemos">
+        <li>Desarrollo de <b>producto digital</b></li>
+        <li><b>Automatización</b> de procesos</li>
+        <li>Integraciones con <b>IA</b></li>
+        <li><b>UX/UI</b> y <b>CRO</b></li>
+        <li><b>Accesibilidad</b> web</li>
+      </ul>
+    </section>
+
+    <nav id="links" aria-label="Contacto"></nav>
+    <!-- Pie con el logo de DOERS (11-nov: abajo, no arriba) -->
+    <footer class="foot"><a class="foot-doers" href="https://doersdf.com/" target="_blank" rel="noopener noreferrer" aria-label="doers DF"><img class="doers-logo" data-px="1" src="../../assets/logo/logo-doers-small.png" alt="doers DF" draggable="false"></a><span>THE BADASS TEAM</span><a href="https://doersdf.com/es/aviso-legal" target="_blank" rel="noopener noreferrer">AVISO LEGAL</a></footer>
+  </main>
+  <script type="module" src="./main.js"></script>
+</body>
+</html>

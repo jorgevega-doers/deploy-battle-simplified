@@ -1,0 +1,95 @@
+/* Estilo común de las tres pantallas (host, mando y pantalla final). Reglas duras de AGENTS.md, sección 17:
+   sin bordes redondeados, sin sombras difuminadas (solo sombras sólidas apiladas) y tipografía pixel servida en local.
+   Las fuentes están en /assets/fonts (licencia OFL); no se piden a Internet porque el stand puede no tener conexión. */
+@font-face {
+  font-family: 'Tiny5'; /* interfaz del host: pixel art fino y muy legible (B y 8, 5 y S no se confunden), estilo "cozy" */
+  src: url('../assets/fonts/tiny5-latin-400-normal.woff2') format('woff2');
+  font-weight: 400;
+  unicode-range: U+0000-00FF, U+2013-2026;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Tiny5'; /* acentos y letras de otros idiomas latinos */
+  src: url('../assets/fonts/tiny5-latin-ext-400-normal.woff2') format('woff2');
+  font-weight: 400;
+  unicode-range: U+0100-024F, U+1E00-1EFF;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Jersey 15'; /* mando y /end (móviles): pixel art más detallado y legible a tamaños pequeños que Tiny5, con minúsculas bien formadas */
+  src: url('../assets/fonts/jersey15-latin-400-normal.woff2') format('woff2');
+  font-weight: 400;
+  unicode-range: U+0000-00FF, U+2013-2026;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Manrope'; /* solo para la pantalla final (/end): textos largos y datos de contacto legibles */
+  src: url('../assets/fonts/manrope-latin-wght-normal.woff2') format('woff2');
+  font-weight: 200 800;
+  font-display: swap;
+}
+
+:root {
+  /* Paleta principal (dominante). */
+  --black: #05050c;
+  --blue: #0003ad;
+  --blue-bright: #4a52ff; /* variante más clara del azul de marca: legible sobre negro */
+  --fuchsia: #ff0080;
+  --white: #ffffff;
+  /* Acentos secundarios: solo para resaltar (power-ups, avisos). Nunca como fondo ni color base. */
+  --accent-cyan: #00f0ff;
+  --accent-yellow: #ffd400;
+  --font-pixel: 'Tiny5', monospace; /* (Press Start 2P se retiró el 26-oct: ya no se usaba y así hay una licencia menos que cumplir) */
+  --font-ui: 'Tiny5', monospace;
+  --font-body: 'Manrope', system-ui, sans-serif;
+}
+
+/* Bordes duros en TODO. */
+*, *::before, *::after {
+  border-radius: 0 !important;
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--black);
+  color: var(--white);
+  font-family: var(--font-pixel);
+  -webkit-font-smoothing: none;
+  font-smooth: never;
+}
+
+/* Botón: borde grueso, sombras sólidas apiladas (efecto neón sin difuminado). */
+.btn {
+  font-family: var(--font-pixel);
+  font-size: 14px;
+  line-height: 1.4;
+  padding: 14px 18px;
+  min-height: 48px; /* tamaño mínimo táctil */
+  color: var(--white);
+  background: var(--black);
+  border: 4px solid var(--fuchsia);
+  box-shadow: 4px 4px 0 var(--blue), 8px 8px 0 var(--fuchsia);
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+  text-align: center;
+}
+.btn:active, .btn.pressed { transform: translate(4px, 4px); box-shadow: 0 0 0 var(--blue), 4px 4px 0 var(--fuchsia); }
+.btn:disabled { opacity: .4; box-shadow: none; cursor: default; }
+
+/* Panel con borde duro y sombra sólida. */
+.panel {
+  background: var(--black);
+  border: 4px solid var(--blue);
+  box-shadow: 6px 6px 0 var(--blue-bright);
+}
+.panel.fuchsia { border-color: var(--fuchsia); box-shadow: 6px 6px 0 var(--blue); }
+
+.pixel-crisp { image-rendering: pixelated; }
+
+/* Logotipo de DOERS DF en pixel art, blanco y sin fondo (scripts/doers-logo.js, a partir del logo oficial de docs/referencias/logo): la versión pequeña
+   (76 x 19 px) para la barra del cronómetro, el mando y /end, y la grande (190 x 49 px, el tamaño del logo de DEPLOY BATTLE) para inicio y login.
+   Se amplían en enteros (--dl = factor) para que los píxeles no se deformen. */
+.doers-logo { display: block; height: calc(19px * var(--dl, 2)); width: auto; image-rendering: pixelated; user-select: none; -webkit-user-drag: none; }
+.doers-logo.big { height: calc(49px * var(--dl, 1)); }

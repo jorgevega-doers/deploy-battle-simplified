@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <link rel="icon" href="data:,">
+  <title>DEPLOY BATTLE · ¿A qué jugamos?</title>
+  <meta name="description" content="Batalla de tanques pixel art de DOERS DF: busca partida y juega con teclado y ratón, contra los bots o con tus amigos usando el móvil como mando.">
+  <link rel="stylesheet" href="../theme.css">
+  <link rel="stylesheet" href="../ui.css">
+  <style>
+    html, body.home { margin: 0; background: #070a14; }
+    body.home { font-family: var(--font-ui); color: var(--white); }
+    /* Fondo: la ciudad del juego (homeBackground.js) tapada por un bloque negro sólido semitransparente: se adivina el juego detrás
+       pero el logo y los textos se leen limpios. */
+    #bg { position: fixed; inset: 0; z-index: 0; }
+    #scene { position: absolute; inset: 0; width: 100vw; height: 100vh; display: block; image-rendering: pixelated; }
+    #bg-dim { position: absolute; inset: 0; background: rgba(5, 5, 12, 0.72); }
+    /* Primera pantalla: ocupa exactamente la ventana (sin desplazamiento). Lo de abajo (#below) solo se ve al bajar. */
+    #screen { position: relative; z-index: 1; height: 100vh; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
+    #top { flex: none; display: flex; justify-content: center; padding: 22px 16px 0; }
+    #top a { display: block; line-height: 0; } /* el logo de DOERS lleva a su web */
+    #stage { position: relative; flex: 1; min-height: 0; }
+    /* Bloque de diseño fijo (1500 x 600; el logo mide 544 y necesita su columna entera; los bloques, aire para sus títulos) que main.js escala para que quepa: logo a la izquierda y el resto a la derecha. */
+    #stage-inner { position: absolute; left: 50%; top: 50%; width: 1500px; height: 600px; transform: translate(-50%, -50%); transform-origin: center center;
+      display: grid; grid-template-columns: minmax(0, 1fr) 916px; gap: 32px; align-items: center; }
+    #left { display: flex; flex-direction: column; align-items: center; gap: 30px; }
+    .tagline { margin: 0; font-size: 22px; letter-spacing: 1px; line-height: 1.35; color: #c3cbe6; text-align: center; max-width: 560px; text-shadow: 2px 2px 0 #05050c; }
+    #right { display: flex; flex-direction: column; gap: 14px; }
+    /* Tres bloques del mismo alto, cada uno con su ancho natural; el botón principal de cada uno, abajo y alineado con los demás. */
+    .blocks { display: grid; grid-template-columns: 286px 286px 316px; gap: 14px; align-items: stretch; }
+    .block { padding: 16px 18px 18px; display: flex; flex-direction: column; gap: 10px; }
+    .block .kicker { font-size: 13px; letter-spacing: 2px; color: #8e9abd; margin-bottom: -6px; }
+    .block h2 { margin: 0; font-size: 22px; white-space: nowrap; letter-spacing: 2px; font-weight: 400; text-shadow: 3px 3px 0 var(--ui-blue); }
+    .block.online h2 { text-shadow: 3px 3px 0 #70003a; }
+    .block p { margin: 0; font-size: 15px; line-height: 1.35; color: #c3cbe6; }
+    .block .grow { flex: 1; }
+    .block .ui-btn { align-self: stretch; padding: 11px 8px; font-size: 18px; }
+    #quick { --tab-img: var(--tab-img-p2); font-size: 22px; letter-spacing: 2px; padding: 13px 8px; } /* el botón principal: fucsia */
+    .block .sep { height: 3px; background: #1d2742; margin: 2px 0; }
+    .block h3 { margin: 0; font-size: 14px; letter-spacing: 2px; font-weight: 400; color: #8e9abd; }
+    #join-form { display: flex; gap: 8px; }
+    #code {
+      flex: 1 1 0; min-width: 0; font-family: var(--font-ui); font-size: 20px; letter-spacing: 5px; text-align: center; text-transform: uppercase;
+      color: var(--white); background: #0f1320; border: 4px solid #2a3150; padding: 6px 4px; outline: none;
+    }
+    #code:focus { border-color: var(--p1, #6f8cff); }
+    #join-form .ui-btn { flex: none; padding: 6px 14px; font-size: 16px; }    #msg { min-height: 22px; margin: 0; text-align: center; font-size: 15px; color: #ff4fa3; text-shadow: 2px 2px 0 #05050c; }
+    #dev-badge { margin: 0; font-size: 15px; letter-spacing: 2px; color: #ff4fa3; text-align: center; }
+    #dev-badge button { all: unset; cursor: pointer; text-decoration: underline; margin-left: 8px; color: #8e9abd; }
+    /* Lo de abajo: solo al desplazarse. */
+    #below { position: relative; z-index: 1; padding: 28px 16px 36px; display: flex; flex-direction: column; align-items: center; gap: 14px; background: rgba(5, 5, 12, 0.88); }
+    #needs { margin: 0; font-size: 14px; color: #8e9abd; text-align: center; line-height: 1.4; }
+    footer { display: flex; justify-content: center; gap: 16px; flex-wrap: wrap; font-size: 14px; color: #8e9abd; }
+    footer a { color: #8e9abd; }
+    /* Pantalla estrecha (móvil en vertical): una columna normal, sin escalar, y se desplaza. */
+    body.narrow #screen { height: auto; min-height: 100dvh; overflow: visible; }
+    body.narrow #stage-inner { position: static; width: auto; height: auto; transform: none; display: flex; flex-direction: column; gap: 22px; padding: 22px 16px 28px; }
+    body.narrow .blocks { grid-template-columns: 1fr; }
+    body.narrow .tagline { font-size: 17px; }
+    /* Con el mando del PC (padNav.js): el botón elegido, con un borde cian bien visible. */
+    body.pad-nav .pad-focus { outline: 4px solid #00f0ff; outline-offset: 3px; }
+    #pad-hint { margin: 0; min-height: 18px; text-align: center; font-size: 13px; letter-spacing: 1px; color: #00f0ff; }
+    /* Móvil o tableta (sin ratón): aquí no se juega. Solo los logos, el aviso, el vídeo del juego y los enlaces. */
+    /* Móvil o tableta: otra página entera (#mobile-page), con el estilo de /end/ (tarjetas, fuente pixel legible en el móvil) y SIN desplazarse:
+       vertical, en columna; horizontal, el vídeo a la izquierda y lo demás a la derecha. Si aun así no cupiera, main.js la encoge (fitMobile). */
+    body.mobile #screen, body.mobile #below, body.mobile #bg { display: none !important; }
+    body.mobile { --font-ui: 'Jersey 15', 'Tiny5', monospace; background-color: #070a14; background-image: repeating-conic-gradient(#0b1020 0 25%, transparent 0 50%); background-size: 8px 8px; overflow: hidden; }
+    body.mobile, body.mobile html { min-height: 100dvh; }
+    #mobile-page { display: flex; flex-direction: column; justify-content: center; min-height: 100dvh; gap: 10px; width: min(560px, 100%); margin: 0 auto; padding: max(10px, env(safe-area-inset-top)) 12px max(12px, env(safe-area-inset-bottom)); box-sizing: border-box; transform-origin: top center; font-family: var(--font-ui); }
+    #mobile-page[hidden] { display: none; }
+    .m-brand { position: relative; display: flex; align-items: center; justify-content: center; gap: 12px; padding: 8px 12px 2px; }
+    .m-brand::before { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 3px; background: var(--p1); }
+    .m-brand a { line-height: 0; }
+    .m-brand .sep { width: 2px; align-self: stretch; margin: 5px 0; background: #2c3756; }
+    .m-brand .title-logo { display: block; height: 48px; width: auto; }
+    .m-video { padding: 6px; }
+    .m-video video { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; background: #05050c; image-rendering: pixelated; }
+    .m-rec { display: flex; justify-content: space-between; margin-top: 5px; font-size: 15px; letter-spacing: 1px; color: #8e9abd; }
+    .m-rec b { color: #ff4fa3; font-weight: 400; animation: m-rec 1.2s steps(1) infinite; }
+    @keyframes m-rec { 50% { opacity: 0; } }
+    .m-side { display: flex; flex-direction: column; gap: 10px; }
+    .m-pc { display: flex; align-items: center; gap: 12px; padding: 10px 14px; }
+    .m-ico { flex: none; width: 56px; height: 48px; image-rendering: pixelated; }
+    .m-pc h2 { margin: 0; font-size: 26px; line-height: 1.05; font-weight: 400; color: var(--white); text-shadow: 3px 3px 0 var(--ui-blue); }
+    .m-pc p { margin: 4px 0 0; font-size: 18px; line-height: 1.25; color: #c9d1ee; }
+    .m-pc strong { color: var(--ui-amber); font-weight: 400; }
+    .m-facts { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin: 0; padding: 10px; list-style: none; }
+    .m-facts li { padding: 1px 8px 2px; font-size: 16px; letter-spacing: 1px; color: var(--ui-muted); text-transform: uppercase; background: var(--ui-ink-2); border: 2px solid #2c3756; }
+    .m-facts b { color: var(--ui-amber); font-weight: 400; }
+    .m-links { display: flex; flex-direction: column; gap: 6px; }
+    .ui-btn.m-btn { display: flex; align-items: center; justify-content: center; width: 100%; min-height: 54px; font-size: 22px; text-decoration: none; box-sizing: border-box; }
+    .ui-btn.m-btn.primary { --tab-img: var(--tab-img-p2); }
+    .m-foot { margin: 0; display: flex; align-items: center; justify-content: center; gap: 14px; flex-wrap: wrap; font-size: 15px; text-align: center; color: var(--ui-muted); }
+    .m-doers { line-height: 0; }
+    .m-foot a { color: var(--ui-muted); }
+    /* Horizontal: vídeo a la izquierda, el resto a la derecha (en una pantalla de móvil tumbado no cabe en columna). */
+    @media (orientation: landscape) {
+      #mobile-page { width: min(900px, 100%); display: grid; grid-template-columns: 1.1fr 1fr; grid-template-areas: 'brand brand' 'video side'; align-items: start; align-content: center; }
+      .m-brand { grid-area: brand; }
+      .m-video { grid-area: video; }
+      .m-side { grid-area: side; }
+    }
+  </style>
+</head>
+<body class="home">
+  <div id="bg"><canvas id="scene"></canvas><div id="bg-dim"></div></div>
+  <main id="screen">
+    <header id="top">
+      <a href="https://doersdf.com/es" target="_blank" rel="noopener" title="Conoce DOERS DF"><img class="doers-logo big" data-px="1" style="--dl: 1" src="../../assets/logo/logo-doers.png" alt="doers DF" draggable="false"></a>
+    </header>
+    <div id="stage">
+      <div id="stage-inner">
+        <section id="left">
+          <!-- Logo del juego con su animación en bucle (las mismas capas que el lobby del host: client/host/lobbyLogo.js y lobby.css) -->
+          <div id="logo-stack">
+            <div class="lg lg-smoke"></div>
+            <img id="logo-body" class="lg" src="../../assets/logo/deploy-battle-body.png" alt="DEPLOY BATTLE" draggable="false">
+            <div class="lg lg-glint"></div>
+            <canvas id="logo-sparks" class="lg lg-sparks"></canvas>
+          </div>
+          <p class="tagline">Tanquecitos, balas que rebotan y amigos que se pican. Hasta 4 en la arena: el último en pie se lo lleva todo.</p>
+        </section>
+        <section id="right">
+          <p id="dev-badge" hidden>MODO DESARROLLADOR <button id="logout" type="button">SALIR</button></p>
+          <div class="blocks">
+            <article class="block ui-panel">
+              <span class="kicker">1 JUGADOR</span>
+              <h2>SOLO</h2>
+              <p class="grow">Tú contra 3 bots que no perdonan. ¿Entras en el Top 10 de la semana?</p>
+              <button class="ui-btn" id="solo" type="button">JUGAR</button>
+            </article>
+            <article class="block ui-panel">
+              <span class="kicker">MULTIJUGADOR</span>
+              <h2>EN ESTA PANTALLA</h2>
+              <p class="grow">Todos delante de la tele. Cada uno juega con su móvil (escanea el QR) o con un mando.</p>
+              <button class="ui-btn" id="local" type="button">CREAR PARTIDA</button>
+            </article>
+            <article class="block online ui-panel">
+              <span class="kicker">MULTIJUGADOR</span>
+              <h2>ONLINE</h2>
+              <p>Cada uno en su pantalla, con teclado y ratón, un mando o el móvil.</p>
+              <button class="ui-btn" id="quick" type="button">BUSCAR PARTIDA</button>
+              <button class="ui-btn" id="private" type="button">CREAR SALA PRIVADA</button>
+              <div class="sep"></div>
+              <h3>¿TE HAN PASADO UN CÓDIGO?</h3>
+              <form id="join-form" autocomplete="off">
+                <input id="code" maxlength="5" placeholder="CÓDIGO" aria-label="Código de la sala" autocapitalize="characters" spellcheck="false">
+                <button class="ui-btn" id="join-btn" type="submit" disabled>ENTRAR</button>
+              </form>
+            </article>
+          </div>
+          <p id="msg" role="alert"></p>
+          <p id="pad-hint"></p>
+        </section>
+      </div>
+    </div>
+  </main>
+  <section id="below">
+    <p id="needs">SOLO y ONLINE se juegan en el ordenador con teclado y ratón, con un mando o con el móvil como mando (escaneando el QR de tu pantalla). EN ESTA PANTALLA, con móviles o mandos. Con Chrome, Edge o Firefox.</p>
+    <footer>
+      <a href="/end/" target="_blank" rel="noopener">Sobre DOERS</a>
+      <a href="https://doersdf.com/es/aviso-legal" target="_blank" rel="noopener noreferrer">Aviso legal</a>
+      <a href="/licencias/">Créditos y licencias</a>
+    </footer>
+  </section>
+  <!-- Móvil (sin ratón): aquí no se juega. Tarjetas como en /end/ y todo en una sola pantalla: logos, el vídeo de una partida real (grabado del
+       propio juego), el aviso de que se juega en el ordenador, qué es el juego y los enlaces. Nunca hay botones de partida. -->
+  <main id="mobile-page" hidden>
+    <header class="m-brand ui-panel" aria-label="DEPLOY BATTLE">
+      <img class="title-logo" src="../../assets/logo/deploy-battle.png" alt="DEPLOY BATTLE" draggable="false">
+    </header>
+    <section class="m-video ui-panel">
+      <video src="../../assets/preview/deploy-battle-preview.mp4" autoplay muted loop playsinline preload="auto" aria-label="Así es una partida de DEPLOY BATTLE"></video>
+      <div class="m-rec"><span><b>●</b> PARTIDA REAL</span><span>1 CONTRA 3 BOTS</span></div>
+    </section>
+    <div class="m-side">
+      <section class="m-pc ui-panel">
+        <svg class="m-ico" viewBox="0 0 14 12" shape-rendering="crispEdges" aria-hidden="true"><path fill="#6f8cff" d="M0 0h14v9H0z"/><path fill="#05050c" d="M1 1h12v7H1z"/><path fill="#ff4fa3" d="M3 3h3v3H3z"/><path fill="#00f0ff" d="M8 4h3v1H8z"/><path fill="#6f8cff" d="M5 9h4v1H5zM3 10h8v2H3z"/></svg>
+        <div>
+          <h2>Se juega en el <strong>ordenador</strong></h2>
+          <p>Ábrelo en tu PC y juega con <strong>teclado y ratón</strong> o con un <strong>mando</strong>.</p>
+        </div>
+      </section>
+      <ul class="m-facts ui-panel" aria-label="El juego">
+        <li><b>1-4</b> jugadores</li>
+        <li><b>Online</b> contra cualquiera</li>
+        <li>O contra <b>3 bots</b></li>
+        <li>Partidas de <b>3 min</b></li>
+      </ul>
+      <nav class="m-links">
+        <a class="ui-btn m-btn primary" href="/end/">SOBRE DOERS</a>
+        <!-- Pie: el logo de DOERS va abajo (11-nov) -->
+        <footer class="m-foot"><a class="m-doers" href="https://doersdf.com/es" target="_blank" rel="noopener" title="Conoce DOERS DF"><img class="doers-logo" data-px="1" src="../../assets/logo/logo-doers-small.png" alt="doers DF" draggable="false"></a><span><a href="https://doersdf.com/es/aviso-legal" target="_blank" rel="noopener noreferrer">Aviso legal</a> · <a href="/licencias/">Créditos y licencias</a></span></footer>
+      </nav>
+    </div>
+  </main>
+  <!-- Intro (la primera vez que se abre el juego en esta ventana; client/introSeen.js): PULSA UNA TECLA → DOERS DF presents → DEPLOY BATTLE. Mismas piezas que en la pantalla del juego (logoIntro.js). -->
+  <div id="press-start" hidden><p class="ps-text">PULSA PARA EMPEZAR</p><p class="ps-sub">HAZ CLIC O PULSA UNA TECLA</p></div>
+  <div id="intro" hidden>
+    <div id="intro-doers" hidden><img id="intro-doers-logo" src="../../assets/logo/logo-doers.png" alt="" draggable="false"><p id="intro-presents"></p></div>
+    <canvas id="intro-fx"></canvas>
+    <div id="intro-logo">
+      <img id="intro-battle-o" src="../../assets/logo/deploy-battle-battle-outline.png" alt="" draggable="false">
+      <img id="intro-deploy-o" src="../../assets/logo/deploy-battle-deploy-outline.png" alt="" draggable="false">
+      <img id="intro-battle" src="../../assets/logo/deploy-battle-battle-letters.png" alt="" draggable="false">
+      <img id="intro-deploy" src="../../assets/logo/deploy-battle-deploy-letters.png" alt="" draggable="false">
+    </div>
+    <div id="intro-cto" hidden><div id="intro-cto-avatar"></div></div>
+    <div id="intro-black"></div>
+    <div id="intro-flash"></div>
+  </div>
+  <script type="module" src="./main.js"></script>
+</body>
+</html>
