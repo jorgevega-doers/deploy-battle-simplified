@@ -97,9 +97,8 @@ test('SALIR en un duelo: el otro gana al momento por abandono', async () => {
 test('SALIR en una partida de 3: la partida sigue con los otros dos; al irse de la página, su plaza queda libre tras los resultados', async () => {
   const { code, players: [a, , c] } = await playing(['AAA', 'BBB', 'CCC']);
   c.pad.emit(EVENTS.PLAYER_QUIT);
-  await sleep(200);
+  assert.ok(await until(() => a.screen.lastState?.tanks[c.slot - 1][3] === 0, 3000), 'el que sale queda eliminado');
   assert.equal(room(code).session.phase, 'PLAYING');
-  assert.equal(a.screen.lastState.tanks[c.slot - 1][3], 0);
   c.pad.disconnect(); c.screen.disconnect(); // goHome: vuelve al título
   assert.ok(await until(() => room(code).session.phase === 'LOBBY', 5000));
   assert.equal(room(code).slots.count(), 2);

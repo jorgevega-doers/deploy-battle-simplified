@@ -90,9 +90,8 @@ test('un fallo dentro de una sala solo cierra ESA sala: las demás partidas sigu
     assert.ok(await until(() => !h.app.rooms.get(bad.code)), 'la sala rota se cierra');
   } finally { console.error = errors; }
   const before = good.players[0].screen.states;
-  await sleep(300);
+  assert.ok(await until(() => good.players[0].screen.states > before + 3, 3000), 'la otra sala sigue recibiendo estados');
   assert.equal(phaseOf(good.code), 'PLAYING');
-  assert.ok(good.players[0].screen.states > before, 'la otra sala sigue recibiendo estados');
   assert.ok(await until(() => !bad.players[0].pad.connected), 'los de la sala rota quedan desconectados (su página vuelve a intentar)');
 });
 

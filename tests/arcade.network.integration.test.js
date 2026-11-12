@@ -69,9 +69,9 @@ test('corte en una partida de 3 sin volver: el caído queda eliminado y la parti
   await startMatch(code, a);
   cut(c.pad);
   cut(c.screen);
-  await sleep(1100); // más que la gracia (0,8 s)
+  // Se espera a que el servidor lo dé por eliminado (pasada la gracia, 0,8 s de juego): con la máquina cargada el reloj del juego va más lento que el real.
+  assert.ok(await until(() => a.screen.lastState?.tanks[c.slot - 1][3] === 0, 5000), 'el que se fue, sin vidas');
   assert.equal(serverPhase(code), 'PLAYING', 'la partida sigue');
-  assert.equal(a.screen.lastState.tanks[c.slot - 1][3], 0, 'el que se fue, sin vidas');
   assert.ok(a.screen.lastState.tanks[b.slot - 1][3] > 0);
 });
 
@@ -123,19 +123,19 @@ test('dos pestañas con tokens distintos (dos ventanas): son dos jugadores disti
 });
 
 test('un corte breve en la sala con la cuenta atrás en marcha: vuelve con su token y la cuenta atrás NO vuelve a empezar', async () => {
-  const slow = await start({ gameConfig: { joinWindowS: 3, soloJoinWindowS: 3 } });
+  const slow = await start({ gameConfig: { joinWindowS: 3, soloJoinWindowS: 3, lobbyGraceS: 2 } }); // gracia larga: volver a tiempo no depende de la carga de la máquina
   try {
     const { code } = await slow.quick();
     const a = await slow.player(code, 'AAA');
     const b = await slow.player(code, 'BBB');
     a.pad.emit(EVENTS.PLAYER_READY);
-    await sleep(1300);
+    const session = slow.app.rooms.get(code).session;
+    assert.ok(await until(() => session.joinLeft !== null && session.joinLeft <= 2, 4000), 'la cuenta atrás ya ha avanzado');
     cut(b.pad);
-    await sleep(150); // menos que lobbyGraceS (0,4 s)
+    await sleep(150);
     const back = await slow.join(code, 'BBB', b.token, b.screenId);
     assert.equal(back.slot, b.slot);
-    await sleep(100);
-    assert.ok(a.screen.lastLobby.joinLeft <= 2, `la cuenta atrás sigue por donde iba (${a.screen.lastLobby.joinLeft})`);
+    assert.ok(session.joinLeft !== null && session.joinLeft <= 2, `la cuenta atrás sigue por donde iba (${session.joinLeft}): no ha vuelto a 3`);
     assert.equal(slow.humans(a), 2);
     assert.ok(await until(() => slow.app.rooms.get(code).session.phase === 'PLAYING', 4000));
     assert.equal(a.screen.lastLobby.plan.humans, 2);
@@ -202,7 +202,7 @@ test('conexión muerta sin detectar (no llega NADA del teclado): a los 4 s su ta
     b.pad.emit(EVENTS.PAD, [100, 0, 0]); // última orden: andar; y luego silencio total (sin ping ni nada)
     const keepAlive = setInterval(() => a.pad.emit(EVENTS.PAD, [40, 0, null]), 200); // A sigue vivo (y andando)
     try {
-      await sleep(3000);
+      await sleep(2500); // margen con los 4 s del servidor (son de reloj real): con la máquina cargada este sleep puede durar más
       assert.ok(!stops.includes(b.slot), 'antes de 4 s se respeta la última orden');
       assert.ok(await until(() => stops.includes(b.slot), 2500), 'pasados 4 s, parado');
       assert.ok(!stops.includes(a.slot), 'al que sigue mandando no se le toca');
@@ -237,7 +237,7 @@ test('un corte de red (no a propósito) sigue teniendo su gracia: en la sala no 
   const a = await h.player(code, 'AAA');
   const b = await h.player(code, 'BBB');
   cut(b.pad);
-  await sleep(200);
-  assert.equal(h.humans(a), 2, 'a los 200 ms sigue su hueco (puede volver con su token)');
+  await sleep(100); // la gracia son 0,4 s de reloj real: margen por si la máquina va cargada
+  assert.equal(h.humans(a), 2, 'justo después del corte sigue su hueco (puede volver con su token)');
   assert.ok(await until(() => h.humans(a) === 1, 2000), 'pasada la gracia, se libera');
 });

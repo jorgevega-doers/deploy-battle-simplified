@@ -134,9 +134,7 @@ test('si entra alguien durante la cuenta atrás se reinicia y se añade a la par
   const a = await player(code, 'AAA');
   a.pad.emit(EVENTS.PLAYER_READY); // solo: cuenta atrás contra bots
   assert.ok(await until(() => counting(a)));
-  await sleep(800);
-  const before = a.screen.lastLobby.joinLeft;
-  assert.ok(before <= 1, `la cuenta atrás avanza (${before})`);
+  assert.ok(await until(() => a.screen.lastLobby.joinLeft !== null && a.screen.lastLobby.joinLeft <= 1), `la cuenta atrás avanza (${a.screen.lastLobby.joinLeft})`);
   const c = await player(code, 'CCC');
   assert.ok(await until(() => a.screen.lastLobby.joinLeft === 2), 'vuelve a empezar desde el principio');
   assert.ok(counting(c), 'el recién llegado también la ve');
