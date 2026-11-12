@@ -41,7 +41,7 @@ npm run server       # http://localhost:3000
 | Variable | Para qué | Por defecto |
 |---|---|---|
 | `PORT` | Puerto del servidor | 3000 |
-| `MAX_ROOMS` | Salas simultáneas | según config |
+| `MAX_ROOMS` | Salas simultáneas | 20 (6 en Render gratis) |
 | `MAX_SOCKETS` | Conexiones simultáneas | 150 |
 | `PUBLIC_LIVES` | Vidas por partida | 5 |
 | `MATCH_SECONDS` | Duración máxima de la partida | 180 |
