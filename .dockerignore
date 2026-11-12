@@ -6,4 +6,3 @@ dist
 *.db-journal
 docs
 tests
-.claude
