@@ -24,7 +24,6 @@ const SECTIONS = [
   { title: 'Fuente Manrope (pantalla final)', note: 'Licencia SIL Open Font License 1.1.', text: manrope },
   { title: 'three.js', note: 'Gráficos 3D. Licencia MIT. https://threejs.org', text: `Copyright © 2010-2026 three.js authors\n\n${MIT}` },
   { title: 'Socket.IO (cliente)', note: 'Comunicación en tiempo real. Licencia MIT. https://socket.io', text: `Copyright (c) 2014-present Guillermo Rauch and Socket.IO contributors\n\n${MIT}` },
-  { title: 'node-qrcode', note: 'Código QR. Licencia MIT. https://github.com/soldair/node-qrcode', text: `Copyright (c) 2012 Ryan Day\n\n${MIT}` },
 ];
 
 const root = document.getElementById('content');

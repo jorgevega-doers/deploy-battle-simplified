@@ -1,6 +1,5 @@
 ﻿node_modules/
 dist/
-bin/
 .vercel/
 *.db
 *.db-journal
@@ -14,7 +13,7 @@ docs/referencias/*/*.jpg
 docs/referencias/*/*.jpeg
 .congelar
 
-# Notas internas de desarrollo (solo en local, no se publican; versión pública, 10-nov)
+# Notas internas de desarrollo (solo en local, no se publican)
 AGENTS.md
 docs/
 .mcp.json
