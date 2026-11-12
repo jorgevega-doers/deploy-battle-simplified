@@ -4,23 +4,25 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createMatch } from '../server/game/match.js';
 import { config } from '../server/config.js';
+// Valores fijos de la prueba (3 vidas, 4 el jugador contra los bots, 60 estados/s): las comprobaciones están calculadas con ellos, no con los de producción.
+const GAME = { ...config.game, lives: 3, soloPlayerLives: 4, broadcastHz: 60 };
 
-const DT = 1 / config.game.tickHz;
+const DT = 1 / GAME.tickHz;
 const openArena = (spawn1, spawn2) => ({
   size: 20, width: 20, height: 20,
   solid: (cx, cy) => cx <= 0 || cy <= 0 || cx >= 19 || cy >= 19,
   spawns: [spawn1, spawn2], powerupSpots: [],
 });
 const newMatch = (initials, spawn2 = { x: 17.5, y: 17.5 }) => createMatch({
-  arena: openArena({ x: 2.5, y: 10.5 }, spawn2), cfg: { ...config.game, introS: 0, powerupFirstS: 999, powerupIntervalS: 999 }, rng: () => 0.5, initials,
+  arena: openArena({ x: 2.5, y: 10.5 }, spawn2), cfg: { ...GAME, introS: 0, powerupFirstS: 999, powerupIntervalS: 999 }, rng: () => 0.5, initials,
 });
 const run = (match, seconds) => { for (let i = 0; i < Math.round(seconds / DT); i++) match.step(DT); };
 
 test('el tanque de TNI tiene sus ventajas (vidas) y uno normal no', () => {
   const match = newMatch(['TNI', 'BOB']);
-  assert.equal(match.stats[0].lives, config.game.tni.lives);
-  assert.equal(match.stats[1].lives, config.game.lives);
-  assert.equal(match.tanks[0].speedFactor, config.game.tni.speedFactor);
+  assert.equal(match.stats[0].lives, GAME.tni.lives);
+  assert.equal(match.stats[1].lives, GAME.lives);
+  assert.equal(match.tanks[0].speedFactor, GAME.tni.speedFactor);
   assert.equal(match.tanks[1].speedFactor, undefined);
 });
 
@@ -32,7 +34,7 @@ test('el cohete de TNI no rebota: revienta en el primer muro con una explosión 
   const events = match.drainEvents();
   assert.equal(events.filter((e) => e.type === 'bounce').length, 0, 'sin rebotes');
   const blast = events.find((e) => e.type === 'explosion');
-  assert.ok(blast && blast.tni === 1 && blast.radius === config.game.tni.blastRadius && blast.slot === 1, JSON.stringify(blast));
+  assert.ok(blast && blast.tni === 1 && blast.radius === GAME.tni.blastRadius && blast.slot === 1, JSON.stringify(blast));
   assert.ok(blast.x < 1.5, `revienta contra el muro: x = ${blast.x}`);
   assert.equal(match.projectiles.filter((p) => p.active).length, 0);
 });
@@ -44,7 +46,7 @@ test('la explosión del cohete quita una vida aunque no dé de lleno (radio gran
   match.setAim(1, Math.PI);
   match.fire(1);
   run(match, 1.2);
-  assert.equal(match.stats[1].lives, config.game.lives - 1);
+  assert.equal(match.stats[1].lives, GAME.lives - 1);
   assert.equal(match.tanks[1].effects.shield, 0);
 });
 

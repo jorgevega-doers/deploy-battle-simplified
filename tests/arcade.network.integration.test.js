@@ -123,7 +123,7 @@ test('dos pestañas con tokens distintos (dos ventanas): son dos jugadores disti
 });
 
 test('un corte breve en la sala con la cuenta atrás en marcha: vuelve con su token y la cuenta atrás NO vuelve a empezar', async () => {
-  const slow = await start({ gameConfig: { publicJoinWindowS: 3 } });
+  const slow = await start({ gameConfig: { joinWindowS: 3, soloJoinWindowS: 3 } });
   try {
     const { code } = await slow.quick();
     const a = await slow.player(code, 'AAA');

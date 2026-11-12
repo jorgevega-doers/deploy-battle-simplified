@@ -1,4 +1,4 @@
-// Arnés de las pruebas de integración de la versión arcade: arranca un servidor real (ONLINE, salas `quick`) en un puerto libre y da
+// Arnés de las pruebas de integración: arranca un servidor real en un puerto libre y da
 // jugadores de prueba con sus dos conexiones (pantalla + teclado), como el navegador. No está en un *.test.js: node --test no lo ejecuta solo.
 // Ojo: server/config.js lee las variables de entorno al importarse; por eso el servidor se importa aquí DENTRO de start() (el archivo de
 // prueba puede poner MAX_ROOMS, etc. antes de llamar a start()).
@@ -17,18 +17,17 @@ export const waitFor = (socket, event, ms = 5000) => new Promise((resolve, rejec
 
 // Tiempos cortos para que las pruebas vayan rápido (en producción: 10 s de cuenta atrás, 180 s de partida...).
 export const FAST = {
-  countdownS: 0.2, introS: 0, joinWindowS: 0, publicJoinWindowS: 1, publicSoloJoinWindowS: 1, publicAutoStartS: null, publicMaxCancels: 3,
-  publicCancelGuardS: 0.15, lobbyGraceS: 0.4, reconnectGraceS: 0.8, matchSeconds: 1.5, resultsS: 0.3,
+  countdownS: 0.2, introS: 0, joinWindowS: 1, soloJoinWindowS: 1, maxCancels: 3, cancelGuardS: 0.15, lobbyGraceS: 0.4, reconnectGraceS: 0.8, matchSeconds: 1.5, resultsS: 0.3,
 };
 
 // options: { gameConfig, roomsPerWindow, connectionsPerMinute, ranking, now }
 export async function start(options = {}) {
-  process.env.MAX_SOCKETS ??= '600'; // fuera de producción el tope es 50 conexiones: con varias salas a la vez se queda corto
+  process.env.MAX_SOCKETS ??= '600'; // el tope de producción (150 conexiones) se queda corto con varias salas a la vez
   const { createApp } = await import('../../server/app.js');
   const { openGlobalRanking } = await import('../../server/db/globalRanking.js');
   const ranking = options.ranking ?? await openGlobalRanking({ url: ':memory:' });
   const app = createApp({
-    dbPath: ':memory:', online: true, devPassword: 'x', roomsPerWindow: options.roomsPerWindow ?? 1000,
+    devPassword: 'x', roomsPerWindow: options.roomsPerWindow ?? 1000,
     connectionsPerMinute: options.connectionsPerMinute ?? 100000, ranking, now: options.now, gameConfig: { ...FAST, ...options.gameConfig },
   });
   await new Promise((resolve) => app.server.listen(0, resolve));

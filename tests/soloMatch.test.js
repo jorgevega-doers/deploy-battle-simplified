@@ -6,8 +6,10 @@ import { createSoloBot, BOT_SKILLS } from '../server/game/soloBot.js';
 import { createNav } from '../server/game/botNav.js';
 import { createArena } from '../shared/arena.js';
 import { config } from '../server/config.js';
+// Valores fijos de la prueba (3 vidas, 4 el jugador contra los bots, 60 estados/s): las comprobaciones están calculadas con ellos, no con los de producción.
+const GAME = { ...config.game, lives: 3, soloPlayerLives: 4, broadcastHz: 60 };
 
-const DT = 1 / config.game.tickHz;
+const DT = 1 / GAME.tickHz;
 const arena = createArena();
 
 function seeded(seed) {
@@ -21,9 +23,9 @@ function seeded(seed) {
   };
 }
 const soloMatch = (seed = 1, overrides = {}) => createMatch({
-  arena, cfg: { ...config.game, introS: 0, ...overrides }, rng: seeded(seed), initials: ['YOU', 'AXL', 'VEX', 'ZED'], solo: true,
+  arena, cfg: { ...GAME, introS: 0, ...overrides }, rng: seeded(seed), initials: ['YOU', 'AXL', 'VEX', 'ZED'], solo: true,
 });
-const botsFor = (seed, slots = [2, 3, 4]) => slots.map((slot, i) => createSoloBot(slot, { arena, cfg: config.game, rng: seeded(seed + slot), skill: BOT_SKILLS[i] }));
+const botsFor = (seed, slots = [2, 3, 4]) => slots.map((slot, i) => createSoloBot(slot, { arena, cfg: GAME, rng: seeded(seed + slot), skill: BOT_SKILLS[i] }));
 
 test('el modo de un jugador crea 4 tanques, uno en cada esquina, y los snapshots llevan 4 entradas', () => {
   const match = soloMatch();
@@ -45,7 +47,7 @@ test('un bot herido reaparece lejos, invulnerable, sin parar la partida', () => 
   assert.equal(hits.length, 1);
   assert.equal(hits[0].slot, 2);
   assert.equal(hits[0].round, false);
-  assert.equal(match.stats[1].lives, config.game.lives - 1);
+  assert.equal(match.stats[1].lives, GAME.lives - 1);
   assert.ok(bot.invuln > 1);
   assert.equal(match.frozen, false, 'un bot herido no congela la ronda');
   assert.equal(match.over, false);
@@ -57,7 +59,7 @@ test('un bot invulnerable no recibe impactos: el disparo lo atraviesa', () => {
   bot.invuln = 1;
   Object.assign(match.projectiles[0], { active: true, id: 7, owner: 1, x: bot.x - 0.3, y: bot.y, dx: 1, dy: 0, speed: 11, bounces: 0, aoe: false, life: 2 });
   match.step(DT);
-  assert.equal(match.stats[1].lives, config.game.lives);
+  assert.equal(match.stats[1].lives, GAME.lives);
 });
 
 test('al eliminar a los 3 bots gana el jugador con una buena puntuación (sin pasar del máximo)', () => {
@@ -80,9 +82,9 @@ test('al eliminar a los 3 bots gana el jugador con una buena puntuación (sin pa
 
 test('el jugador empieza con más vidas que los bots y las vidas extra no inflan su puntuación', () => {
   const match = soloMatch();
-  assert.equal(match.stats[0].lives, config.game.soloPlayerLives);
-  assert.ok(config.game.soloPlayerLives > config.game.lives);
-  assert.equal(match.stats[1].lives, config.game.lives);
+  assert.equal(match.stats[0].lives, GAME.soloPlayerLives);
+  assert.ok(GAME.soloPlayerLives > GAME.lives);
+  assert.equal(match.stats[1].lives, GAME.lives);
   match.expireTime();
   match.step(DT);
   assert.ok(match.result.scores[0].score <= SCORE_MAX);
@@ -91,17 +93,17 @@ test('el jugador empieza con más vidas que los bots y las vidas extra no inflan
 test('el jugador está protegido al empezar y tras cada pausa de ronda: los disparos lo atraviesan', () => {
   const match = soloMatch();
   const me = match.tanks[0];
-  assert.ok(me.invuln >= config.game.soloStartInvulnS - 1e-9);
+  assert.ok(me.invuln >= GAME.soloStartInvulnS - 1e-9);
   Object.assign(match.projectiles[0], { active: true, id: 8, owner: 2, x: me.x + 0.3, y: me.y, dx: -1, dy: 0, speed: 11, bounces: 0, aoe: false, life: 2 });
   match.step(DT);
-  assert.equal(match.stats[0].lives, config.game.soloPlayerLives);
-  for (let i = 0; i < Math.ceil((config.game.soloStartInvulnS + 0.1) / DT); i++) match.step(DT);
+  assert.equal(match.stats[0].lives, GAME.soloPlayerLives);
+  for (let i = 0; i < Math.ceil((GAME.soloStartInvulnS + 0.1) / DT); i++) match.step(DT);
   assert.equal(me.invuln, 0);
   // tras un impacto (ronda nueva) vuelve a estar protegido durante la pausa y un rato después
   Object.assign(match.projectiles[0], { active: true, id: 9, owner: 2, x: me.x + 0.3, y: me.y, dx: -1, dy: 0, speed: 11, bounces: 0, aoe: false, life: 2 });
   match.step(DT);
-  assert.equal(match.stats[0].lives, config.game.soloPlayerLives - 1);
-  assert.ok(me.invuln > config.game.roundFreezeS);
+  assert.equal(match.stats[0].lives, GAME.soloPlayerLives - 1);
+  assert.ok(me.invuln > GAME.roundFreezeS);
 });
 
 test('si matan al jugador pierde: gana el bot que le disparó', () => {
@@ -162,7 +164,7 @@ test('tres bots contra un jugador quieto: lo eliminan en menos de 2 minutos (en 
 test('los bots esquivan: un jugador que dispara sin parar a un bot no lo elimina sin más', () => {
   // Un bot en solitario contra un tirador fijo que le apunta con puntería perfecta: debe esquivar bastantes disparos.
   const match = soloMatch(3, { lives: 99 });
-  const bot = createSoloBot(2, { arena, cfg: config.game, rng: seeded(5), skill: BOT_SKILLS[0] });
+  const bot = createSoloBot(2, { arena, cfg: GAME, rng: seeded(5), skill: BOT_SKILLS[0] });
   match.tanks[2].alive = false; match.tanks[3].alive = false;
   match.tanks[0].x = 8; match.tanks[0].y = 15.5; // fila despejada de muros, a 12 celdas
   match.tanks[1].x = 20; match.tanks[1].y = 15.5;
@@ -185,7 +187,7 @@ test('los bots esquivan: un jugador que dispara sin parar a un bot no lo elimina
 test('una partida de 4 bots (con 3 de ellos contra el "jugador" también bot) no falla y termina o llega al final del tiempo', () => {
   const match = soloMatch(9, { matchSeconds: 60 });
   const bots = botsFor(900, [1, 2, 3, 4].slice(0, 3));
-  const fourth = createSoloBot(4, { arena, cfg: config.game, rng: seeded(77), skill: BOT_SKILLS[1] });
+  const fourth = createSoloBot(4, { arena, cfg: GAME, rng: seeded(77), skill: BOT_SKILLS[1] });
   const all = [...bots, fourth];
   let events = 0;
   for (let i = 0; i < 70 / DT && !match.over; i++) {
@@ -206,7 +208,7 @@ test('un bot pegado a la esquina de una columna (el atasco que se veía en las e
     match.tanks[2].x = 2.5; match.tanks[2].y = 14.0;
     match.tanks[0].x = 20; match.tanks[0].y = 2.5; match.tanks[1].x = 29.5; match.tanks[1].y = 15.5; match.tanks[3].x = 29.5; match.tanks[3].y = 2.5;
     // Solo piensa este bot: los demás tanques están quietos y nadie dispara, así que solo se mide su movimiento.
-    const bot = createSoloBot(3, { arena, cfg: config.game, rng: seeded(seed * 7), skill: BOT_SKILLS[1] });
+    const bot = createSoloBot(3, { arena, cfg: GAME, rng: seeded(seed * 7), skill: BOT_SKILLS[1] });
     let maxAway = 0;
     let slow = 0;
     for (let i = 0; i < 5 / DT; i++) {

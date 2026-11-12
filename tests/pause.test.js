@@ -5,8 +5,10 @@ import { createPause } from '../server/game/pause.js';
 import { createSession } from '../server/game/session.js';
 import { createArena } from '../shared/arena.js';
 import { config } from '../server/config.js';
+// Valores fijos de la prueba (3 vidas, 4 el jugador contra los bots, 60 estados/s): las comprobaciones están calculadas con ellos, no con los de producción.
+const GAME = { ...config.game, lives: 3, soloPlayerLives: 4, broadcastHz: 60 };
 
-const DT = 1 / config.game.tickHz;
+const DT = 1 / GAME.tickHz;
 
 test('pausa: 10 s como mucho, cualquiera la quita, 2 por partida y 30 s de espera entre una y otra', () => {
   const log = [];
@@ -31,7 +33,7 @@ test('pausa: 10 s como mucho, cualquiera la quita, 2 por partida y 30 s de esper
 test('sesión: en pausa el reloj no corre; SALIR elimina al jugador y la partida sigue con los demás (o acaba)', () => {
   const pauses = [];
   const session = createSession({
-    arena: createArena(), cfg: { ...config.game, introS: 0, joinWindowS: 0, countdownS: 0 },
+    arena: createArena(), cfg: { ...GAME, introS: 0, joinWindowS: 0, countdownS: 0 },
     out: { phase() {}, countdown() {}, state() {}, events() {}, gameOver() {}, redirect() {}, finished() {}, pause: (s) => pauses.push(s) },
   });
   session.setPlayers(['AAA', 'BBB', 'CCC']);

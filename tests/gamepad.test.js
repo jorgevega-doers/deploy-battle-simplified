@@ -1,12 +1,8 @@
-// Mandos físicos (sección 72): configuración por defecto (estándar y genérica en Windows / Linux), lectura de botones y gatillos, la
-// configuración aprendida, y la entrada por el servidor como MANDO1 (sin email, solo desde el portátil, y fuera del ranking).
-import { test, before, after } from 'node:test';
+// Mandos físicos: configuración por defecto (estándar y genérica en Windows / Linux), lectura de botones y gatillos, la configuración aprendida
+// y el giro suave del apuntado.
+import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { io as connect } from 'socket.io-client';
-import { createApp } from '../server/app.js';
-import { EVENTS } from '../shared/events.js';
 import { defaultMapping, isPressed, axisValue, detectInput, turnToward } from '../client/host/gamepadMap.js';
-import { parseGamepadName } from '../server/net/validate.js';
 
 const pad = ({ mapping = '', axes = 10, pressed = [], values = {} } = {}) => ({
   mapping,
@@ -38,59 +34,6 @@ test('la configuración aprende botones, gatillos y sticks a partir del reposo',
   assert.deepEqual(detectInput(pad({ values: { 2: -0.9 } }), 'rx', rest), { i: 2, sign: -1 });
   assert.equal(detectInput(pad({ pressed: [1] }), 'lx', rest), null, 'un stick no se configura con un botón');
   assert.equal(detectInput(pad(), 'start', rest), null);
-});
-
-test('nombres de mando válidos', () => {
-  assert.equal(parseGamepadName('MANDO1'), 'MANDO1');
-  assert.equal(parseGamepadName('MANDO4'), 'MANDO4');
-  assert.equal(parseGamepadName('MANDO5'), null);
-  assert.equal(parseGamepadName('ABC'), null);
-  assert.equal(parseGamepadName(7), null);
-});
-
-// --- Por el servidor ---
-let app;
-let url;
-const sockets = [];
-const newClient = (headers) => { const s = connect(url, { transports: ['websocket'], forceNew: true, extraHeaders: headers }); sockets.push(s); return s; };
-const waitFor = (socket, event, ms = 6000) => new Promise((resolve, reject) => {
-  const timer = setTimeout(() => reject(new Error(`timeout esperando "${event}"`)), ms);
-  socket.once(event, (data) => { clearTimeout(timer); resolve(data); });
-});
-async function join(payload, headers) {
-  const socket = newClient(headers);
-  if (!socket.connected) await waitFor(socket, 'connect');
-  const answer = Promise.race([
-    waitFor(socket, EVENTS.SLOT_ASSIGNED).then((d) => ({ type: 'slot', ...d })),
-    waitFor(socket, EVENTS.ERROR_MSG).then((d) => ({ type: 'error', ...d })),
-  ]);
-  socket.emit(EVENTS.JOIN_ROOM, { role: 'player', ...payload });
-  return { socket, answer: await answer };
-}
-
-before(async () => {
-  app = createApp({ dbPath: ':memory:', requireEmail: true, maxPlayers: 4, gameConfig: { introS: 0, joinWindowS: 0 } });
-  await new Promise((resolve) => app.server.listen(0, resolve));
-  url = `http://localhost:${app.server.address().port}`;
-  app.startLoop();
-});
-after(async () => {
-  app.stopLoop();
-  sockets.forEach((s) => s.disconnect());
-  app.io.close();
-  await new Promise((resolve) => app.server.close(resolve));
-});
-
-test('un mando físico entra como MANDO1 sin email desde el propio portátil', async () => {
-  const { answer } = await join({ gamepad: true, name: 'MANDO1' });
-  assert.equal(answer.type, 'slot');
-  assert.equal(answer.initials, 'MANDO1');
-});
-
-test('un nombre de mando inválido no entra, y desde fuera del portátil (túnel) tampoco', async () => {
-  assert.equal((await join({ gamepad: true, name: 'MANDO9' })).answer.code, 'invalid_initials');
-  const remote = await join({ gamepad: true, name: 'MANDO2' }, { 'cf-connecting-ip': '1.2.3.4' });
-  assert.equal(remote.answer.code, 'gamepad_forbidden');
 });
 
 test('el apuntado gira hacia el objetivo por el camino corto y sin pasarse (suaviza los saltos de 45° de un stick de 8 direcciones)', () => {

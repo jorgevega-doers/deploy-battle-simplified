@@ -6,7 +6,6 @@ test('asigna P1, P2, P3 y P4, y rechaza al quinto', () => {
   const slots = createSlots();
   for (const [i, name] of ['AAA', 'BBB', 'CCC', 'DDD'].entries()) assert.deepEqual(slots.assign(`s${i}`, name), { slot: i + 1, initials: name });
   assert.equal(slots.assign('s4', 'EEE'), null);
-  assert.equal(slots.isFull(), true);
   assert.equal(slots.count(), 4);
 });
 
@@ -54,8 +53,8 @@ test('compact: al irse alguien, los que quedan pasan a ser P1..Pn y se avisa a l
 test('rebind devuelve la plaza a un socket nuevo con el mismo token (y a nadie más)', () => {
   const slots = createSlots();
   const token = 'tokensecreto1234567890';
-  slots.assign('a', 'AAA', null, token);
-  slots.assign('b', 'BBB', null, 'otrotoken1234567890xx');
+  slots.assign('a', 'AAA', token);
+  slots.assign('b', 'BBB', 'otrotoken1234567890xx');
   assert.equal(slots.rebind('falso-falso-falso-falso', 'c'), null);
   const back = slots.rebind(token, 'c');
   assert.deepEqual({ slot: back.slot, initials: back.initials, old: back.oldSocketId }, { slot: 1, initials: 'AAA', old: 'a' });
@@ -70,5 +69,4 @@ test('clear vacía todas las plazas', () => {
   slots.assign('b', 'BBB');
   slots.clear();
   assert.deepEqual(slots.initials(), [null, null, null, null]);
-  assert.equal(slots.isFull(), false);
 });

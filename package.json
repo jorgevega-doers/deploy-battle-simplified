@@ -13,7 +13,6 @@
     "qrcode": "^1.5.4",
     "socket.io": "^4.8.4",
     "socket.io-client": "^4.8.4",
-    "sqlite3": "^6.0.1",
     "three": "^0.186.1"
   },
   "devDependencies": {
@@ -25,8 +24,5 @@
     "dev": "vite",
     "build": "vite build",
     "test": "node --test"
-  },
-  "allowScripts": {
-    "sqlite3@6.0.1": true
   }
 }

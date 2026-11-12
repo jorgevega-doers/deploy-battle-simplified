@@ -3,10 +3,12 @@ import assert from 'node:assert/strict';
 import { createMatch } from '../server/game/match.js';
 import { createArena } from '../shared/arena.js';
 import { config } from '../server/config.js';
+// Valores fijos de la prueba (3 vidas, 4 el jugador contra los bots, 60 estados/s): las comprobaciones están calculadas con ellos, no con los de producción.
+const GAME = { ...config.game, lives: 3, soloPlayerLives: 4, broadcastHz: 60 };
 import { calculateScore, calculateAccuracy, accuracyFactor, speedFactor, SCORE_MAX, SCORE_WEIGHTS } from '../server/game/score.js';
 
 const near = (actual, expected, eps = 1e-6) => assert.ok(Math.abs(actual - expected) < eps, `${actual} no es ${expected}`);
-const DT = 1 / config.game.tickHz;
+const DT = 1 / GAME.tickHz;
 
 // Generador de números al azar con semilla fija, para que los tests sean repetibles.
 function seeded(seed) {
@@ -30,7 +32,7 @@ const openArena = (spawn1, spawn2, spots = []) => ({
   powerupSpots: spots,
 });
 const newMatch = (arena, overrides = {}) => createMatch({
-  arena, cfg: { ...config.game, introS: 0, ...overrides }, rng: seeded(1), initials: ['AAA', 'BBB'],
+  arena, cfg: { ...GAME, introS: 0, ...overrides }, rng: seeded(1), initials: ['AAA', 'BBB'],
 });
 const run = (match, seconds) => { for (let i = 0; i < Math.round(seconds / DT); i++) match.step(DT); };
 const eventsOf = (match, type) => match.drainEvents().filter((e) => e.type === type);
@@ -40,7 +42,7 @@ test('un tanque se mueve y se para contra el borde', () => {
   match.setMove(1, 1, 0);
   run(match, 1);
   // Con aceleración llega algo menos lejos que a velocidad máxima desde el primer instante.
-  assert.ok(match.tanks[0].x > 2.5 + config.game.tankSpeed * 0.8 && match.tanks[0].x < 2.5 + config.game.tankSpeed, `x = ${match.tanks[0].x}`);
+  assert.ok(match.tanks[0].x > 2.5 + GAME.tankSpeed * 0.8 && match.tanks[0].x < 2.5 + GAME.tankSpeed, `x = ${match.tanks[0].x}`);
   run(match, 6);
   near(match.tanks[0].x, 18.5, 1e-3); // pegado al muro derecho (el muro empieza en x = 19)
   near(match.tanks[0].y, 2.5);
@@ -76,8 +78,8 @@ test('la velocidad aumenta con el power-up de velocidad', () => {
   boosted.tanks[0].effects.speed = 10;
   normal.setMove(1, 1, 0); boosted.setMove(1, 1, 0);
   run(normal, 1); run(boosted, 1);
-  near(normal.tanks[0].vx, config.game.tankSpeed);
-  near(boosted.tanks[0].vx / normal.tanks[0].vx, config.game.speedBoost, 1e-9);
+  near(normal.tanks[0].vx, GAME.tankSpeed);
+  near(boosted.tanks[0].vx / normal.tanks[0].vx, GAME.speedBoost, 1e-9);
   assert.ok(boosted.tanks[0].x > normal.tanks[0].x);
 });
 
@@ -86,9 +88,9 @@ test('el tanque acelera de forma progresiva y no arranca de golpe', () => {
   match.setMove(1, 1, 0);
   run(match, 0.05);
   const early = match.tanks[0].vx;
-  assert.ok(early > 0 && early < config.game.tankSpeed * 0.5, `a los 0,05 s debería ir despacio (${early})`);
-  run(match, config.game.tankSpeed / config.game.tankAccel + 0.1);
-  near(match.tanks[0].vx, config.game.tankSpeed);
+  assert.ok(early > 0 && early < GAME.tankSpeed * 0.5, `a los 0,05 s debería ir despacio (${early})`);
+  run(match, GAME.tankSpeed / GAME.tankAccel + 0.1);
+  near(match.tanks[0].vx, GAME.tankSpeed);
 });
 
 test('al soltar el pad el tanque frena de forma progresiva y se para', () => {
@@ -98,7 +100,7 @@ test('al soltar el pad el tanque frena de forma progresiva y se para', () => {
   const releasedAt = match.tanks[0].x;
   match.setMove(1, 0, 0);
   run(match, 0.03);
-  assert.ok(match.tanks[0].vx > 0 && match.tanks[0].vx < config.game.tankSpeed, 'sigue moviéndose un instante');
+  assert.ok(match.tanks[0].vx > 0 && match.tanks[0].vx < GAME.tankSpeed, 'sigue moviéndose un instante');
   run(match, 0.5);
   assert.equal(match.tanks[0].vx, 0);
   const stopped = match.tanks[0].x;
@@ -113,8 +115,8 @@ test('curva del pad: la mitad del empuje da menos de la mitad de la velocidad (m
   match.setMove(1, 0.5, 0);
   run(match, 1);
   const half = match.tanks[0].vx;
-  assert.ok(half > 0 && half < config.game.tankSpeed * 0.5, `a medio empuje va a ${half}`);
-  near(half, config.game.tankSpeed * 0.5 ** config.game.moveResponseExponent, 1e-9);
+  assert.ok(half > 0 && half < GAME.tankSpeed * 0.5, `a medio empuje va a ${half}`);
+  near(half, GAME.tankSpeed * 0.5 ** GAME.moveResponseExponent, 1e-9);
 });
 
 test('al chocar con un muro pierde la velocidad en ese eje y no sigue "empujando"', () => {
@@ -134,7 +136,7 @@ test('tras el dash conserva parte de la velocidad y el frenado la va reduciendo'
   match.setMove(1, 1, 0);
   run(match, 1);
   match.dash(1);
-  run(match, config.game.dashDurationS + 0.01);
+  run(match, GAME.dashDurationS + 0.01);
   match.setMove(1, 0, 0);
   run(match, 0.02);
   assert.ok(match.tanks[0].vx > 0, 'sigue avanzando por inercia');
@@ -212,7 +214,7 @@ test('durante la pausa no se puede mover ni disparar, y después sí', () => {
   assert.equal(match.fire(1), false);
   run(match, 0.3);
   near(match.tanks[0].x, 2.5);
-  run(match, config.game.roundFreezeS);
+  run(match, GAME.roundFreezeS);
   assert.equal(match.frozen, false);
   run(match, 0.3);
   assert.ok(match.tanks[0].x > 2.5);
@@ -239,14 +241,14 @@ test('la cadencia limita los disparos', () => {
   const match = newMatch(openArena({ x: 2.5, y: 2.5 }, { x: 17.5, y: 17.5 }));
   assert.equal(match.fire(1), true);
   assert.equal(match.fire(1), false);
-  run(match, config.game.fireCooldownS + 0.05);
+  run(match, GAME.fireCooldownS + 0.05);
   assert.equal(match.fire(1), true);
 });
 
 test('un disparo pedido justo antes de acabar la cadencia se guarda y sale solo', () => {
   const match = newMatch(openArena({ x: 2.5, y: 2.5 }, { x: 17.5, y: 17.5 }));
   assert.equal(match.fire(1), true);
-  run(match, config.game.fireCooldownS - 0.1); // faltan ~0,1 s: dentro del búfer (0,25 s)
+  run(match, GAME.fireCooldownS - 0.1); // faltan ~0,1 s: dentro del búfer (0,25 s)
   assert.equal(match.fire(1), false);          // todavía no puede salir...
   run(match, 0.2);
   assert.equal(match.stats[0].shots, 2);       // ...pero salió solo al acabar la cadencia
@@ -257,7 +259,7 @@ test('un disparo pedido demasiado pronto no se guarda', () => {
   match.fire(1);
   run(match, 0.1); // faltan ~0,5 s: fuera del búfer
   assert.equal(match.fire(1), false);
-  run(match, config.game.fireCooldownS + 0.2);
+  run(match, GAME.fireCooldownS + 0.2);
   assert.equal(match.stats[0].shots, 1);
 });
 
@@ -280,11 +282,11 @@ test('el dash recorre una distancia fija en la dirección del movimiento y tiene
   match.setMove(1, 1, 0);
   assert.equal(match.dash(1), true);
   assert.ok(eventsOf(match, 'dash').length === 1);
-  run(match, config.game.dashDurationS + 0.05);
-  const expected = config.game.dashSpeed * config.game.dashDurationS;
-  near(match.tanks[0].x - 2.5, expected + 0, expected * 0.2 + config.game.tankSpeed * 0.05);
+  run(match, GAME.dashDurationS + 0.05);
+  const expected = GAME.dashSpeed * GAME.dashDurationS;
+  near(match.tanks[0].x - 2.5, expected + 0, expected * 0.2 + GAME.tankSpeed * 0.05);
   assert.equal(match.dash(1), false, 'en espera');
-  run(match, config.game.dashCooldownS);
+  run(match, GAME.dashCooldownS);
   assert.equal(match.dash(1), true);
 });
 
@@ -293,7 +295,7 @@ test('quieto, el dash va hacia donde apunta; durante el dash la dirección no se
   match.tanks[0].aim = Math.PI / 2; // apunta hacia arriba
   match.dash(1);
   match.setMove(1, 1, 0);            // intenta ir a la derecha en pleno dash
-  run(match, config.game.dashDurationS - 0.02); // solo mientras dura el dash
+  run(match, GAME.dashDurationS - 0.02); // solo mientras dura el dash
   assert.ok(match.tanks[0].y > 2.5 + 2, 'ha subido');
   near(match.tanks[0].x, 2.5, 1e-6);
   run(match, 0.2); // acabado el dash vuelve a obedecer al pad
@@ -393,14 +395,14 @@ test('la explosión rompe el escudo y quita la vida a la vez', () => {
 test('un power-up avisa (powerup_warn) en su sitio antes de aparecer, y la explosión sale menos', () => {
   const match = newMatch(openArena({ x: 2.5, y: 2.5 }, { x: 17.5, y: 17.5 }, [{ x: 10.5, y: 10.5 }, { x: 5.5, y: 12.5 }]));
   const events = [];
-  for (let i = 0; i < 60 * (config.game.powerupFirstSpawnS + 1); i++) { match.step(DT); events.push(...match.drainEvents()); }
+  for (let i = 0; i < 60 * (GAME.powerupFirstSpawnS + 1); i++) { match.step(DT); events.push(...match.drainEvents()); }
   const warnAt = events.findIndex((e) => e.type === 'powerup_warn');
   const spawnAt = events.findIndex((e) => e.type === 'powerup_spawn');
   assert.ok(warnAt >= 0 && spawnAt > warnAt, 'primero el aviso y luego la aparición');
   assert.equal(events[warnAt].x, events[spawnAt].x);
   assert.equal(events[warnAt].y, events[spawnAt].y);
-  assert.ok(events[warnAt].seconds <= config.game.powerupWarnS + 1e-9);
-  const w = config.game.powerupWeights;
+  assert.ok(events[warnAt].seconds <= GAME.powerupWarnS + 1e-9);
+  const w = GAME.powerupWeights;
   assert.ok(w.aoe < w.double && w.aoe < w.speed && w.aoe < w.shield, 'la explosión es la menos frecuente');
 });
 
@@ -418,7 +420,7 @@ test('solo hay un power-up activo: el nuevo sustituye al anterior', () => {
 test('los power-ups aparecen, se recogen y duran lo configurado', () => {
   const spots = [{ x: 10.5, y: 10.5 }, { x: 5.5, y: 12.5 }];
   const match = newMatch(openArena({ x: 2.5, y: 2.5 }, { x: 17.5, y: 17.5 }, spots));
-  run(match, config.game.powerupFirstSpawnS + 0.1);
+  run(match, GAME.powerupFirstSpawnS + 0.1);
   assert.equal(match.powerups.items.length, 1);
   assert.ok(match.drainEvents().some((e) => e.type === 'powerup_spawn'));
 
@@ -426,7 +428,7 @@ test('los power-ups aparecen, se recogen y duran lo configurado', () => {
   match.tanks[0].x = item.x; match.tanks[0].y = item.y;
   match.step(DT);
   assert.equal(match.powerups.items.length, 0);
-  const duration = config.game.powerupDurationS[item.type];
+  const duration = GAME.powerupDurationS[item.type];
   assert.ok(duration >= 3 && duration <= 8, 'deben durar unos pocos segundos');
   assert.ok(match.tanks[0].effects[item.type] > duration - 0.1);
   const pick = eventsOf(match, 'powerup_pick');
@@ -440,7 +442,7 @@ test('los power-ups aparecen, se recogen y duran lo configurado', () => {
 });
 
 test('cada power-up tiene su propia duración y recoger otro igual la renueva sin acumularla', () => {
-  const durations = config.game.powerupDurationS;
+  const durations = GAME.powerupDurationS;
   assert.deepEqual(Object.keys(durations).sort(), ['aoe', 'double', 'shield', 'speed']);
   for (const seconds of Object.values(durations)) assert.ok(seconds > 0 && seconds <= 8);
 
@@ -470,7 +472,7 @@ test('nunca hay más power-ups que el máximo', () => {
   const spots = Array.from({ length: 6 }, (_, i) => ({ x: 3.5 + i * 2, y: 10.5 }));
   const match = newMatch(openArena({ x: 2.5, y: 2.5 }, { x: 17.5, y: 17.5 }, spots), { powerupSpawnS: 1, powerupFirstSpawnS: 1 });
   run(match, 20);
-  assert.equal(match.powerups.items.length, config.game.powerupMax);
+  assert.equal(match.powerups.items.length, GAME.powerupMax);
 });
 
 test('expireTime (menú de test) acaba la partida por tiempo en el siguiente paso', () => {
@@ -574,7 +576,7 @@ test('puntuación y precisión', () => {
 test('una partida completa con el mapa real: entradas aleatorias durante 10 minutos de juego, rápida y sin errores', () => {
   const rng = seeded(42);
   const arena = createArena();
-  const match = createMatch({ arena, cfg: { ...config.game, introS: 0, matchSeconds: 1e9, lives: 1e9 }, rng, initials: ['AAA', 'BBB'] });
+  const match = createMatch({ arena, cfg: { ...GAME, introS: 0, matchSeconds: 1e9, lives: 1e9 }, rng, initials: ['AAA', 'BBB'] });
   const start = performance.now();
   const ticks = 60 * 60 * 10;
   for (let i = 0; i < ticks; i++) {

@@ -1,4 +1,4 @@
-// Validación de datos que llegan de los móviles. Nunca se confía en lo que envía el cliente.
+// Validación de datos que llegan de los navegadores. Nunca se confía en lo que envía el cliente.
 
 const clamp = (v, min, max) => Math.min(max, Math.max(min, v));
 
@@ -31,7 +31,7 @@ export function parseAim(payload) {
   return payload.angle;
 }
 
-// Token secreto de reconexión del mando (lo inventa el móvil): 16-64 caracteres seguros, o null.
+// Token secreto de reconexión (lo inventa cada pestaña): 16-64 caracteres seguros, o null.
 export function parseToken(raw) {
   return typeof raw === 'string' && /^[A-Za-z0-9_-]{16,64}$/.test(raw) ? raw : null;
 }
@@ -45,24 +45,7 @@ export function parseInitials(raw, blocked = []) {
   return value;
 }
 
-// Email del visitante (obligatorio en el stand al escanear el QR): en minúsculas, sin espacios, con un formato razonable y como mucho
-// 254 caracteres. Devuelve el email normalizado o null. No comprueba que exista (eso solo lo sabría el servidor de correo).
-// Nombre de un mando físico conectado a la pantalla del juego (sección 72): MANDO1 a MANDO4. Devuelve el nombre o null.
-// Id de una pantalla (versión pública: el QR de cada pantalla vincula el móvil a ella) o llave de anfitrión: texto corto y sin símbolos.
+// Id de la pantalla de un jugador (sale en lobby_state para que cada pantalla marque su tanque con TÚ): texto corto y sin símbolos.
 export function parseScreenId(raw) {
   return typeof raw === 'string' && /^[A-Za-z0-9_-]{8,40}$/.test(raw) ? raw : null;
 }
-
-export function parseGamepadName(raw) {
-  return typeof raw === 'string' && /^MANDO[1-4]$/.test(raw) ? raw : null;
-}
-
-export function parseEmail(raw) {
-  if (typeof raw !== 'string') return null;
-  const value = raw.trim().toLowerCase();
-  if (value.length < 6 || value.length > 254 || value.includes('..')) return null;
-  return /^[a-z0-9._%+'-]{1,64}@[a-z0-9-]+(\.[a-z0-9-]+)*\.[a-z]{2,}$/.test(value) ? value : null;
-}
-
-// Los bots de prueba del menú del host entran con un email de este dominio (reservado: no existe) y no se guarda. Solo desde el propio portátil.
-export const isTestEmail = (email) => email.endsWith('@test.invalid');

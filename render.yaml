@@ -1,5 +1,4 @@
 # DEPLOY BATTLE (versión simplificada) en Render (Blueprint), desde la rama "main" de este repositorio. Plan gratis: se duerme tras ~15 min sin uso (la primera visita tarda ~1 min).
-# (El stand de la feria y la versión pública con salas viven en el proyecto original, no en este repositorio.)
 services:
   - type: web
     name: deploy-battle-arcade
@@ -10,12 +9,8 @@ services:
     healthCheckPath: /healthz
     autoDeploy: true     # cada push a "main" despliega solo
     envVars:
-      - key: ONLINE
-        value: "1"
       - key: MAX_ROOMS
         value: "6"        # el plan gratis tiene poca CPU: pocas salas a la vez para que ninguna vaya a tirones
-      - key: DB_PATH
-        value: ":memory:" # la base local no se usa en la pública (el ranking va a Turso)
       - key: DEV_PASSWORD
         sync: false      # contraseña de /db-admin/ (modo desarrollador); se escribe a mano en Render
       - key: TURSO_DATABASE_URL

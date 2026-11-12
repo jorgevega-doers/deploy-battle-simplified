@@ -6,13 +6,15 @@ import { describePlan } from '../shared/modeText.js';
 import { createMatch } from '../server/game/match.js';
 import { createArena } from '../shared/arena.js';
 import { config } from '../server/config.js';
+// Valores fijos de la prueba (3 vidas, 4 el jugador contra los bots, 60 estados/s): las comprobaciones están calculadas con ellos, no con los de producción.
+const GAME = { ...config.game, lives: 3, soloPlayerLives: 4, broadcastHz: 60 };
 
 const arena = createArena();
-const DT = 1 / config.game.tickHz;
+const DT = 1 / GAME.tickHz;
 const INITIALS = ['AAA', 'BBB', 'CCC', 'DDD'];
 // Equipos 2 contra 2: ya no se ofrecen (29-oct), pero el motor de la partida los sigue soportando y se prueba con un plan escrito a mano.
 const TEAM_PLAN = { kind: 'brawl', humans: 4, bots: 0, teams: [0, 1, 0, 1] };
-const match = (plan, overrides = {}) => createMatch({ arena, cfg: { ...config.game, introS: 0, ...overrides }, rng: () => 0.5, initials: INITIALS.slice(0, tankCount(plan)), plan });
+const match = (plan, overrides = {}) => createMatch({ arena, cfg: { ...GAME, introS: 0, ...overrides }, rng: () => 0.5, initials: INITIALS.slice(0, tankCount(plan)), plan });
 // Pone un disparo de `owner` justo encima del tanque `victim`, mirando hacia él.
 function aimedShot(m, owner, victim) {
   const v = m.tanks[victim - 1];
@@ -49,7 +51,7 @@ test('combate de 4 sin equipos: un golpe no reinicia la ronda, la víctima reapa
   assert.equal(hit.slot, 2);
   assert.equal(hit.round, false);
   assert.equal(m.frozen, false);
-  assert.equal(m.stats[1].lives, config.game.lives - 1);
+  assert.equal(m.stats[1].lives, GAME.lives - 1);
   assert.ok(m.tanks[1].invuln > 1);
   assert.equal(m.over, false);
 });
@@ -58,11 +60,11 @@ test('equipos 2 contra 2: sin fuego amigo (el disparo atraviesa al compañero) y
   const m = match(TEAM_PLAN);
   aimedShot(m, 1, 3); // P1 y P3 son compañeros
   m.step(DT);
-  assert.equal(m.stats[2].lives, config.game.lives);
+  assert.equal(m.stats[2].lives, GAME.lives);
   assert.equal(m.drainEvents().filter((e) => e.type === 'hit').length, 0);
   // Elimina a P2 y P4 (el otro equipo): gana el equipo de P1 y P3.
   for (const victim of [2, 4]) {
-    for (let k = 0; k < config.game.lives; k++) {
+    for (let k = 0; k < GAME.lives; k++) {
       m.tanks[victim - 1].invuln = 0;
       aimedShot(m, 1, victim);
       m.step(DT);
@@ -99,7 +101,7 @@ test('fin por tiempo en equipos: gana el equipo con más vidas sumadas', () => {
 });
 
 // --- Ayuda de puntería (sección 61) ---
-const duel = (assist = { aimAssistConeRad: 0.22, aimAssistStrength: 0.65 }) => createMatch({ arena, cfg: { ...config.game, introS: 0, ...assist }, rng: () => 0.5, initials: ['AAA', 'BBB'], plan: { kind: 'duel', humans: 2, bots: 0, teams: null } });
+const duel = (assist = { aimAssistConeRad: 0.22, aimAssistStrength: 0.65 }) => createMatch({ arena, cfg: { ...GAME, introS: 0, ...assist }, rng: () => 0.5, initials: ['AAA', 'BBB'], plan: { kind: 'duel', humans: 2, bots: 0, teams: null } });
 const place = (m) => { // P1 en (10, 15) apuntando 0,12 rad por encima de P2, que está en (20, 15), en una fila sin muros
   Object.assign(m.tanks[0], { x: 10, y: 15, aim: 0.12 });
   Object.assign(m.tanks[1], { x: 20, y: 15, vx: 0, vy: 0 });
@@ -121,7 +123,7 @@ test('ayuda de puntería: sin ayuda, fuera del cono, con un muro de por medio o 
   const wide = duel();
   place(wide); wide.tanks[0].aim = 0.6; wide.fire(1); // 0,6 rad: fuera del cono de 0,22
   assert.ok(Math.abs(shotAngle(wide) - 0.6) < 1e-6);
-  const bot = createMatch({ arena, cfg: { ...config.game, introS: 0, aimAssistConeRad: 0.22, aimAssistStrength: 0.65 }, rng: () => 0.5, initials: ['AAA', 'AXL', 'VEX', 'ZED'], plan: { kind: 'solo', humans: 1, bots: 3, teams: null } });
+  const bot = createMatch({ arena, cfg: { ...GAME, introS: 0, aimAssistConeRad: 0.22, aimAssistStrength: 0.65 }, rng: () => 0.5, initials: ['AAA', 'AXL', 'VEX', 'ZED'], plan: { kind: 'solo', humans: 1, bots: 3, teams: null } });
   Object.assign(bot.tanks[1], { x: 20, y: 15, vx: 0, vy: 0 }); Object.assign(bot.tanks[0], { x: 10, y: 9 }); Object.assign(bot.tanks[1], { aim: Math.PI + 0.1 });
   bot.fire(2);
   assert.ok(Math.abs(Math.sin(shotAngle(bot) - (Math.PI + 0.1))) < 1e-6, 'los bots no tienen ayuda');

@@ -1,4 +1,4 @@
-// Versión arcade (rama arcade, 11-nov): la cola común SIN LISTO. Una sola persona pulsa JUGAR y corre una cuenta atrás (10 s en producción; aquí
+// La cola común SIN LISTO. Una sola persona pulsa JUGAR y corre una cuenta atrás (10 s en producción; aquí
 // 1,5 s); al llegar a 0 empieza la partida con quien haya. Se puede cancelar (con límite), si entra alguien se reinicia, y tras la partida nadie
 // arranca solo. Incluye casuísticas de robustez: dobles clics, trolls que cancelan sin fin, salidas y desconexiones durante la cuenta atrás,
 // sala llena, spam de eventos y el easter egg TNI. "/" sirve la pantalla del juego.
@@ -15,9 +15,8 @@ const sockets = [];
 
 before(async () => {
   const ranking = await openGlobalRanking({ url: ':memory:' });
-  // publicAutoStartS: null = la configuración de la versión arcade (config.js).
-  app = createApp({ dbPath: ':memory:', online: true, devPassword: 'x', roomsPerWindow: 100, connectionsPerMinute: 1000, ranking,
-    gameConfig: { countdownS: 0.2, introS: 0, joinWindowS: 0, publicJoinWindowS: 1.5, publicSoloJoinWindowS: 1.5, publicAutoStartS: null, publicMaxCancels: 3, publicCancelGuardS: 0.15,
+  app = createApp({ devPassword: 'x', roomsPerWindow: 100, connectionsPerMinute: 1000, ranking,
+    gameConfig: { countdownS: 0.2, introS: 0, joinWindowS: 1.5, soloJoinWindowS: 1.5, maxCancels: 3, cancelGuardS: 0.15,
       lobbyGraceS: 0.3, matchSeconds: 0.8, resultsS: 0.3 } });
   await new Promise((resolve) => app.server.listen(0, resolve));
   base = `http://localhost:${app.server.address().port}`;
