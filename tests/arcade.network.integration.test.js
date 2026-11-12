@@ -158,7 +158,8 @@ test('volver con su token después de haber perdido por abandono (partida de 3) 
   const c = await h.player(code, 'CCC');
   await startMatch(code, a);
   cut(c.pad);
-  await sleep(1100);
+  // Se espera a que el servidor lo dé por eliminado (no un tiempo fijo: con la máquina cargada tardaba más).
+  assert.ok(await until(() => a.screen.lastState?.tanks[c.slot - 1][3] === 0, 5000), 'C queda eliminado');
   const back = await h.join(code, 'CCC', c.token, c.screenId);
   assert.equal(back.slot, c.slot);
   back.emit(EVENTS.FIRE); back.emit(EVENTS.PAD, [100, 100, 0]); back.emit(EVENTS.DASH);
