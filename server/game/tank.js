@@ -53,7 +53,7 @@ export function startDash(tank, cfg) {
   tank.dashDirX = dx / len;
   tank.dashDirY = dy / len;
   tank.dashLeft = cfg.dashDurationS;
-  tank.dashCooldown = tank.dashCooldownS ?? cfg.dashCooldownS; // el tanque de TNI tiene su propia espera (sección 88)
+  tank.dashCooldown = tank.dashCooldownS ?? cfg.dashCooldownS; // el tanque de TNI tiene su propia espera
   return true;
 }
 

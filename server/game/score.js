@@ -1,4 +1,4 @@
-// Puntuación única para todos los modos (AGENTS.md, sección 70): máximo SCORE_MAX en cualquier modo y cada factor medido en proporción a lo que
+// Puntuación única para todos los modos: máximo SCORE_MAX en cualquier modo y cada factor medido en proporción a lo que
 // permite ese modo (no en valores absolutos), para que el Top 10 general sea justo. Contra bots pesan menos el daño y la puntería y más
 // sobrevivir y ganar rápido. Lógica pura: match.js le pasa los datos de la partida. Qué NO hace: decidir quién gana ni quién puntúa 0
 // (abandonos y quien no acierta nada; eso lo decide match.js).
@@ -57,8 +57,8 @@ export function calculateScore(data, { vsBots = false } = {}) {
   return Math.max(0, Math.min(SCORE_MAX, Math.round(total)));
 }
 
-// Ranking global de la versión pública (6-nov, solo 1 contra 3 bots): la puntuación normal + un extra por ganar ANTES del tiempo de referencia
-// (sin techo: cada segundo de menos suma), todo multiplicado por la dificultad, para que FÁCIL no gane el ranking. "stand" es la FÁCIL de la pública.
+// Ranking global (solo 1 contra 3 bots): la puntuación normal + un extra por ganar ANTES del tiempo de referencia
+// (sin techo: cada segundo de menos suma), todo multiplicado por la dificultad, para que FÁCIL no gane el ranking. "stand" es la dificultad FÁCIL (el nombre se queda: es el que guarda la base de datos).
 export const DIFFICULTY_MULTIPLIER = Object.freeze({ stand: 0.6, media: 1, pro: 1.5 });
 export const FAST_BONUS_PER_S = 100;
 export function rankedScore({ score, won, elapsed, difficulty }) {

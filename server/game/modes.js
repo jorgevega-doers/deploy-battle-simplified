@@ -1,4 +1,4 @@
-// Modo de juego a partir de cuántos jugadores hay (AGENTS.md, secciones 58 y 62). Lógica pura, sin red ni reloj.
+// Modo de juego a partir de cuántos jugadores hay. Lógica pura, sin red ni reloj.
 //   1 jugador  -> "solo": él contra 3 bots (los bots SOLO existen en este caso).
 //   2 jugadores -> "duel": 1 contra 1.
 //   3 jugadores -> "brawl" de 3 (todos contra todos, sin bots).

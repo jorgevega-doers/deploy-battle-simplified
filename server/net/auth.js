@@ -1,6 +1,6 @@
 // Acceso con contraseña del modo online (28-oct). Una sola contraseña para todo el sitio; al acertarla el navegador recibe una cookie
-// firmada (HttpOnly, SameSite=Lax, "Secure" detrás de HTTPS) que caduca a las 12 h. Los móviles NO la necesitan: entran con el enlace
-// del QR, que lleva el código de la sala (un código al azar de 5 caracteres de una sala que existe), y solo pueden jugar.
+// firmada (HttpOnly, SameSite=Lax, "Secure" detrás de HTTPS) que caduca a las 12 h. Los jugadores NO la necesitan: entran en su sala
+// por la cola común (JUGAR) y solo pueden jugar.
 // Qué hace: comprobar la contraseña en tiempo constante, firmar y verificar la cookie y limitar los intentos fallidos por IP.
 // Qué NO hace: no guarda nada en disco (si el servidor se reinicia sin SESSION_SECRET, hay que volver a entrar) ni conoce las salas.
 import { createHmac, createHash, randomBytes, timingSafeEqual } from 'node:crypto';
@@ -12,8 +12,8 @@ const MAX_FAILS = 8;              // fallos permitidos por IP en esa ventana
 
 const ROLES = ['user', 'dev'];
 
-// devPassword (opcional) abre el modo desarrollador: la misma cookie lleva el rol 'dev' y el menú completo de pruebas (sección 53).
-// Versión pública (6-nov): sin "password" el sitio es abierto y solo existe el rol 'dev' (página /db-admin/ con DEV_PASSWORD).
+// devPassword (opcional) abre el modo desarrollador: la misma cookie lleva el rol 'dev' y el menú completo de pruebas.
+// Sin "password" el sitio es abierto y solo existe el rol 'dev' (página /db-admin/ con DEV_PASSWORD).
 export function createAuth({ password = '', devPassword = '', secret = '', now = () => Date.now() }) {
   const key = secret || randomBytes(32).toString('hex');
   const sign = (value) => createHmac('sha256', key).update(value).digest('base64url');

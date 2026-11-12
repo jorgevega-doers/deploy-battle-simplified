@@ -1,4 +1,4 @@
-// Ranking global de la versión pública (6-nov): partidas de 1 contra 3 bots guardadas en Turso (SQLite en la nube, cliente @libsql/client)
+// Ranking global: partidas de 1 contra 3 bots guardadas en Turso (SQLite en la nube, cliente @libsql/client)
 // para que sobrevivan a que Render se duerma o se reinicie. Tres tablas a la vista: HOY, ESTA SEMANA e HISTÓRICO (hora de Madrid).
 // Sin TURSO_DATABASE_URL usa una base en memoria (pruebas y desarrollo): funciona igual pero se pierde al reiniciar.
 // Las salas abiertas en modo desarrollador guardan aparte (dev = 1), para que las pruebas no ensucien el ranking de los jugadores.

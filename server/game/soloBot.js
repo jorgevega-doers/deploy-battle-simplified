@@ -24,7 +24,7 @@ export const BOT_SKILLS = Object.freeze([
   { reaction: 0.45, aimError: 0.12, dodgeChance: 0.4, fireDelay: 0.55, fireEvery: 1.5 },
 ]);
 
-// Dificultades (sección 60). PRO = la de siempre. STAND = para el público de la feria: los bots reaccionan más tarde, apuntan peor,
+// Dificultades. PRO = la más dura. STAND (= FÁCIL; el nombre se queda: es el que guarda el ranking): los bots reaccionan más tarde, apuntan peor,
 // esquivan poco y disparan más despacio, pero se mueven igual de bien (no parecen tontos: simplemente son menos precisos); el jugador
 // tiene una vida más y los bots tardan algo más en empezar a disparar.
 export const DIFFICULTY = Object.freeze({
@@ -39,7 +39,7 @@ export const DIFFICULTY = Object.freeze({
     playerLivesBonus: 1,
     aimAssist: { cone: 0.22, strength: 0.65 }, // STAND: ayuda de puntería discreta (~12 grados de cono)
   },
-  // MEDIA (versión pública, 6-nov): punto medio entre STAND (= FÁCIL en la pública) y PRO, valor a valor.
+  // MEDIA (la de la partida normal): punto medio entre FÁCIL y PRO, valor a valor.
   media: {
     skills: Object.freeze([
       { reaction: 0.46, aimError: 0.14, dodgeChance: 0.4, fireDelay: 0.6, fireEvery: 1.6 },

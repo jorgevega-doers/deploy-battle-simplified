@@ -1,4 +1,4 @@
-// Configuraciones de mandos compartidas (versión pública, 10-nov): cuando alguien configura un mando que el navegador no reconoce, su
+// Configuraciones de mandos compartidas: cuando alguien configura un mando que el navegador no reconoce, su
 // configuración se guarda aquí para ese modelo (el id que da el navegador: nombre, fabricante y producto), y el siguiente que conecte ese
 // mismo modelo, en cualquier ordenador, la recibe sin tener que configurar nada.
 // Contra una configuración mal hecha: cada pantalla (voter) tiene UN voto por modelo (si vuelve a configurarlo, cambia su voto); se usa la

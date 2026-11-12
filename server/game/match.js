@@ -26,7 +26,7 @@ export function createMatch({ arena, cfg, rng = Math.random, initials = [null, n
   const isHuman = (slot) => (solo ? slot === 1 : slot <= mode.humans);
   // Cada tanque empieza apuntando hacia el centro del mapa (las salidas cambian según el mapa).
   const tanks = Array.from({ length: count }, (_, i) => createTank(i + 1, spawns[i], Math.atan2(arena.height / 2 - spawns[i].y, arena.width / 2 - spawns[i].x)));
-  // Easter egg (sección 88): el JUGADOR que se llama TNI lleva un tanque chetado (cfg.tni). Los bots nunca lo son.
+  // Easter egg: el JUGADOR que se llama TNI lleva un tanque chetado (cfg.tni). Los bots nunca lo son.
   const tniCfg = cfg.tni ?? null;
   const isTni = Array.from({ length: count }, (_, i) => Boolean(tniCfg) && isHuman(i + 1) && initials[i] === tniCfg.name);
   isTni.forEach((on, i) => { if (on) { tanks[i].speedFactor = tniCfg.speedFactor; tanks[i].dashCooldownS = tniCfg.dashCooldownS; } });
@@ -85,14 +85,14 @@ export function createMatch({ arena, cfg, rng = Math.random, initials = [null, n
       kind: mode.kind,
       teams: mode.teams,
       reason,
-      elapsed, // segundos jugados (el ranking global de la versión pública premia ganar rápido)
+      elapsed, // segundos jugados (el ranking global premia ganar rápido)
       scores: tanks.map((_, i) => ({
         slot: i + 1,
         initials: initials[i] ?? null,
         lives: stats[i].lives,
         accuracy: accuracyOf(i),
         // Puntúa 0 quien no ha acertado ni un disparo (dos jugadores quietos no deben entrar en el ranking), quien abandona y todos si
-        // abandonan todos (si no, el que se desconecta o su rival, con otro móvil, se regalarían una puntuación sin jugar).
+        // abandonan todos (si no, el que se desconecta o su rival, con otra pestaña, se regalarían una puntuación sin jugar).
         // Puntuación única (score.js): máximo igual en todos los modos; contra bots, con los pesos del modo contra bots.
         score: reason === 'forfeit' || stats[i].forfeited || stats[i].hits === 0 ? 0 : calculateScore({
           result: results[i],

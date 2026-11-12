@@ -1,8 +1,8 @@
-// Reset global: vacía las plazas y expulsa a todos los mandos. El host se queda conectado.
+// Reinicio de la sala (menú de pruebas del modo dev): vacía las plazas y expulsa a los jugadores. Las pantallas se quedan conectadas.
 // También cancela la partida en marcha (session.reset()) y devuelve la sesión al lobby.
 import { EVENTS } from '../../shared/events.js';
 
-// ns = el espacio de nombres de la sala (o el Server en el modo del stand): se usa su lista de sockets.
+// ns = el espacio de nombres de la sala: se usa su lista de sockets.
 export function performHardReset(ns, slots, session) {
   slots.clear();
   session.reset();

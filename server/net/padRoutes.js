@@ -1,4 +1,4 @@
-// API de configuraciones de mandos compartidas (versión pública, 10-nov; server/db/padConfigs.js):
+// API de configuraciones de mandos compartidas (server/db/padConfigs.js):
 //  - GET  /api/pads?id=ID          -> { mapping } (la más votada para ese modelo) o 404 si nadie lo ha configurado aún.
 //  - POST /api/pads { id, mapping } -> guarda el voto de quien lo configuró (uno por IP y modelo; la IP no se guarda: solo una huella).
 // Límite: 20 votos cada 10 minutos por IP. Qué NO hace: no decide nada del juego.

@@ -15,7 +15,7 @@ export function createProjectilePool(size) {
 }
 
 // Activa un proyectil libre del pool. Devuelve null si no queda ninguno. "life" = segundos que vive como mucho.
-// rocket = cohete del tanque de TNI (sección 88): no rebota; revienta (onExplode) al primer muro o al acabarse su vida.
+// rocket = cohete del tanque de TNI: no rebota; revienta (onExplode) al primer muro o al acabarse su vida.
 export function spawnProjectile(pool, { id, owner, x, y, angle, speed, aoe, life = Infinity, rocket = false }) {
   for (let i = 0; i < pool.length; i++) {
     const p = pool[i];

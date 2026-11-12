@@ -1,4 +1,4 @@
-// Pausa de la partida (versión pública, 10-nov): un jugador congela la partida para todos, pero con límites para que nadie abuse:
+// Pausa de la partida: un jugador congela la partida para todos, pero con límites para que nadie abuse:
 //  - dura como mucho maxS (10 s) y luego sigue sola; cualquiera puede quitarla antes;
 //  - cada jugador tiene perMatch pausas por partida y, entre una y la siguiente, cooldownS de espera.
 // En las salas online con otra gente no se congela nada (lo decide sockets.js): allí el menú de pausa es solo tuyo, como en los juegos online.

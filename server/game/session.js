@@ -1,7 +1,7 @@
 // Fases de la sesión de una sala: LOBBY -> READY (presentación) -> PLAYING -> GAME_OVER -> LOBBY.
 // No usa sockets ni relojes: el tiempo llega en cada tick(dt) y todo lo que ocurre se comunica mediante las funciones de "out". Así se puede
 // probar entera simulando el paso del tiempo. El modo de juego sale solo de cuántos jugadores hay (server/game/modes.js).
-// Arranque (versión arcade): no hay LISTO. Cualquier jugador pulsa JUGAR y corre la cuenta atrás (joinWindowS; soloJoinWindowS contra bots); al
+// Arranque: no hay LISTO. Cualquier jugador pulsa JUGAR y corre la cuenta atrás (joinWindowS; soloJoinWindowS contra bots); al
 // llegar a 0 empieza la partida con quien haya. Cualquiera puede cancelarla (maxCancels veces cada uno por sala de espera, para que un troll no la
 // cancele sin fin); si entra alguien, vuelve a empezar. No se puede cancelar en el primer instante (cancelGuardS: el doble clic en JUGAR).
 import { createMatch } from './match.js';
