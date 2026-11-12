@@ -1,8 +1,8 @@
 // Salas y API del juego. Cada sala es un espacio de nombres "/r/CODIGO" con su partida (hasta 4 jugadores, cada uno en su pantalla).
 //  - "/" = la pantalla del juego (título, JUGAR, sala y partida en la misma página). POST /api/quick = la cola común: te mete en la sala con
 //    hueco (la más llena) o crea una.
-//  - "/db-admin/" = contraseña de desarrollador (DEV_PASSWORD): cookie con el rol "dev" (menú de pruebas, salas y ranking aparte).
-//  - Ranking global (Turso) del 1 contra 3 bots; configuraciones de mandos compartidas (/api/pads).
+//  - "/db-admin/" = contraseña de desarrollador (DEV_PASSWORD): cookie con el rol "dev" (menú de pruebas y salas aparte).
+//  - Configuraciones de mandos compartidas (/api/pads, en Turso).
 // Qué NO hace: no sabe de reglas de juego (server/game/) ni del bucle (app.js).
 import express from 'express';
 import { resolve } from 'node:path';
@@ -12,7 +12,6 @@ import { createSlots } from './net/slots.js';
 import { createAuth, createRateLimiter } from './net/auth.js';
 import { createRoomRegistry, reserve } from './net/rooms.js';
 import { parseToken } from './net/validate.js';
-import { openGlobalRanking, createNullRanking } from './db/globalRanking.js';
 import { openPadConfigs } from './db/padConfigs.js';
 import { registerPadRoutes } from './net/padRoutes.js';
 
@@ -24,15 +23,10 @@ const CSP = [
 
 const sameHost = (origin, host) => { if (!origin) return true; try { return new URL(origin).host === host; } catch { return false; } };
 
-export function setupOnline({ app, io, distDir, arena, arenas, cfg, rng, devPassword, secret, roomsPerWindow, connectionsPerMinute, roomIdleMs, now, ranking = null, padConfigs = null }) {
+export function setupOnline({ app, io, distDir, arena, arenas, cfg, rng, devPassword, secret, roomsPerWindow, connectionsPerMinute, roomIdleMs, now, padConfigs = null }) {
   const auth = createAuth({ devPassword, secret, now });
   if (!secret) console.warn('Aviso: sin SESSION_SECRET el modo desarrollador se cierra cada vez que se reinicia el servidor.');
-  // Ranking global: se abre en segundo plano; si falla, el juego sigue sin ranking.
-  const rankingReady = ranking ? Promise.resolve(ranking) : openGlobalRanking({ now }).catch((err) => {
-    console.error('No se pudo abrir el ranking global (Turso); el juego sigue sin ranking:', err.message);
-    return createNullRanking();
-  });
-  // Configuraciones de mandos compartidas (Turso, como el ranking); si falla, cada uno configura su mando en su navegador como siempre.
+  // Configuraciones de mandos compartidas (Turso); si falla, cada uno configura su mando en su navegador como siempre.
   const padsReady = padConfigs ? Promise.resolve(padConfigs) : openPadConfigs({ now }).catch((err) => {
     console.error('No se pudo abrir la tabla de mandos (Turso):', err.message);
     return { vote: async () => {}, best: async () => null, close: () => {} };
@@ -72,7 +66,6 @@ export function setupOnline({ app, io, distDir, arena, arenas, cfg, rng, devPass
       const session = registerSockets(ns, slots, {
         cfg, arena, arenas, rng, room,
         allowDebug: (socket) => auth.roleOf(socket.handshake.headers) === 'dev',
-        rankSolo: async (entry) => (await rankingReady).insert({ ...entry, dev: room.dev }),
       });
       return { ns, session, slots };
     },
@@ -143,5 +136,5 @@ export function setupOnline({ app, io, distDir, arena, arenas, cfg, rng, devPass
   app.get(['/login', '/login/'], (_req, res) => res.redirect(301, '/db-admin/'));
   app.get(['/host', '/host/', '/play', '/play/'], (_req, res) => res.redirect(301, '/'));
 
-  return { rooms, auth, rankingReady };
+  return { rooms, auth };
 }

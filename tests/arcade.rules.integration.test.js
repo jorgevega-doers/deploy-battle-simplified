@@ -1,17 +1,15 @@
 // Versión arcade: reglas de la partida y de la sala (AGENTS.md, secciones 2, 4 y 5). 5 vidas para todos, plan según la gente (1 = contra 3 bots),
 // bots en MEDIA, mapa al azar y distinto tras cada partida, tiempo máximo, AFK, pausa (solo contra bots), SALIR en partida, resultados sin
-// puesto, TNI fuera del ranking y las páginas que no se tocan (/healthz, /end/, /home/, /licencias/, /db-admin/).
+// puesto ni ranking y las páginas que no se tocan (/healthz, /end/, /home/, /licencias/, /db-admin/).
 import { test, before, after, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync } from 'node:fs';
 import { start, sleep, until, waitFor, EVENTS } from './support/arcadeServer.js';
 
-const inserted = []; // ranking global de mentira: apunta lo que se guarda
-const ranking = { insert: async (e) => { inserted.push(e); return { rank: 1, ranks: null }; }, tops: async () => ({ week: [] }), close() {} };
 let h;
-before(async () => { h = await start({ ranking, gameConfig: { matchSeconds: 2, pauseMaxS: 0.5, pauseCooldownS: 0.4 } }); });
+before(async () => { h = await start({ gameConfig: { matchSeconds: 2, pauseMaxS: 0.5, pauseCooldownS: 0.4 } }); });
 after(() => h.stop());
-beforeEach(async () => { inserted.length = 0; await h.reset(); });
+beforeEach(async () => { await h.reset(); });
 
 const room = (code) => h.app.rooms.get(code);
 async function playing(names) {
@@ -49,12 +47,11 @@ test('AFK en partida (nadie toca nada): la partida acaba sola por tiempo y todos
 test('resultados sin puesto ni ranking en partidas entre personas', async () => {
   const { players } = await playing(['AAA', 'BBB']);
   assert.ok(await until(() => players[0].screen.lastResult, 5000));
-  assert.ok(players[0].screen.lastResult.scores.every((s) => s.rank === null));
-  assert.equal(inserted.length, 0);
+  assert.ok(players[0].screen.lastResult.scores.every((s) => !('rank' in s)), 'sin puesto en los resultados');
 });
 
 test('pausa contra los bots: congela la partida, se acaba sola, máximo 2 por partida y con espera entre una y otra', async () => {
-  const slow = await start({ ranking, gameConfig: { matchSeconds: 6, pauseMaxS: 0.5, pauseCooldownS: 0.4 } });
+  const slow = await start({ gameConfig: { matchSeconds: 6, pauseMaxS: 0.5, pauseCooldownS: 0.4 } });
   try {
     const { code } = await slow.quick();
     const p = await slow.player(code, 'AAA');
@@ -117,7 +114,7 @@ test('SALIR contra los bots: la partida termina y la sala queda libre', async ()
 });
 
 test('SALIR durante la intro: los demás vuelven a la sala sin quedarse colgados y pueden volver a pulsar JUGAR', async () => {
-  const intro = await start({ ranking, gameConfig: { introS: 0.8 } });
+  const intro = await start({ gameConfig: { introS: 0.8 } });
   try {
     const { code } = await intro.quick();
     const a = await intro.player(code, 'AAA');
@@ -143,13 +140,12 @@ async function soloWithScore(name) {
   await sleep(150);
 }
 
-test('ranking global: el 1 contra 3 bots con puntos se guarda; el tanque chetado de TNI NUNCA entra', async () => {
+test('contra los bots, los resultados enseñan la puntuación de la partida tal cual (sin ranking que la cambie)', async () => {
   await soloWithScore('AAA');
-  assert.deepEqual(inserted.map((e) => e.initials), ['AAA']);
-  inserted.length = 0;
-  await h.reset();
-  await soloWithScore('TNI');
-  assert.deepEqual(inserted, [], 'TNI no entra en el ranking');
+  const result = h.sockets.find((s) => s.lastResult)?.lastResult;
+  assert.ok(result, 'llega game_over');
+  assert.equal(result.scores[0].score, 1234);
+  assert.ok(!('rank' in result.scores[0]));
 });
 
 test('páginas y rutas que no se tocan: /healthz, cabeceras de seguridad, /, /end/, /home/, /licencias/, /db-admin/, /login', async (t) => {

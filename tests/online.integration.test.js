@@ -5,7 +5,6 @@ import assert from 'node:assert/strict';
 import { io as connect } from 'socket.io-client';
 import { createApp } from '../server/app.js';
 import { createAuth } from '../server/net/auth.js';
-import { openGlobalRanking } from '../server/db/globalRanking.js';
 import { EVENTS } from '../shared/events.js';
 
 const DEV_PASSWORD = 'clave-dev-prueba';
@@ -14,9 +13,8 @@ let base;
 const sockets = [];
 
 before(async () => {
-  const ranking = await openGlobalRanking({ url: ':memory:' });
   app = createApp({
-    devPassword: DEV_PASSWORD, roomsPerWindow: 100, connectionsPerMinute: 1000, ranking,
+    devPassword: DEV_PASSWORD, roomsPerWindow: 100, connectionsPerMinute: 1000,
     gameConfig: { countdownS: 0.2, introS: 0, joinWindowS: 0.3, soloJoinWindowS: 0.3, matchSeconds: 30, resultsS: 0.3 },
   });
   await new Promise((resolve) => app.server.listen(0, resolve));

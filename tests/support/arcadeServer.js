@@ -20,15 +20,13 @@ export const FAST = {
   countdownS: 0.2, introS: 0, joinWindowS: 1, soloJoinWindowS: 1, maxCancels: 3, cancelGuardS: 0.15, lobbyGraceS: 0.4, reconnectGraceS: 0.8, matchSeconds: 1.5, resultsS: 0.3,
 };
 
-// options: { gameConfig, roomsPerWindow, connectionsPerMinute, ranking, now }
+// options: { gameConfig, roomsPerWindow, connectionsPerMinute, now }
 export async function start(options = {}) {
   process.env.MAX_SOCKETS ??= '600'; // el tope de producción (150 conexiones) se queda corto con varias salas a la vez
   const { createApp } = await import('../../server/app.js');
-  const { openGlobalRanking } = await import('../../server/db/globalRanking.js');
-  const ranking = options.ranking ?? await openGlobalRanking({ url: ':memory:' });
   const app = createApp({
     devPassword: 'x', roomsPerWindow: options.roomsPerWindow ?? 1000,
-    connectionsPerMinute: options.connectionsPerMinute ?? 100000, ranking, now: options.now, gameConfig: { ...FAST, ...options.gameConfig },
+    connectionsPerMinute: options.connectionsPerMinute ?? 100000, now: options.now, gameConfig: { ...FAST, ...options.gameConfig },
   });
   await new Promise((resolve) => app.server.listen(0, resolve));
   const base = `http://localhost:${app.server.address().port}`;
@@ -89,7 +87,7 @@ export async function start(options = {}) {
   const phase = (p) => (p.screen ?? p).lastLobby?.state;
   const counting = (p) => (p.screen ?? p).lastLobby?.joinLeft != null;
   const humans = (p) => (p.screen ?? p).lastLobby?.plan?.humans ?? 0;
-  return { app, base, ranking, quick, client, connected, player, join, reset, stop, phase, counting, humans, sockets };
+  return { app, base, quick, client, connected, player, join, reset, stop, phase, counting, humans, sockets };
 }
 
 export { EVENTS };

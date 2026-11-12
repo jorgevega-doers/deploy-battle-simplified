@@ -24,7 +24,7 @@ export const BOT_SKILLS = Object.freeze([
   { reaction: 0.45, aimError: 0.12, dodgeChance: 0.4, fireDelay: 0.55, fireEvery: 1.5 },
 ]);
 
-// Dificultades. PRO = la más dura. STAND (= FÁCIL; el nombre se queda: es el que guarda el ranking): los bots reaccionan más tarde, apuntan peor,
+// Dificultades. PRO = la más dura. STAND (= FÁCIL): los bots reaccionan más tarde, apuntan peor,
 // esquivan poco y disparan más despacio, pero se mueven igual de bien (no parecen tontos: simplemente son menos precisos); el jugador
 // tiene una vida más y los bots tardan algo más en empezar a disparar.
 export const DIFFICULTY = Object.freeze({

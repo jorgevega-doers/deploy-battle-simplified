@@ -11,10 +11,10 @@ import { buildVCard, VCARD_PATH, VCARD_FILENAME } from '../shared/vcard.js';
 import { setupOnline } from './online.js';
 
 // gameConfig permite cambiar valores de la partida (p. ej. una partida corta) sin tocar config.js: lo usan los tests.
-// ranking / padConfigs: los tests pasan unos en memoria; sin ellos se abre Turso (o memoria sin TURSO_DATABASE_URL).
+// padConfigs: los tests pasan uno en memoria; sin él se abre Turso (o memoria sin TURSO_DATABASE_URL).
 export function createApp({
   gameConfig = {}, rng = Math.random, devPassword = config.devPassword, roomsPerWindow = 10, connectionsPerMinute = config.connectionsPerMinute,
-  secret = config.sessionSecret, roomIdleMs = config.roomIdleMs, now, ranking = null, padConfigs = null,
+  secret = config.sessionSecret, roomIdleMs = config.roomIdleMs, now, padConfigs = null,
 } = {}) {
   const cfg = { ...config.game, ...gameConfig };
 
@@ -39,7 +39,7 @@ export function createApp({
     maxHttpBufferSize: 4096, // los mensajes del juego son diminutos: nadie necesita mandar 1 MB
   });
 
-  const { rooms, auth } = setupOnline({ app, io, distDir, arena, arenas, cfg, rng, devPassword, secret, roomsPerWindow, connectionsPerMinute, roomIdleMs, now, ranking, padConfigs });
+  const { rooms, auth } = setupOnline({ app, io, distDir, arena, arenas, cfg, rng, devPassword, secret, roomsPerWindow, connectionsPerMinute, roomIdleMs, now, padConfigs });
 
   // Tarjeta de contacto de /end (SOBRE DOERS): un archivo .vcf real con su tipo. iPhone lo abre directamente en "Añadir contacto" y Android lo
   // descarga y lo abre con la app de contactos; con un enlace "data:" o "download" el iPhone no lo abría.

@@ -6,7 +6,6 @@ import { test, before, after, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
 import { io as connect } from 'socket.io-client';
 import { createApp } from '../server/app.js';
-import { openGlobalRanking } from '../server/db/globalRanking.js';
 import { EVENTS } from '../shared/events.js';
 
 let app;
@@ -14,8 +13,7 @@ let base;
 const sockets = [];
 
 before(async () => {
-  const ranking = await openGlobalRanking({ url: ':memory:' });
-  app = createApp({ devPassword: 'x', roomsPerWindow: 100, connectionsPerMinute: 1000, ranking,
+  app = createApp({ devPassword: 'x', roomsPerWindow: 100, connectionsPerMinute: 1000,
     gameConfig: { countdownS: 0.2, introS: 0, joinWindowS: 1.5, soloJoinWindowS: 1.5, maxCancels: 3, cancelGuardS: 0.15,
       lobbyGraceS: 0.3, matchSeconds: 0.8, resultsS: 0.3 } });
   await new Promise((resolve) => app.server.listen(0, resolve));

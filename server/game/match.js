@@ -85,13 +85,12 @@ export function createMatch({ arena, cfg, rng = Math.random, initials = [null, n
       kind: mode.kind,
       teams: mode.teams,
       reason,
-      elapsed, // segundos jugados (el ranking global premia ganar rápido)
       scores: tanks.map((_, i) => ({
         slot: i + 1,
         initials: initials[i] ?? null,
         lives: stats[i].lives,
         accuracy: accuracyOf(i),
-        // Puntúa 0 quien no ha acertado ni un disparo (dos jugadores quietos no deben entrar en el ranking), quien abandona y todos si
+        // Puntúa 0 quien no ha acertado ni un disparo (dos jugadores quietos no deben llevarse puntos), quien abandona y todos si
         // abandonan todos (si no, el que se desconecta o su rival, con otra pestaña, se regalarían una puntuación sin jugar).
         // Puntuación única (score.js): máximo igual en todos los modos; contra bots, con los pesos del modo contra bots.
         score: reason === 'forfeit' || stats[i].forfeited || stats[i].hits === 0 ? 0 : calculateScore({

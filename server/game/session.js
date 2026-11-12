@@ -137,7 +137,7 @@ export function createSession({ arena, arenas = [arena], cfg, rng = Math.random,
     get tankCount() { const plan = this.plan; return plan ? tankCount(plan) : 0; },
     // Iniciales de todos los tanques del plan (humanos y luego bots), o las de las plazas si aún no hay plan.
     get tankNames() { const plan = this.plan; return plan ? namesFor(plan) : [...initials]; },
-    // Para el ranking: hay solo un jugador (1 contra 3 bots).
+    // Hay solo un jugador (1 contra 3 bots).
     get solo() { return this.plan?.kind === 'solo'; },
     get humans() { return humanCount(); },
     get difficulty() { return difficulty; },

@@ -14,7 +14,7 @@ services:
       - key: DEV_PASSWORD
         sync: false      # contraseña de /db-admin/ (modo desarrollador); se escribe a mano en Render
       - key: TURSO_DATABASE_URL
-        sync: false      # ranking global: libsql://<base>-<cuenta>.turso.io (a mano en Render)
+        sync: false      # configuraciones de mandos compartidas: libsql://<base>-<cuenta>.turso.io (a mano en Render)
       - key: TURSO_AUTH_TOKEN
         sync: false      # token de la base de Turso (a mano en Render; nunca en el repositorio)
       - key: SESSION_SECRET

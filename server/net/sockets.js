@@ -12,8 +12,7 @@ import { claimReservation } from './rooms.js';
 
 // ns = el espacio de nombres de la sala; room = { code, dev, pending... } (rooms.js).
 // allowDebug(socket) = la pantalla está en modo desarrollador (menú de pruebas: elegir mapa y dificultad, acabar el tiempo, reiniciar la sala).
-// rankSolo(result) = guarda en el ranking global la partida de 1 contra 3 bots y devuelve su puntuación de ranking.
-export function registerSockets(ns, slots, { arena, arenas = [arena], cfg, rng, room, allowDebug = () => false, rankSolo = null }) {
+export function registerSockets(ns, slots, { arena, arenas = [arena], cfg, rng, room, allowDebug = () => false }) {
   const debugOk = (socket) => Boolean(allowDebug(socket));
   // Pantallas de la sala (cada jugador abre la suya): todas ven la misma partida.
   const hostScreens = new Set();
@@ -45,16 +44,6 @@ export function registerSockets(ns, slots, { arena, arenas = [arena], cfg, rng, 
   });
   const broadcastLobby = () => ns.emit(EVENTS.LOBBY_STATE, lobbyState());
 
-  // Ranking global: solo puntúa la partida de 1 contra 3 bots de un jugador con nombre de 3 letras (TNI no: su tanque está chetado). La
-  // puntuación que ve el jugador en los resultados es la del ranking (con el multiplicador de dificultad y el extra de rapidez).
-  async function saveResult(result) {
-    for (const s of result.scores) s.rank = null;
-    const player = result.scores[0];
-    if (!rankSolo || !session.solo || !player || player.bot || player.tni || !/^[A-Z]{3}$/.test(player.initials ?? '') || player.score <= 0) return;
-    const won = (result.winners ?? []).includes(1);
-    try { Object.assign(player, await rankSolo({ initials: player.initials, score: player.score, accuracy: player.accuracy, difficulty: session.difficulty, won, elapsed: result.elapsed })); } catch (err) { console.error('No se pudo guardar en el ranking global:', err.message); }
-  }
-
   // La sesión no conoce los sockets: todo lo que ocurre en la partida sale por estas funciones.
   session = createSession({
     arena,
@@ -68,11 +57,7 @@ export function registerSockets(ns, slots, { arena, arenas = [arena], cfg, rng, 
       pause: (state) => ns.emit(EVENTS.PAUSE_STATE, state), // la partida está (o deja de estar) en pausa
       state: (snapshot) => ns.to('host').emit(EVENTS.STATE_UPDATE, snapshot),
       events: (list) => { for (const event of list) ns.to('host').emit(EVENTS.MATCH_EVENT, event); },
-      gameOver: (result) => {
-        saveResult(result)
-          .then(() => ns.emit(EVENTS.GAME_OVER, result))
-          .catch((err) => console.error('Error al cerrar la partida:', err));
-      },
+      gameOver: (result) => ns.emit(EVENTS.GAME_OVER, result),
       // Fin de los resultados: se quedan en la sala todos los que siguen conectados (los demás dejan su plaza) y vuelven a pulsar JUGAR.
       finished: () => {
         for (const id of slots.socketIds()) if (!ns.sockets.has(id)) slots.release(id);

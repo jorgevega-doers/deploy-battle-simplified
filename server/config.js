@@ -51,7 +51,7 @@ export const config = Object.freeze({
     aoeRadius: 1.6,              // radio de la explosión del power-up de explosión
     friendlyFire: false,         // tus disparos no te dañan
     // Easter egg: el JUGADOR que se llama TNI lleva un tanque "chetado": más vidas, más rápido, dispara más a menudo y sus disparos son cohetes
-    // que NO rebotan: revientan al primer choque (muro, tanque o fin de su vida) en una explosión grande que atraviesa escudos. No entra en el ranking.
+    // que NO rebotan: revientan al primer choque (muro, tanque o fin de su vida) en una explosión grande que atraviesa escudos.
     tni: Object.freeze({
       name: 'TNI', lives: 6, speedFactor: 1.35, dashCooldownS: 1.2, fireCooldownS: 0.4, maxProjectiles: 6,
       projectileSpeed: 13, projectileLifeS: 2.2, blastRadius: 2.8, aimAssistConeRad: 0.3, aimAssistStrength: 0.85,

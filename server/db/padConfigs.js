@@ -3,7 +3,7 @@
 // mismo modelo, en cualquier ordenador, la recibe sin tener que configurar nada.
 // Contra una configuración mal hecha: cada pantalla (voter) tiene UN voto por modelo (si vuelve a configurarlo, cambia su voto); se usa la
 // configuración más votada y, en empate, la más reciente. Así un error se corrige en cuanto otro lo configura bien.
-// Turso (mismas variables que el ranking); sin ellas, en memoria. Qué NO hace: no lee mandos ni sabe de botones (eso, el navegador).
+// Turso (TURSO_DATABASE_URL y TURSO_AUTH_TOKEN); sin ellas, en memoria. Qué NO hace: no lee mandos ni sabe de botones (eso, el navegador).
 import { createClient } from '@libsql/client';
 
 const SCHEMA = [

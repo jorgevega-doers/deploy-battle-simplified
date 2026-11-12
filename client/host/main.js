@@ -502,7 +502,7 @@ socket.on(EVENTS.GAME_OVER, (result) => {
   const text = winners.length === 0 ? 'EMPATE'
     : soloMode ? (result.winner === 1 ? `¡VICTORIA ${span(1)}!` : `GANA ${span(result.winner)}`)
       : `GANA ${span(winners[0])}`;
-  // Tabla de resultados: jugador, puntos, vidas y precisión (sin puesto: no hay ranking a la vista).
+  // Tabla de resultados: jugador, puntos, vidas y precisión.
   const head = ['', 'PUNTOS', 'VIDAS', 'PRECISIÓN'].map((h) => `<span class="head">${h}</span>`).join('');
   const rows = result.scores.map((s) => [
     `<span class="who" style="color: var(--p${s.slot})">${s.initials ?? `P${s.slot}`}</span>`,

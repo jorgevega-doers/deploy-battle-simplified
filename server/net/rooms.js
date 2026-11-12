@@ -39,7 +39,7 @@ export function createRoomRegistry({ build, destroyNamespace, maxRooms, idleMs, 
 
   const registry = {
     // Devuelve la sala nueva o null si ya hay demasiadas.
-    // dev: sala abierta en modo desarrollador; su ranking va aparte y la cola común solo la junta con otras salas dev.
+    // dev: sala abierta en modo desarrollador; la cola común solo la junta con otras salas dev.
     // code: se usa para RESTAURAR una sala con su código (el servidor se reinició con un despliegue nuevo y la pantalla vuelve a conectar).
     create({ dev = false, code: wanted = null } = {}) {
       if (rooms.size >= maxRooms) return null;
