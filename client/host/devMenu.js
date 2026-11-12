@@ -341,6 +341,12 @@ export function setupDevMenu({ $, socket, juice, sfx, padSetup = null, onDemo, o
     }
   }
 
+  // Salir del modo dev: borra la cookie y recarga (las salas dev se quedan aparte; vuelves a la normal desde el título).
+  if (devOn) {
+    const out = button(panel, 'SALIR DEL MODO DEV');
+    click(out, () => { fetch('/api/logout', { method: 'POST' }).catch(() => {}).finally(() => window.location.assign('/')); });
+  }
+
   // Volver al inicio (cierra esta sala). Pide confirmación para no salir sin querer.
   {
     const leave = button(panel, 'VOLVER AL INICIO');

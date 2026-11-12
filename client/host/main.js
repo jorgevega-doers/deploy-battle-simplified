@@ -624,7 +624,7 @@ $('fps').hidden = true;
 $('debug').dataset.locked = '1'; // hasta saber si es modo dev, ni FPS ni panel F3
 fetch('/api/mode').then((res) => res.json()).catch(() => ({})).then((info) => {
   const isDev = info.dev === true;
-  if (isDev) delete $('debug').dataset.locked;
+  if (isDev) { delete $('debug').dataset.locked; $('dev-badge').hidden = false; }
   devMenu = setupDevMenu({ $, socket, juice, sfx, padSetup, onIntro: (short) => logoIntro.start({ short, prelude: !short }), onQuality: applyQualityMode, onFpsCap: setFpsCap,
     getFpsCap: () => fpsCap, resetVisuals, onDemo: (on) => { $('lobby').hidden = on || lobby.state !== 'LOBBY'; }, full: isDev });
   devMenu.setDifficulty(lobby.difficulty);

@@ -12,6 +12,12 @@ function safeNext() {
 }
 fetch('/api/mode').then((res) => res.json()).then((info) => { $('dev-on').hidden = info.dev !== true; }).catch(() => {});
 
+$('dev-out').addEventListener('click', async (event) => {
+  event.preventDefault();
+  await fetch('/api/logout', { method: 'POST' }).catch(() => {});
+  window.location.reload();
+});
+
 $('form').addEventListener('submit', async (event) => {
   event.preventDefault();
   const password = $('password').value;

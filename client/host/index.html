@@ -184,6 +184,8 @@
     #dev-panel input[type=range]::-moz-range-thumb { width: 12px; height: 16px; background: var(--ui-blue-hi); border: 2px solid var(--ui-edge); border-radius: 0; }
     #debug { position: fixed; top: 52px; left: 10px; margin: 0; padding: 4px 8px; font-family: monospace; font-size: 12px; color: var(--white); z-index: 7; }
     #debug[hidden] { display: none; }
+    #dev-badge { position: fixed; bottom: 10px; left: 10px; padding: 4px 8px; font-family: var(--font-ui); font-size: 12px; letter-spacing: 1px; color: #05050c; background: #ffd400; box-shadow: 3px 3px 0 #ff0080; z-index: 7; pointer-events: none; }
+    #dev-badge[hidden] { display: none; }
 </style>
 </head>
 <body class="host intro-on">
@@ -303,6 +305,7 @@
   <div id="banner" class="dim" hidden></div>
   <div id="arcade"></div>
   <div id="flash"></div>
+  <div id="dev-badge" hidden>MODO DEV · M: MENÚ</div>
   <pre id="debug" class="ui-panel" hidden></pre>
   <script type="module" src="./boot.js"></script>
 </body>
