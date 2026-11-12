@@ -13,7 +13,7 @@ Se despliega en Render desde la rama **`main`** de este repositorio (Blueprint: 
 2. **Render**: un Blueprint con este `render.yaml` (o, en un servicio ya creado, Settings → Branch: `main`).
 3. Variables a mano en Render: `DEV_PASSWORD`, `TURSO_DATABASE_URL`, `TURSO_AUTH_TOKEN`. `SESSION_SECRET` la genera Render. Las de versiones anteriores (`ONLINE`, `DB_PATH`, `ACCESS_PASSWORD`) ya no se usan: se pueden borrar.
 
-URL actual: https://doers-force-arena.onrender.com
+URL actual: https://deploy-battle-arcade.onrender.com
 
 ## Notas
 - Se duerme tras ~15 min sin uso: la primera visita tarda ~1 min en despertar (el título lo avisa). Al reiniciarse, las salas abiertas se recrean solas con su código cuando su pantalla reconecta (la partida en curso se pierde).
