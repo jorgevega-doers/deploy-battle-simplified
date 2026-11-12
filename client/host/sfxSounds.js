@@ -1,4 +1,4 @@
-// Recetas de todos los sonidos del juego (AGENTS.md, sección 43). Estilo: retro "chiptune" pero ACOGEDOR, como un juego de
+// Recetas de todos los sonidos del juego. Estilo: retro "chiptune" pero ACOGEDOR, como un juego de
 // tanques de salón de los de consola de sobremesa en versión 8 bits: ondas triangulares y cuadradas suavizadas con un filtro
 // paso bajo (nada de chirridos), notas de la escala pentatónica (suenan bien juntas, no se oye ninguna "nota falsa") y un
 // poco de reverb de salón en los sonidos "bonitos" (power-ups, victoria). Los golpes y explosiones llevan ruido grave y
@@ -77,7 +77,7 @@ export function createSounds({ tone, noise }) {
         tone({ type: 'square', freq: 220, to: 55, dur: 0.4, vol: 0.07, lp: 1400, pan });
       },
     },
-    // --- Easter egg de TNI (sección 88) ---
+    // --- Easter egg de TNI ---
     // Bazocazo: golpe grave de salida que impone, silbido del cohete y chasquido.
     bazooka: {
       minGapMs: 60,
@@ -253,7 +253,7 @@ export function createSounds({ tone, noise }) {
         tone({ type: 'square', freq: G6, dur: 0.14, vol: 0.1, delay: 0.07, lp: 2800 });
       },
     },
-    // Interfaz del lobby: entra un jugador, pulsa LISTO, cambia el modo.
+    // Interfaz de la sala de espera: entra un jugador, alguien pulsa JUGAR, cambia el modo.
     join: {
       minGapMs: 200,
       play() {

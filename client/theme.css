@@ -1,6 +1,6 @@
-/* Estilo común de las tres pantallas (host, mando y pantalla final). Reglas duras de AGENTS.md, sección 17:
+/* Estilo común de las páginas (juego, /end, /home, /licencias, /db-admin). Reglas duras de la estética (AGENTS.md):
    sin bordes redondeados, sin sombras difuminadas (solo sombras sólidas apiladas) y tipografía pixel servida en local.
-   Las fuentes están en /assets/fonts (licencia OFL); no se piden a Internet porque el stand puede no tener conexión. */
+   Las fuentes están en /assets/fonts (licencia OFL); no se piden a Internet (todo se sirve desde el propio servidor). */
 @font-face {
   font-family: 'Tiny5'; /* interfaz del host: pixel art fino y muy legible (B y 8, 5 y S no se confunden), estilo "cozy" */
   src: url('../assets/fonts/tiny5-latin-400-normal.woff2') format('woff2');
@@ -16,7 +16,7 @@
   font-display: swap;
 }
 @font-face {
-  font-family: 'Jersey 15'; /* mando y /end (móviles): pixel art más detallado y legible a tamaños pequeños que Tiny5, con minúsculas bien formadas */
+  font-family: 'Jersey 15'; /* /end y /home (móviles): pixel art más detallado y legible a tamaños pequeños que Tiny5, con minúsculas bien formadas */
   src: url('../assets/fonts/jersey15-latin-400-normal.woff2') format('woff2');
   font-weight: 400;
   unicode-range: U+0000-00FF, U+2013-2026;

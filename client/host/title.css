@@ -1,5 +1,5 @@
-/* Versión arcade (rama arcade, 11-nov): pantalla de título, pie con el logo de DOERS, sala de espera simplificada y mira del ratón.
-   Todo cuelga de body.arcade (lo pone boot.js): el stand y las salas antiguas (/host/?room=...) no cambian. Ninguna pantalla se desplaza. */
+/* Pantalla de título, pie con el logo de DOERS, sala de espera y mira del ratón. Todo cuelga de body.arcade (lo pone boot.js).
+   Ninguna pantalla se desplaza. */
 
 /* ---- Pie: en el título y en la sala de espera (en la partida no), con el logo de DOERS ---- */
 :root { --foot-h: 34px; }
@@ -13,7 +13,6 @@ body.arcade.title-on #site-foot, body.arcade.lobby-on #site-foot {
 #site-foot nav { display: flex; gap: 22px; }
 #site-foot nav a { font-size: 13px; letter-spacing: 1px; color: var(--ui-muted); text-decoration: none; }
 #site-foot nav a:hover, #site-foot nav a:focus-visible { color: var(--white); text-decoration: underline; }
-body.arcade #legal { display: none !important; } /* el aviso legal va en el pie */
 html, body.host { overflow: hidden; }
 
 /* ---- Título: logo arriba, frase, JUGAR en medio e INSERT COIN abajo ---- */
@@ -47,32 +46,9 @@ body.title-on #lobby, body.title-on #topbar, body.title-on .hud, body.title-on #
 /* El nombre (nameGate.js) por encima del título. */
 body.arcade #name-gate { z-index: 20; }
 
-/* ---- Sala de espera: jugadores y cuenta atrás arriba, controles debajo. Sin QR, sin Top 10, sin mapa ni dificultad. ---- */
-body.arcade #lobby-card, body.arcade #public-side, body.arcade #insert-coin, body.arcade #lobby #lobby-logo, body.arcade #pad-hint { display: none !important; }
+/* ---- Sala de espera (sus tarjetas, en lobby.css) y resultados ---- */
 body.arcade.lobby-on #topbar { display: none; } /* el cronómetro solo hace falta en la partida */
-body.arcade #dev-toggle { display: none !important; } /* sin botón MENÚ (la tecla M sigue abriéndolo) */
-body.arcade #lobby.waiting #lobby-row { display: grid; grid-template-columns: 600px 600px !important; /* !important: la regla de la partida rápida (lobby.css) deja una tercera columna vacía a la derecha */ grid-template-rows: 230px auto auto; gap: 12px; align-items: stretch; }
-body.arcade #lobby.waiting #lobby-row { justify-content: center; } /* la rejilla de tarjetas, centrada en la fila (estaba pegada a la izquierda) */
-body.arcade #lobby.waiting #wait-players { grid-column: 1; grid-row: 1; height: 230px; box-sizing: border-box; grid-template-columns: 1fr; gap: 6px; align-content: center; }
-body.arcade #lobby.waiting #wait-count { grid-column: 2; grid-row: 1; height: 230px; box-sizing: border-box; }
-body.arcade #lobby.waiting #wait-tutorial { grid-column: 1 / 3; grid-row: 2; height: auto !important; min-height: 0; gap: 12px; } /* tamaño natural: nada estirado */
-body.arcade #wait-count.with-actions { grid-template-columns: 1fr 250px; }
-body.arcade .wp-edit { display: none !important; } /* el nombre se pone al pulsar JUGAR */
-body.arcade #wait-sub.warn { color: var(--ui-amber); }
-/* Controles: un solo tipo (teclado y ratón, o mando): los 3 pasos en fila, a todo el ancho. */
-body.arcade #wait-tutorial .cc-set:not(.cc-two .cc-set) { display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: auto; gap: 16px; }
-body.arcade #wait-tutorial .tut-cols { flex: none; }
-body.arcade #wait-tutorial .cc-set .cc-padfix { grid-column: 1 / 4; }
-
 body.arcade #banner .results { grid-template-columns: auto repeat(3, auto); } /* sin columna PUESTO (no hay ranking) */
-
-/* Debajo de las tarjetas: SALIR (al título) (arcadeLobby.js). */
-#arcade-actions[hidden] { display: none !important; }
-body.arcade #lobby.waiting #arcade-actions { grid-column: 1 / 3; grid-row: 3; display: flex; justify-content: center; gap: 16px; }
-#arcade-actions .ui-btn { font-family: var(--font-ui); font-size: 20px; letter-spacing: 2px; min-height: 52px; min-width: 200px; padding: 2px 22px; color: var(--white); cursor: pointer; }
-#arcade-actions .ui-btn[hidden] { display: none; }
-/* Tecla dentro de una frase (controlsCard.js): encapsulada, con el mismo aspecto que las teclas dibujadas. */
-.cc-row .kc { display: inline-block; font-style: normal; margin: 0 2px; padding: 1px 6px; color: var(--white); background: #1a2140; border: 2px solid #05070d; box-shadow: inset -2px -2px 0 #0f1428, inset 2px 2px 0 #3a4570; line-height: 1.2; }
 
 /* Mira del ratón capturado (keyboardPlayer.js, pointer lock): el cursor del sistema desaparece y esta cruz marca dónde apuntas. */
 #crosshair { position: fixed; left: 0; top: 0; z-index: 8; width: 26px; height: 26px; margin: -13px 0 0 -13px; pointer-events: none;

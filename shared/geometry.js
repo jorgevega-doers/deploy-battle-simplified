@@ -1,10 +1,10 @@
-// Geometría 2D sin motor físico (AGENTS.md, sección 9). Código puro: lo usan el servidor (simulación)
+// Geometría 2D sin motor físico. Código puro: lo usan el servidor (simulación)
 // y el host (línea de apuntado), de modo que la línea punteada coincide exactamente con el disparo real.
 //
 // Convenciones: el eje Y crece hacia arriba; las celdas miden 1 x 1; el ángulo 0 apunta a +X.
 // "solid(cx, cy)" es una función que dice si la celda (cx, cy) es un muro.
 // Las funciones del bucle de juego escriben el resultado en un objeto "out" que se reutiliza,
-// para no crear objetos nuevos en cada tick (AGENTS.md, sección 19).
+// para no crear objetos nuevos en cada tick.
 
 const EDGE = 1e-6;  // tolerancia: una caja apoyada exactamente en un muro no cuenta como solapada
 const NUDGE = 1e-6; // tras un rebote se separa el punto un pelo del muro para no volver a "chocar" con él

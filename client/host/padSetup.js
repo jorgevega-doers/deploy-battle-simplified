@@ -1,7 +1,7 @@
-// Configuración de un mando que el navegador no reconoce (versión pública, 10-nov). Los mandos "estándar" (Xbox, PlayStation...) llegan ya
-// ordenados; los genéricos (p. ej. los GAME BOX del stand) llegan "en bruto" y el número de cada botón cambia según el mando: lo que el juego creía
-// START era R2 (y L2 + R2 ponían LISTO). Así que, la primera vez que se conecta uno de esos, se pregunta botón a botón (PULSA START, PULSA SELECT...)
-// y se guarda para ese modelo de mando (localStorage, la misma clave que el menú MANDOS del stand). Mientras se configura, ese mando no juega.
+// Configuración de un mando que el navegador no reconoce. Los mandos "estándar" (Xbox, PlayStation...) llegan ya
+// ordenados; los genéricos (p. ej. los GAME BOX) llegan "en bruto" y el número de cada botón cambia según el mando: lo que el juego creía
+// START era R2 (y L2 + R2 hacían otra cosa). Así que, la primera vez que se conecta uno de esos, se pregunta botón a botón (PULSA START, PULSA SELECT...)
+// y se guarda para ese modelo de mando (localStorage). Mientras se configura, ese mando no juega.
 // Qué NO hace: no lee el mando para jugar (padInput.js, gamepads.js): solo aprende qué es cada botón.
 import { defaultMapping, detectInput } from './gamepadMap.js';
 import { alertBox } from './alertIcon.js';

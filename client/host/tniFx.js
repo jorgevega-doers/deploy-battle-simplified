@@ -1,4 +1,4 @@
-// Easter egg de TNI (AGENTS.md, sección 88): el tanque del jugador que se llama TNI es un tanque de lujo (negro y dorado, franja roja,
+// Easter egg de TNI: el tanque del jugador que se llama TNI es un tanque de lujo (negro y dorado, franja roja,
 // bandera y un bazuca en vez de cañón), sus disparos son cohetes con llama y estela de humo, y cuando el servidor dice que revientan
 // (evento "explosion" con tni: no rebotan, revientan al primer choque) sale una explosión pixel art enorme (bola de fuego que se abre, se
 // rompe en humo y se disipa, con explosiones secundarias encadenadas), pintada por código. Las ventajas de juego las decide el servidor (cfg.tni).

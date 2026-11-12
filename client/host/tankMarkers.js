@@ -54,7 +54,7 @@ export function createTankMarkers(scene, { camera, layer }) {
     setNames(names) {
       markers.forEach((m, i) => { m.label.textContent = names[i] ?? (i < 2 ? `P${i + 1}` : `B${i + 1}`); });
     },
-    // Versión pública, sala a distancia: los tanques de los jugadores de ESTA pantalla llevan la etiqueta marcada ("TÚ"), para encontrarse enseguida.
+    // Cada uno en su pantalla: el tanque del jugador de ESTA pantalla llevan la etiqueta marcada ("TÚ"), para encontrarse enseguida.
     setMine(flags) {
       markers.forEach((m, i) => { m.label.classList.toggle('mine', Boolean(flags[i])); });
     },

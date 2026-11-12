@@ -1,5 +1,4 @@
-// Salir de la sala con Escape (versión pública, 6-nov): la primera pulsación pregunta "¿Salir de la partida?"; la segunda vuelve a la elección de
-// modo (/). Cualquier otra tecla, un clic fuera o SEGUIR la cierra. Los botones sirven también con ratón.
+// Salir de la sala con Escape: la primera pulsación pregunta "¿YA TE VAS?"; la segunda vuelve al título. Cualquier otra tecla, un clic fuera o SEGUIR la cierra. Los botones sirven también con ratón.
 // Qué NO hace: no avisa al servidor (al cerrar la página el socket se corta y la sala sigue para los demás).
 // Ojo: si la página está en pantalla completa, el primer Escape lo usa el navegador para salir de ella y no llega aquí.
 

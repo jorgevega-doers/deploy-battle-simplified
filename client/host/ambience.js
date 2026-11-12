@@ -1,4 +1,4 @@
-// Sonido ambiente de la calle de Tokio de noche (AGENTS.md, sección 44), sintetizado y de fondo. Cuarta versión (26-oct): el
+// Sonido ambiente de la calle de Tokio de noche, sintetizado y de fondo. Cuarta versión (26-oct): el
 // usuario dijo que algunos sonidos "no tenían nada que ver con la escena" (tren, paso a nivel, megafonía de estación, bicicletas:
 // no hay vías ni bicis en el mapa), así que ahora cada sonido sale de algo que SE VE en la escena y, cuando es de un local, suena
 // DESDE ese local (en su sitio del estéreo):

@@ -3,10 +3,10 @@
 //
 // Los obstáculos se definen como rectángulos y cada uno se copia girado 180 grados: así el mapa es justo para los
 // dos jugadores (P1 abajo a la izquierda, P2 arriba a la derecha). Todos los pasillos miden al menos 2 celdas de
-// ancho, porque el tanque ocupa 1 x 1 (AGENTS.md, sección 9). Los tests (tests/arena.test.js) lo comprueban.
+// ancho, porque el tanque ocupa 1 x 1. Los tests (tests/arena.test.js) lo comprueban.
 import { GRID_WIDTH, GRID_HEIGHT } from './constants.js';
 
-// Hay 3 MAPAS que se van alternando partida a partida (AGENTS.md, sección 46). En todos: obstáculos [x, y, ancho, alto] de la
+// Hay 3 MAPAS que se van alternando partida a partida. En todos: obstáculos [x, y, ancho, alto] de la
 // esquina inferior izquierda, cada uno con su copia girada 180 grados; nada fuera de x 3-28 / y 3-14 (el anillo de calle de 2
 // celdas junto al borde queda libre: salidas de las 4 esquinas, carriles de los coches) y pasillos de al menos 2 celdas.
 // El bloque central es su propio reflejo. El arte de cada obstáculo está en shared/city/interior.js (ASSIGNMENTS).

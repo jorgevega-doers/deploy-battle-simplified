@@ -1,4 +1,4 @@
-// El "compositor" de la música de fondo (AGENTS.md, sección 44): una pieza ORIGINAL y reproducible que se genera por código, sin
+// El "compositor" de la música de fondo: una pieza ORIGINAL y reproducible que se genera por código, sin
 // copiar ni inspirarse en ninguna melodía real (así no hay derechos de autor ajenos). Es lógica pura (sin audio): dado el número
 // de compás y el "ánimo" devuelve las notas que suenan, y music.js las toca.
 // Estilo (cambiado el 26-oct a petición del usuario): TECHNO INDUSTRIAL pero ACOGEDOR, para un juego de tanques. Bombo a 4 por

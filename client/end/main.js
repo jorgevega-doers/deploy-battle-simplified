@@ -79,7 +79,7 @@ for (const [id, link] of Object.entries(LINKS)) {
   }
 }
 
-// El logo de DOERS se redibuja a píxeles enteros al cargar y al cambiar el tamaño (sección 65). La página se desplaza.
+// El logo de DOERS se redibuja a píxeles enteros al cargar y al cambiar el tamaño. La página se desplaza.
 keepPixelImagesSharp(); // (antes se registraba fitPixelImages directamente: recibía el evento como raíz y lanzaba una excepción en cada carga y giro)
 
 // 11-nov: la página entera en la pantalla, sin desplazarse: si no cabe (móvil pequeño, en horizontal), se encoge toda por igual.

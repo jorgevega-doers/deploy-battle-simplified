@@ -1,9 +1,9 @@
-// Fondo de la página de inicio (versión pública, 6-nov): la ciudad del juego en 3D con su vida (gente, coches, luces), sin partida, en un mapa
-// al azar. Es la misma escena del host (scene.js + life.js), a 30 FPS como mucho. Sin WebGL 2 no hay fondo y la página sigue igual (fondo liso).
+// Fondo de la pantalla de título: la ciudad del juego en 3D con su vida (gente, coches, luces), sin partida, en un mapa
+// al azar. Es la misma escena de la partida (scene.js + life.js), a 30 FPS como mucho. Sin WebGL 2 no hay fondo y la página sigue igual (fondo liso).
 // Qué NO hace: no se conecta al servidor ni dibuja tanques.
 import { createArena, MAPS } from '../../shared/arena.js';
-import { createScene } from '../host/scene.js';
-import { createLife } from '../host/life.js';
+import { createScene } from './scene.js';
+import { createLife } from './life.js';
 
 const FRAME_MS = 33;
 

@@ -1,4 +1,4 @@
-// Icono de alerta en pixel art (triángulo ámbar con "!", 9 x 8) y la cajita de aviso que lo lleva (versión pública, 10-nov).
+// Icono de alerta en pixel art (triángulo ámbar con "!", 9 x 8) y la cajita de aviso que lo lleva.
 // Lo usan los avisos de "¿el mando no va bien? mantén un botón 4 s" (controles, configuración del mando, inicio).
 const ROWS = [
   '....#....',

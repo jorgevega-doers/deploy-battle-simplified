@@ -99,13 +99,14 @@ test('nombres: inválidos o bloqueados no entran; minúsculas y espacios se norm
   assert.ok(!room(code).session.tankNames.includes('QQQ'));
 });
 
-test('eventos del stand y del modo dev desde una pantalla normal no hacen nada: ni reinicios, ni fin de partida, ni cambiar mapa o dificultad', async () => {
+test('eventos del modo dev (y los que ya no existen) desde una pantalla normal no hacen nada: ni reinicios, ni fin de partida, ni cambiar mapa o dificultad', async () => {
   const { code } = await h.quick();
   const a = await h.player(code, 'AAA'); // la primera pantalla de la sala (la vieja "anfitriona")
   const b = await h.player(code, 'BBB');
   for (const s of [a.screen, b.screen]) {
     s.emit(EVENTS.MAP_SELECT, { choice: 2 }); s.emit(EVENTS.MAP_SELECT, { reroll: true }); s.emit(EVENTS.DIFFICULTY_SET, { level: 'pro' });
-    s.emit(EVENTS.HARD_RESET); s.emit(EVENTS.EMERGENCY_RESET); s.emit(EVENTS.ATTRACT_SET, { on: true }); s.emit(EVENTS.LEADERBOARD_RESET); s.emit(EVENTS.TUNNEL_RESTART);
+    s.emit(EVENTS.HARD_RESET);
+    for (const old of OLD_EVENTS) s.emit(old, { on: true }); // los del stand ya no tienen manejador: se ignoran
   }
   await sleep(200);
   assert.equal(room(code).session.mapChoice, 'random', 'mapa siempre aleatorio');
@@ -118,11 +119,13 @@ test('eventos del stand y del modo dev desde una pantalla normal no hacen nada: 
   assert.equal(room(code).session.phase, 'PLAYING', 'nadie acaba la partida a mano');
 });
 
+// Eventos de la versión completa (stand) que un cliente viejo o malicioso aún podría mandar.
+const OLD_EVENTS = ['emergency_reset', 'attract_set', 'leaderboard_reset', 'tunnel_restart'];
 // Payloads raros para todos los eventos que un cliente puede mandar.
 const JUNK = [undefined, null, 0, -1, 1e308, NaN, Infinity, '', 'x', 'A'.repeat(500), true, [], [1], [1, 2, 3, 4], [NaN, NaN], ['a', 'b'], {}, { on: 'yes' },
   { x: 'a', y: {} }, { initials: [] }, { role: 'player', initials: 'ABC', token: 123 }, { role: 'admin' }, { choice: -1 }, { level: '__proto__' }, { __proto__: { x: 1 } }];
 const CLIENT_EVENTS = ['HOST_JOIN', 'JOIN_ROOM', 'PAD', 'PAD_MOVE', 'PAD_AIM', 'FIRE', 'DASH', 'PLAYER_READY', 'PAUSE_REQUEST', 'PLAYER_RENAME',
-  'PING_REPORT', 'LATENCY_PING', 'MAP_SELECT', 'DIFFICULTY_SET', 'ATTRACT_SET', 'HARD_RESET', 'EMERGENCY_RESET', 'DEBUG_END_TIME', 'LEADERBOARD_RESET', 'TUNNEL_RESTART'];
+  'PING_REPORT', 'LATENCY_PING', 'MAP_SELECT', 'DIFFICULTY_SET', 'HARD_RESET', 'DEBUG_END_TIME'].map((name) => EVENTS[name]).concat(OLD_EVENTS);
 
 test('basura en todos los eventos (en la sala y en partida, con y sin plaza): ningún manejador falla y la partida sigue', async () => {
   const errors = [];
@@ -136,7 +139,7 @@ test('basura en todos los eventos (en la sala y en partida, con y sin plaza): ni
     await h.connected(stranger);
     const blast = async () => {
       for (const s of [b.pad, b.screen, stranger]) {
-        for (const name of CLIENT_EVENTS) for (const junk of JUNK) s.emit(EVENTS[name], junk);
+        for (const name of CLIENT_EVENTS) for (const junk of JUNK) s.emit(name, junk);
         await sleep(1100); // por debajo del límite de 300 eventos por segundo
       }
     };

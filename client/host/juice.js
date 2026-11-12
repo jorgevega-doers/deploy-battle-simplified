@@ -1,8 +1,7 @@
 // "Jugosidad" arcade del host: reúne los efectos de respuesta visual (cuenta atrás y GO! con letras de píxeles, impacto con
-// zoom y reaparición, final con KO, recogida de power-ups, celebración del Top 10) detrás de unas pocas funciones que
+// zoom y reaparición, final con KO, recogida de power-ups) detrás de unas pocas funciones que
 // main.js llama en cada momento. Qué NO hace: no recibe sockets ni toca el HUD; main.js le pasa los eventos y le pide el zoom.
 import { createArcadeText, THEMES } from './arcadeText.js';
-import { createConfetti } from './confetti.js';
 import { createDebris } from './debris.js';
 import { createDust } from './dust.js';
 import { createFinale } from './finale.js';
@@ -13,13 +12,11 @@ import { createSoloFx } from './soloFx.js';
 export { FLY_MS };
 
 const HEART_LOST_MS = 900; // cuánto tiempo se anima el corazón que se acaba de perder
-const TOP_SIZE = 10;       // posiciones del ranking que se celebran
 
 // $ = búsqueda por id; icons = SVG de píxeles de cada power-up; getMaxLives = vidas con las que empezó la partida.
 // Solo se crea con la vista 3D.
 export function createJuice({ arena, sceneApi, entities, icons, $, getMaxLives }) {
   const arcade = createArcadeText($('arcade'));
-  const confetti = createConfetti($('arcade'));
   const debris = createDebris(sceneApi.scene); // un solo juego de trozos: el impacto normal y el KO nunca coinciden
   const finale = createFinale({ debris, entities, arcade, flashEl: $('flash') });
   const round = createRoundFx({ debris, entities, arcade, getMaxLives });
@@ -64,12 +61,6 @@ export function createJuice({ arena, sceneApi, entities, icons, $, getMaxLives }
       namesShown = false;
       arcade.show('GO!', { theme: THEMES.amber, size: 1.3, y: 50, hold: 380, enter: 'slam', shake: true });
     },
-    // Celebra que una puntuación ha entrado en el ranking (rank = mejor posición de la partida): confeti y cartel.
-    celebrate(rank) {
-      if (typeof rank !== 'number' || rank < 1 || rank > TOP_SIZE) return;
-      arcade.show(rank === 1 ? 'NEW RECORD' : 'TOP 10', { theme: rank === 1 ? THEMES.amber : THEMES.cyan, size: 0.62, y: 18, hold: 2600, enter: 'slam', shake: true });
-      confetti.burst(rank === 1 ? 110 : 60);
-    },
     // Zoom de cámara de este fotograma (impacto o KO). Va ANTES de entities.update (las etiquetas usan la cámara).
     beforeDraw(now) {
       finale.update(now);
@@ -91,7 +82,6 @@ export function createJuice({ arena, sceneApi, entities, icons, $, getMaxLives }
       pickups.reset();
       dust.reset();
       arcade.clear();
-      confetti.clear();
       for (let i = 0; i < 4; i++) { pickedAt[i] = {}; lostAt[i] = -1e9; }
     },
     // Menú de pruebas: lanza una animación con datos inventados y devuelve cuánto dura (ms).
@@ -113,8 +103,6 @@ export function createJuice({ arena, sceneApi, entities, icons, $, getMaxLives }
           return 4400;
         case 'time': api.onEvent({ type: 'match_over', winner: null, reason: 'time' }, now); return 2600;
         case 'powerup': api.onEvent({ type: 'powerup_pick', id: 0, slot: 1, powerup: 'double' }, now); return 2700;
-        case 'record': api.celebrate(1); return 4200;
-        case 'top10': api.celebrate(5); return 4200;
         default: return 0;
       }
     },

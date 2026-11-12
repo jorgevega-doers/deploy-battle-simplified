@@ -1,4 +1,4 @@
-// Paleta limitada del pixel art de la ciudad (AGENTS.md, secciones 10 y 23). Manda el azul con el negro; el magenta es
+// Paleta limitada del pixel art de la ciudad. Manda el azul con el negro; el magenta es
 // secundario; cian, amarillo, naranja y un verde apagado son acentos de neón para carteles y luces.
 // Cada color se guarda empaquetado en 32 bits (bytes R, G, B, A en memoria), como espera PixelImage.
 

@@ -1,5 +1,5 @@
-// Panel de rendimiento que se enseña/oculta con F3 (AGENTS.md, sección 19): FPS, tiempo de fotograma,
-// llamadas de dibujo, triángulos, ping y estado de la conexión. Sirve para comprobar el presupuesto en el portátil real.
+// Panel de rendimiento que se enseña/oculta con F3: FPS, tiempo de fotograma,
+// llamadas de dibujo, triángulos, ping y estado de la conexión. Sirve para comprobar el presupuesto en un equipo real.
 const SAMPLES = 120;      // fotogramas que se miran para la media
 const REFRESH_MS = 250;   // cada cuánto se reescribe el texto
 

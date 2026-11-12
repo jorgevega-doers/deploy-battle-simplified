@@ -1,7 +1,7 @@
 // Escena 3D de la arena: renderizador, cámara inclinada, luces (solo para los tanques), ciudad, niebla y brillo neón (bloom).
 // Conversión de coordenadas: el mundo del juego tiene X a la derecha e Y hacia arriba (en pantalla);
 // en Three.js eso es X = x, Z = -y (el "arriba" de la pantalla es el norte, -Z).
-// Presupuesto de rendimiento (AGENTS.md, sección 19): sin sombras, sin antialias, la escena a un tercio de la resolución
+// Presupuesto de rendimiento: sin sombras, sin antialias, la escena a un tercio de la resolución
 // (píxel "gordo"), toda la ciudad en una sola malla (cityMesh.js) y el bloom a baja resolución y apagable.
 import {
   WebGLRenderer, Scene, PerspectiveCamera, HemisphereLight, DirectionalLight, Vector2, Vector3, Color, Fog, Group,

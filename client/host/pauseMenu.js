@@ -1,7 +1,7 @@
-// Menú de PAUSA en plena partida (versión pública, 10-nov). Lo abre un jugador de ESTA pantalla: ESC (teclado), START (mando del PC).
+// Menú de PAUSA en plena partida. Lo abre un jugador de ESTA pantalla: ESC (teclado), START (mando del PC).
 // SEGUIR lo cierra; SALIR DE LA PARTIDA pide confirmación y el jugador pierde por abandono (la partida sigue con los demás).
 // La partida se congela de verdad (servidor, pause.js: 10 s como mucho, 2 pausas por partida, 30 s entre una y otra); online con otra gente no se
-// congela: el menú es solo tuyo y la partida sigue. Si pausa otro (un móvil, otra pantalla), aquí solo se ve el aviso con los segundos.
+// congela: el menú es solo tuyo y la partida sigue. Si pausa otro, aquí solo se ve el aviso con los segundos.
 // Se maneja con ratón, con teclado (↑↓ / W S, ENTER, ESC) y con el mando (cruceta o stick, A, B o START): input('up'|'down'|'ok'|'back').
 // Qué NO hace: no decide si se puede pausar (el servidor) ni sale de la página (owner.onQuit).
 import { EVENTS } from '../../shared/events.js';

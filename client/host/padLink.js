@@ -1,7 +1,7 @@
-// Envío de los controles del mando al servidor, pensado para redes lentas (sección 63). Qué hace: junta movimiento y apuntado en UN solo
+// Envío de los controles del jugador (teclado, ratón o mando del PC) al servidor, pensado para redes lentas. Qué hace: junta movimiento y apuntado en UN solo
 // paquete corto ("pad": [x, y, ángulo] en enteros), no manda nada si el valor (redondeado en escalones) no ha cambiado, adapta el ritmo al ping,
 // espera a que el WebSocket esté libre (si hay datos sin enviar, uno nuevo solo empeora el retardo: se manda el ÚLTIMO estado en cuanto se vacía)
-// y repite el estado cada 500 ms mientras el dedo está puesto. Qué NO hace: no toca el DOM ni sabe de joysticks (los llama main.js).
+// y repite el estado cada 500 ms mientras se mueve. Qué NO hace: no toca el DOM ni lee el teclado o el mando (lo hace keyboardPlayer.js).
 //
 // Formato de "pad": [x, y, a]  x e y en -100..100 (centésimas del pad); a = ángulo en centésimas de radián o null (sin cambios).
 

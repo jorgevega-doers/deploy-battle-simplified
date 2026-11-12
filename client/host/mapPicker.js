@@ -1,4 +1,4 @@
-// Selector de mapa del menú de desarrollador (antes eran 4 cuadros junto al QR; desde el 29-oct el mapa es siempre aleatorio y solo se fija
+// Selector de mapa del menú de desarrollador (el mapa es siempre aleatorio y solo se fija
 // desde aquí). 4 cuadros con minimapa: "?" = aleatorio (por defecto) y los 3 mapas. El elegido va en fucsia; con "aleatorio", el mapa que
 // toca ahora lleva "·YA" junto al nombre. Qué NO hace: no habla con el servidor; quien lo crea decide qué hacer al pulsar (onPick).
 import { createArena, MAPS } from '../../shared/arena.js';

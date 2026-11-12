@@ -1,6 +1,6 @@
-// Qué música y qué ambiente suenan en cada momento del juego (AGENTS.md, sección 44). Función pura: main.js la consulta cada
+// Qué música y qué ambiente suenan en cada momento del juego. Función pura: main.js la consulta cada
 // fotograma y, cuando cambia el resultado, se lo aplica a sfx.js. Aquí se decide DÓNDE suena cada cosa y dónde no:
-//   lobby (QR y salvapantallas)  música calma + ambiente
+//   lobby (sala de espera)       música calma + ambiente
 //   cuenta atrás                  música calma a media voz + ambiente algo más bajo
 //   partida                       música con ritmo + ambiente muy bajo (mandan los efectos)
 //   últimos 10 s                  música más rápida

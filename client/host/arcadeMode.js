@@ -1,10 +1,9 @@
-// Versión arcade (rama arcade, 11-nov): el juego entero en una sola página. "/" abre la pantalla de título (boot.js); al pulsar JUGAR y poner el
+// El juego entero en una sola página. "/" abre la pantalla de título (boot.js); al pulsar JUGAR y poner el
 // nombre se busca sala y se carga la pantalla del juego (main.js) en la MISMA página, así el sonido que se activó con el primer clic sigue sonando.
 // Este módulo es el punto de encuentro entre boot.js y main.js (los módulos se cargan una sola vez: lo que boot.js pone aquí, main.js lo lee).
 // Qué NO hace: no dibuja nada.
 
 export const ARCADE = {
-  on: false,   // la página se abrió en modo arcade (boot.js lo enciende antes de cargar main.js)
   sfx: null,   // el sonido ya desbloqueado en el título: main.js lo reutiliza (si no, la música empezaría de cero)
 };
 const SKIP_KEY = 'df.arcade.skip';   // volver al título sin "PULSA PARA EMPEZAR" ni intro (venimos de SALIR, no de abrir la web)

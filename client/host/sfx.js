@@ -1,5 +1,5 @@
 // Motor de sonido del host: Web Audio API, todo SINTETIZADO por código (osciladores y ruido), sin archivos de audio ni muestras
-// de terceros, así que no hay derechos de autor ajenos (AGENTS.md, secciones 43 y 44). Aquí vive el "hardware": el contexto de
+// de terceros, así que no hay derechos de autor ajenos. Aquí vive el "hardware": el contexto de
 // audio, un compresor suave contra saturaciones, una reverb pequeña de "salón" (la parte acogedora), el silencio (tecla M, y N
 // para solo la música), TRES BUSES de mezcla (efectos, música y ambiente; la música y el ambiente se agachan un instante con
 // cada golpe fuerte: "ducking") y las dos piezas con las que se construye cada sonido: tone() (un tono con envolvente) y
@@ -230,7 +230,7 @@ export function createSfx({ context = null, storage = null } = {}) {
     // Velocidad (celdas/s) del tanque "index" para su sonido de movimiento; llamar en cada fotograma. silenceMotion() = parar todos.
     motion(index, speed, pan = 0) { motion.update(index, speed, pan); },
     silenceMotion() { if (ctx && master) motion.silence(); },
-    motionHeavy(index, on) { motion.setHeavy(index, on); }, // tanque de TNI: motor grave y pesado (sección 88)
+    motionHeavy(index, on) { motion.setHeavy(index, on); }, // tanque de TNI: motor grave y pesado
     motionPreview(index, speed, seconds) { motion.preview(index, speed, seconds); }, // solo para medir niveles
     toggleMute() { api.setMuted(!muted); },
     onStatus(fn) { listeners.add(fn); },

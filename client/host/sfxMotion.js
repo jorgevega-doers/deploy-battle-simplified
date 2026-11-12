@@ -1,4 +1,4 @@
-// Sonido de movimiento de cada tanque: el "cla cla cla" de un tanquecito de juguete de MADERA (AGENTS.md, sección 43). Cada paso
+// Sonido de movimiento de cada tanque: el "cla cla cla" de un tanquecito de juguete de MADERA. Cada paso
 // de las orugas es un golpecito seco de bloque de madera: un "tok" corto de seno (que alterna entre dos alturas, de ahí el
 // cla-clo, cla-clo) más un "clic" de ruido filtrado. Cuanto más rápido va el tanque, más seguidos y fuertes suenan los golpes
 // (de 5 a 14 por segundo; el dash los acelera al máximo). Parado no suena. Es retro y acogedor: nada de zumbidos.
@@ -27,7 +27,7 @@ export function createMotionSound(access) {
     return { out, panner, nextAt: 0, flip: index % 2, pitch: PITCH[index], heavy: heavy[index] };
   }
 
-  // Tanque de TNI (sección 88): en vez de madera, un golpe de oruga de acero pesado: retumbo grave de seno, gruñido de motor (cuadrada
+  // Tanque de TNI: en vez de madera, un golpe de oruga de acero pesado: retumbo grave de seno, gruñido de motor (cuadrada
   // muy grave filtrada) y crujido sordo. Mucho más grave y fuerte que el resto: impone.
   function heavyKnock(e, when, level) {
     const ctx = access.context();

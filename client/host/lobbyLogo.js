@@ -1,4 +1,4 @@
-// Logo de DEPLOY BATTLE en el lobby (izquierda de la tarjeta del QR): fija su tamaño en píxeles enteros y mantiene su animación en bucle.
+// Logo animado de DEPLOY BATTLE de la pantalla de título: fija su tamaño en píxeles enteros y mantiene su animación en bucle.
 // El bucle son 4 capas apiladas (el CSS está en lobby.css): humo que "hierve" (3 fotogramas), el rótulo, un destello diagonal que lo
 // cruza de vez en cuando (solo sobre el relleno de las letras) y chispas cuadradas que saltan del borde superior (este módulo).
 // Qué NO hace: la intro (logoIntro.js) ni el reparto del lobby (main.js: fitLobbyCard).

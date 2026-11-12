@@ -14,7 +14,7 @@ const COLORS = {
   powerups: { double: '#ffd400', speed: '#00f0ff', aoe: '#ff9a00', shield: '#5be38f' },
 };
 const POWERUP_LETTER = { double: 'D', speed: 'S', aoe: 'A', shield: 'E' };
-const AIM_BOUNCES = 2; // la línea de apuntado enseña como mucho 2 rebotes (AGENTS.md, sección 5)
+const AIM_BOUNCES = 2; // la línea de apuntado enseña como mucho 2 rebotes
 
 export function createDebugView(canvas, arena) {
   const ctx = canvas.getContext('2d');

@@ -1,5 +1,5 @@
 // Sala de espera de la versión arcade en el cliente (client/host/arcadeLobby.js), sin navegador: un DOM mínimo de mentira. Cubre la
-// inactividad (90 s sin tocar nada -> fuera, con aviso los últimos 15 s; no cuenta con la cuenta atrás ni a solas en la sala pública) y el botón.
+// inactividad (90 s sin tocar nada -> fuera, con aviso los últimos 15 s; no cuenta con la cuenta atrás ni a solas esperando rivales) y el botón.
 import { test, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
 
@@ -26,7 +26,7 @@ beforeEach(() => {
   lobby = createArcadeLobby({ $, keyboard: { slot: 1, source: 'keyboard', ready: () => { readies += 1; } }, onLeave: (note) => left.push(note) });
 });
 const T0 = () => performance.now();
-const state = (over = {}) => ({ state: 'LOBBY', joinLeft: null, plan: { humans: 2 }, cancelsLeft: [3, 3, 3, 3], room: { solo: false }, ...over });
+const state = (over = {}) => ({ state: 'LOBBY', joinLeft: null, plan: { humans: 2 }, cancelsLeft: [3, 3, 3, 3], ...over });
 
 test('con más gente y sin cuenta atrás: aviso a los 75 s ("¿SIGUES AHÍ?") y fuera a los 90 s, una sola vez', () => {
   lobby.update(state());
@@ -62,17 +62,14 @@ test('con la cuenta atrás en marcha nadie es expulsado (aunque no toque nada)',
   assert.equal(els['quick-ready'].textContent, 'CANCELAR');
 });
 
-test('a solas en la sala pública esperando rivales no cuenta (no bloquea a nadie); en una sala privada contra bots, sí', () => {
+test('a solas esperando rivales no cuenta (no bloquea a nadie): el reloj de BUSCANDO RIVALES corre y nadie te saca', () => {
   lobby.update(state({ plan: { humans: 1 } }));
   const t0 = T0();
   for (let s = 0; s <= 300; s += 10) lobby.tick(t0 + s * 1000);
   assert.equal(left.length, 0);
   assert.equal(els['wait-title'].textContent, 'BUSCANDO RIVALES');
   assert.equal(els['quick-ready'].textContent, 'JUGAR CON BOTS');
-  lobby.update(state({ plan: { humans: 1 }, room: { solo: true } }));
-  const t1 = t0 + 300000; // sigue el mismo reloj falso
-  lobby.tick(t1 + 91000);
-  assert.equal(left.length, 1);
+  assert.equal(els['wait-num'].textContent, '5:00');
 });
 
 test('en partida no cuenta, y al volver a la sala el reloj empieza de cero', () => {

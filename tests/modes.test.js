@@ -2,7 +2,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { planFor, tankCount } from '../server/game/modes.js';
-import { describePlan } from '../shared/modeText.js';
 import { createMatch } from '../server/game/match.js';
 import { createArena } from '../shared/arena.js';
 import { config } from '../server/config.js';
@@ -29,17 +28,12 @@ test('planFor: 1 jugador = 1 contra 3 bots; 2 = 1 contra 1; 3 y 4 = todos contra
   assert.deepEqual(planFor(4), { kind: 'brawl', humans: 4, bots: 0, teams: null });
 });
 
-test('tankCount y describePlan', () => {
+test('tankCount', () => {
   assert.equal(tankCount(planFor(1)), 4);
   assert.equal(tankCount(planFor(2)), 2);
   assert.equal(tankCount(planFor(3)), 3);
   assert.equal(tankCount(planFor(4)), 4);
   assert.equal(tankCount(null), 0);
-  assert.equal(describePlan(null), 'ESPERANDO JUGADORES');
-  assert.equal(describePlan(planFor(1)), '1 JUGADOR VS 3 BOTS');
-  assert.equal(describePlan(planFor(2)), '1 CONTRA 1');
-  assert.match(describePlan(planFor(3)), /3 JUGADORES.*TODOS CONTRA TODOS/);
-  assert.match(describePlan(planFor(4)), /4 JUGADORES.*TODOS CONTRA TODOS/);
 });
 
 test('combate de 4 sin equipos: un golpe no reinicia la ronda, la víctima reaparece invulnerable y se queda sin vidas a las 3', () => {

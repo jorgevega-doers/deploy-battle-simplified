@@ -1,26 +1,25 @@
-// Teclado y ratón de la partida rápida (versión pública, 10-nov): esta pantalla también es el mando de su jugador. Abre su propia conexión de jugador
-// (como un móvil: mismos eventos) con las iniciales y un token; WASD o flechas mueven, el ratón apunta (el rayo sigue al cursor), clic izquierdo
-// dispara (mantenido, repite), ESPACIO es el impulso y ENTER pulsa LISTO.
-// Si el jugador escanea el QR de su pantalla, el móvil entra con el MISMO token y se queda con la plaza: el servidor corta esta conexión y aquí se
-// pasa a modo "móvil" (el teclado deja de mandar). reclaim() la recupera.
+// Teclado y ratón (o mando del PC) de esta pantalla: es el mando de su jugador. Abre su propia conexión de jugador con las iniciales y un token;
+// WASD o flechas mueven, el ratón apunta (el rayo sigue al cursor), clic izquierdo dispara (mantenido, repite), ESPACIO es el acelerón y ENTER
+// pulsa JUGAR. Si otra pestaña con el MISMO token (una pestaña duplicada) se queda con la plaza, el servidor corta esta conexión y aquí se pasa a
+// modo "phone" (el teclado deja de mandar); reclaim() la recupera cuando esa plaza vuelve a estar libre.
 // Qué NO hace: no dibuja nada ni decide nada del juego (todo lo decide el servidor).
 import { Raycaster, Plane, Vector3, Vector2 } from 'three';
 import { EVENTS } from '../../shared/events.js';
-import { createPadLink } from '../play/padLink.js';
+import { createPadLink } from './padLink.js';
 import { createPadInput } from './padInput.js';
 
 const REFIRE_MS = 220;
-const LEAVE_HOLD_MS = 1500; // en la sala de espera, mantener SELECT este rato = salir (sin ventana; como SALIR en el móvil) // clic mantenido: vuelve a pedir disparo (la cadencia real la pone el servidor)
+const LEAVE_HOLD_MS = 1500; // en la sala de espera, mantener SELECT este rato = salir (sin ventana). REFIRE_MS: clic mantenido, vuelve a pedir disparo (la cadencia real la pone el servidor)
 const KEYS = { up: ['KeyW', 'ArrowUp'], down: ['KeyS', 'ArrowDown'], left: ['KeyA', 'ArrowLeft'], right: ['KeyD', 'ArrowRight'] };
 
 // connect() abre el socket de jugador; getTank(slot) = { x, y } dibujado ahora; camera = la de la escena; isPlaying() = la partida corre.
-// pointerLock (versión arcade): en la partida el ratón queda capturado y se dibuja la mira (crosshair) donde apuntas; así no se escapa a otra pantalla
+// pointerLock: en la partida el ratón queda capturado y se dibuja la mira (crosshair) donde apuntas; así no se escapa a otra pantalla
 // ni fuera de una ventana pequeña. ESC (o cambiar de ventana) lo suelta y abre la pausa; un clic lo vuelve a capturar.
-export function createKeyboardPlayer({ connect, initials: startName, token, screen, camera, getTank, isPlaying, onChange = () => {}, onName = () => {}, onSource = () => {}, pauseMenu = null, onQuit = () => {}, padSetup = null, blocked = () => false, onLobbyPad = () => {}, pointerLock = false, crosshair = null }) {
+export function createKeyboardPlayer({ connect, initials: startName, token, screen, camera, getTank, isPlaying, onChange = () => {}, onName = () => {}, onSource = () => {}, pauseMenu = null, onQuit = () => {}, padSetup = null, blocked = () => false, pointerLock = false, crosshair = null }) {
   const socket = connect();
   let slot = null;
   let initials = startName; // el nombre confirmado por el servidor (cambia con EDITAR)
-  let mode = 'connecting'; // 'keyboard' | 'phone' (el móvil se quedó la plaza) | 'connecting'
+  let mode = 'connecting'; // 'keyboard' | 'phone' (otra pestaña se quedó la plaza) | 'connecting'
   const held = new Set();
   let aim = null;          // ángulo actual del ratón respecto al tanque (radianes, eje Y del juego hacia arriba)
   let mouse = null;        // posición del ratón en coordenadas normalizadas (-1..1)
@@ -70,7 +69,7 @@ export function createKeyboardPlayer({ connect, initials: startName, token, scre
     set('keyboard');
   });
   socket.on('disconnect', (reason) => {
-    // El servidor la cerró: o el móvil se ha quedado con la plaza (relevo) o un reinicio. En cualquier caso, el teclado deja de jugar.
+    // El servidor la cerró: otra pestaña con el mismo token se ha quedado la plaza (o un reinicio). En cualquier caso, el teclado deja de jugar.
     if (reason === 'io server disconnect') { link.releaseMove(); set('phone'); }
   });
   socket.on(EVENTS.ERROR_MSG, (err) => onChange(mode, err));
@@ -83,7 +82,7 @@ export function createKeyboardPlayer({ connect, initials: startName, token, scre
 
   const active = () => mode === 'keyboard' && slot !== null;
   const typingNow = () => /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName); // escribiendo el nombre: el mando no roba nada
-  // Mando: START = LISTO en la espera; en partida, stick izquierdo mueve, derecho apunta, R1/RB dispara (mantenido repite), L1/LB impulso.
+  // Mando: START = JUGAR en la espera; en partida, stick izquierdo mueve, derecho apunta, R1/RB dispara (mantenido repite), L1/LB acelerón.
   // Pausa (ESC o START en partida): el menú de pauseMenu.js; mientras está abierto, el teclado y el mando solo manejan el menú.
   const menuOpen = () => Boolean(pauseMenu?.open);
   function openPause() {
@@ -113,8 +112,7 @@ export function createKeyboardPlayer({ connect, initials: startName, token, scre
     }
     if (pad.start && isPlaying()) { openPause(); return; }
     if (pad.start && !isPlaying()) socket.emit(EVENTS.PLAYER_READY);
-    // En la sala de espera, la cruceta elige mapa (←→) y dificultad (↑↓) si esta pantalla puede elegir (publicHost.step).
-    if (!isPlaying()) { for (const dir of ['left', 'right', 'up', 'down']) if (pad.nav[dir]) onLobbyPad(dir); return; }
+    if (!isPlaying()) return; // en la sala de espera el mando solo pulsa JUGAR (START) y sale (SELECT mantenido)
     const [x, y] = pad.move;
     if (x || y) { link.setMove(x, y); padPrev.moving = true; } else if (padPrev.moving) { link.releaseMove(); padPrev.moving = false; }
     if (pad.aim !== null && (aim === null || Math.abs(Math.atan2(Math.sin(pad.aim - aim), Math.cos(pad.aim - aim))) > 0.01)) { aim = pad.aim; link.setAim(aim); }
@@ -166,11 +164,7 @@ export function createKeyboardPlayer({ connect, initials: startName, token, scre
     if (isPlaying() && source !== 'keyboard') return;
     if (!event.repeat && !isPlaying()) useSource('keyboard'); // una tecla que se queda pulsada (repetición) no le quita el control al mando
     if (event.code === 'Enter' && !event.repeat) { socket.emit(EVENTS.PLAYER_READY); return; }
-    if (!isPlaying()) { // sala de espera: las flechas eligen mapa (←→) y dificultad (↑↓), igual que la cruceta del mando
-      const dir = { ArrowLeft: 'left', ArrowRight: 'right', ArrowUp: 'up', ArrowDown: 'down' }[event.code];
-      if (dir) { event.preventDefault(); onLobbyPad(dir); }
-      return;
-    }
+    if (!isPlaying()) return; // en la sala de espera, el teclado solo pulsa JUGAR (ENTER)
     if (event.code === 'Space') { event.preventDefault(); if (!event.repeat) socket.emit(EVENTS.DASH); return; }
     if (Object.values(KEYS).flat().includes(event.code)) { event.preventDefault(); held.add(event.code); sendMove(); }
   });
@@ -236,8 +230,7 @@ export function createKeyboardPlayer({ connect, initials: startName, token, scre
     },
     // Para la reconexión con el nombre de ahora (no el de cuando se abrió la página).
     get socket() { return socket; },
-    // El móvil soltó la plaza (o se quiere volver al teclado): se reconecta con el mismo token y la recupera.
-    // Con la partida en marcha no: el mando que se elige para una partida (el móvil) se queda hasta que acabe.
+    // La otra pestaña soltó la plaza: se reconecta con el mismo token y la recupera. Con la partida en marcha no: se espera a que acabe.
     reclaim() { if (mode === 'phone' && !isPlaying()) { set('connecting'); socket.connect(); } },
   };
 }

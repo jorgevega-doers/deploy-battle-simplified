@@ -4,7 +4,7 @@ import { BoxGeometry, TextureLoader, NearestFilter, SRGBColorSpace } from 'three
 import { remapBoxUVs } from '../../shared/atlas.js';
 import atlasUrl from '../../assets/textures/atlas.png';
 
-// Textura de pixel art: filtro "más cercano" (sin suavizado, los píxeles se ven nítidos) y sin mipmaps (AGENTS.md, sección 9).
+// Textura de pixel art: filtro "más cercano" (sin suavizado, los píxeles se ven nítidos) y sin mipmaps.
 function loadPixelTexture(url) {
   const texture = new TextureLoader().load(url);
   texture.magFilter = NearestFilter;

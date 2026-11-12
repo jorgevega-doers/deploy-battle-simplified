@@ -1,4 +1,4 @@
-// Nombre e icono de píxeles de cada power-up, para las fichas del host y la pantalla del mando.
+// Nombre e icono de píxeles de cada power-up, para las fichas del marcador.
 export const POWERUP_NAMES = { double: 'DOBLE DISPARO', speed: 'VELOCIDAD', aoe: 'EXPLOSIÓN', shield: 'ESCUDO' };
 // Iconos de 7 x 7 ('#' = color del power-up, que lo da el CSS con currentColor): dos balas, doble flecha y estallido.
 const POWERUP_PIXELS = {

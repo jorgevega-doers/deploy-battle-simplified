@@ -1,4 +1,4 @@
-// Imágenes de pixel art siempre nítidas (sección 65): una imagen con data-px="N" se dibuja con N píxeles de PANTALLA FÍSICA por cada píxel suyo, en
+// Imágenes de pixel art siempre nítidas: una imagen con data-px="N" se dibuja con N píxeles de PANTALLA FÍSICA por cada píxel suyo, en
 // número entero, teniendo en cuenta la densidad del móvil (devicePixelRatio, p. ej. 2,75) y cualquier escala (transform) de sus contenedores.
 // Si no, un logo a "x2" en un móvil de densidad 2,75 sale a 5,5 píxeles por píxel: unos píxeles de 5 y otros de 6, y se ve "raro".
 // Qué NO hace: no toca imágenes sin data-px (las que se ven suavizadas a propósito).

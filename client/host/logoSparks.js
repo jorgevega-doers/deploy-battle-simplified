@@ -1,6 +1,6 @@
 // Chispas cuadradas de pixel art para el logo (bucle del lobby y choque de la intro). Pool fijo: ningún objeto nuevo por fotograma.
 // Cada chispa vive en una cuadrícula de celdas enteras: se mueve a pasos de 1/20 s y se dibuja con fillRect de 1 o 2 celdas, así nunca
-// queda un píxel "a medias" ni se ve movimiento suave (AGENTS.md, sección 17). Qué NO hace: no crea el canvas ni decide cuándo salen.
+// queda un píxel "a medias" ni se ve movimiento suave. Qué NO hace: no crea el canvas ni decide cuándo salen.
 export const SPARK_COLORS = ['#ffffff', '#ff9cca', '#ff1f8e', '#9fb0ff', '#6f8cff']; // blanco, rosas de la marca y azules claros
 
 const STEP_S = 1 / 20;

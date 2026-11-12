@@ -1,7 +1,7 @@
-// Entrada de la pantalla del juego. Versión arcade (11-nov, "como el Brawl Stars: le das a jugar y juegas"):
+// Entrada de la pantalla del juego ("como el Brawl Stars: le das a jugar y juegas"):
 //   "/"  -> HAZ CLIC PARA EMPEZAR (solo al abrir o recargar: desbloquea el sonido) -> intro del logo -> TÍTULO (logo, una frase, JUGAR, INSERT COIN)
 //        -> JUGAR -> tus 3 letras -> se busca sala (/api/quick, cola común) -> la sala de espera y la partida (main.js), en la MISMA página.
-//   Cualquier otra dirección (/host/?room=..., el stand) carga main.js directamente, como siempre.
+//   En el móvil, a /home/ (allí no se juega). Cualquier otra dirección que cargue esta página (p. ej. /host/index.html), al inicio.
 // Ojo: roomSocket.js lee la sala de la dirección al cargarse; tras ponerla, se le pide que la vuelva a leer (readRoomFromUrl).
 import '../theme.css';
 import './lobby.css';
@@ -11,13 +11,12 @@ import { isTouchOnly } from '../touchOnly.js';
 
 const $ = (id) => document.getElementById(id);
 const params = new URLSearchParams(window.location.search);
-const arcade = window.location.pathname === '/';
 
 function hasWebGL() {
   try { const gl = document.createElement('canvas').getContext('webgl2'); gl?.getExtension('WEBGL_lose_context')?.loseContext(); return Boolean(gl); } catch { return false; }
 }
 
-if (!arcade) import('./main.js');
+if (window.location.pathname !== '/') window.location.replace('/');
 else if (isTouchOnly()) window.location.replace('/home/'); // en el móvil no se juega: su página de tarjetas
 else {
   // Una recarga dentro de una sala vuelve al título (la sala se queda en la dirección solo para que main.js sepa dónde entrar).
@@ -30,7 +29,7 @@ async function startTitle() {
   const [{ createSfx }, { SCAPES }, { createLogoIntro }, { createLobbyLogo }, { insertCoinSvg, coinCols, COIN_ROWS, COIN_PAD }, { createNameGate },
     { createMenuPad }, { createPadSetup }, { createHomeBackground }, { fitPixelImages }] = await Promise.all([
     import('./sfx.js'), import('./soundscape.js'), import('./logoIntro.js'), import('./lobbyLogo.js'), import('./insertCoin.js'), import('./nameGate.js'),
-    import('./menuPad.js'), import('./padSetup.js'), import('../home/homeBackground.js'), import('../pixelFit.js'),
+    import('./menuPad.js'), import('./padSetup.js'), import('./titleBackground.js'), import('../pixelFit.js'),
   ]);
   document.body.classList.add('arcade', 'title-on');
   $('title').hidden = false;
@@ -49,10 +48,8 @@ async function startTitle() {
     startMusic();
   }
 
-  // --- Fondo (la ciudad del juego) y logo animado (las mismas capas del lobby: se presta el logo y se devuelve al entrar en la sala) ---
+  // --- Fondo (la ciudad del juego) y logo animado ---
   const background = createHomeBackground($('title-bg'));
-  const logoHome = $('lobby-logo').parentElement;
-  $('title-logo').appendChild($('lobby-logo'));
   const logo = createLobbyLogo({ $, isRunning: () => !document.hidden, onReady: () => fit() });
   $('title-coin').innerHTML = insertCoinSvg('INSERT COIN');
   function fit() {
@@ -83,8 +80,6 @@ async function startTitle() {
   if (!skipIntro) document.body.classList.add('intro-on');
   if (skipIntro) { intro.disable(); titleReady(); }
   else {
-    $('press-start').querySelector('.ps-text').textContent = 'HAZ CLIC PARA EMPEZAR';
-    $('press-start').querySelector('.ps-sub').textContent = 'O PULSA UNA TECLA';
     intro.armPressStart({ intro: true, onDone: titleReady });
   }
 
@@ -117,14 +112,12 @@ async function startTitle() {
       const data = await res.json().catch(() => ({}));
       if (!res.ok || !data.code) throw Object.assign(new Error('sin sala'), { status: res.status });
       // La sala va en la dirección: main.js (roomSocket.js) la lee al cargarse.
-      history.replaceState(null, '', `/?room=${encodeURIComponent(data.code)}&type=quick`);
+      history.replaceState(null, '', `/?room=${encodeURIComponent(data.code)}`);
       (await import('../roomSocket.js')).readRoomFromUrl(); // por si ya estaba cargado (trozo común del empaquetado): que lea la sala nueva
       running = false;
       background?.dispose();
-      logoHome.prepend($('lobby-logo')); // el logo vuelve a su sitio del lobby
       $('title').hidden = true;
       document.body.classList.remove('title-on');
-      ARCADE.on = true;
       await import('./main.js');
     } catch (err) {
       busy = false;

@@ -1,4 +1,4 @@
-// /db-admin/ (versión pública, 6-nov): contraseña de DESARROLLADOR. El servidor la comprueba y responde con la cookie del rol "dev" (menú completo de
+// /db-admin/: contraseña de DESARROLLADOR. El servidor la comprueba y responde con la cookie del rol "dev" (menú completo de
 // pruebas y ranking aparte en las salas que se abran después). Vuelve al inicio (o a ?next=). Nunca guarda la contraseña en el navegador.
 import '../theme.css';
 import { keepPixelImagesSharp } from '../pixelFit.js';
@@ -34,4 +34,4 @@ $('form').addEventListener('submit', async (event) => {
   }
 });
 
-keepPixelImagesSharp(); // logos de pixel art con píxeles enteros en cualquier móvil (sección 65)
+keepPixelImagesSharp(); // logos de pixel art con píxeles enteros en cualquier móvil

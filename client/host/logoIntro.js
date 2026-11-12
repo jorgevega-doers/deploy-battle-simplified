@@ -1,20 +1,11 @@
-// Pantalla de título de DEPLOY BATTLE (AGENTS.md, sección 56): "PULSA UNA TECLA" al abrir el host (el navegador no deja sonar hasta el
-// primer clic o tecla), y la intro: sobre la ciudad oscurecida, DEPLOY entra deslizándose desde la izquierda y BATTLE desde la derecha con
-// rayas de velocidad, chocan con sacudida y chispas, flash blanco y, al irse el blanco, aparece el lobby completo (barra superior, logo,
-// tarjeta del QR, fichas). Versión completa al arrancar (~3,4 s) y corta (~1,9 s) al volver al lobby tras una partida.
+// "HAZ CLIC PARA EMPEZAR" al abrir el juego (el navegador no deja sonar hasta el primer clic o tecla) y la intro del logo: sobre la ciudad oscurecida, DEPLOY entra deslizándose desde la izquierda y BATTLE desde la derecha con
+// rayas de velocidad, chocan con sacudida y chispas, flash blanco y, al irse el blanco, aparece lo de debajo (el título o la sala de espera).
+// Versión completa al arrancar (con el preludio de DOERS DF presents) y corta (~1,9 s) al volver a la sala tras una partida.
 // Todo a pasos y en celdas enteras del logo (sin suavizados ni medios píxeles). Qué NO hace: el bucle del lobby (lobbyLogo.js).
 import { createSparks } from './logoSparks.js';
-import { createChallengeSlide } from './challengeSlide.js';
 
 // Guion de la versión completa, en ms; la corta lo multiplica por SHORT. Los sonidos salen en los mismos instantes.
 const T = { deployIn: 250, deployOut: 950, battleIn: 550, battleOut: 1250, hit: 1250, flash: 2650, swap: 2850, end: 3400 };
-// Secuencia completa (con preludio) = DOERS DF presents → DEPLOY BATTLE → pantalla del reto → flash → lobby (sección 87). En vez del flash
-// blanco, DEPLOY BATTLE se funde a negro en 4 pasos, debajo aparece el reto (el negro se retira en otros 4), dura SLIDE_MS y entonces
-// llega el flash blanco de siempre hacia el lobby.
-const SLIDE_MS = 6800; // 1,6 s de espaldas + giro + ~4,5 s con el texto
-const FADE_STEP = 175;
-const CTO = { fadeFrom: T.flash, show: T.flash + 4 * FADE_STEP, flash: T.flash + 4 * FADE_STEP + SLIDE_MS };
-CTO.swap = CTO.flash + (T.swap - T.flash); CTO.end = CTO.flash + (T.end - T.flash);
 const SHORT = 0.55;
 // Preludio de la secuencia completa (ms): logo de DOERS DF que aparece a pasos, "presents..." que se escribe, y fundido a negro. Después empieza la animación de DEPLOY BATTLE (T).
 const PRE_MS = 2900;
@@ -66,8 +57,7 @@ function measureWord(img, fromLeft) {
 const easeOut = (p) => 1 - (1 - p) ** 3;
 const clamp01 = (v) => Math.min(1, Math.max(0, v));
 
-// withCto = false en la versión pública: la secuencia es DOERS DF presents -> DEPLOY BATTLE -> QR, sin el reto del CTO.
-export function createLogoIntro({ $, sfx, onReveal = () => {}, shouldPlay = () => true, withCto = true }) {
+export function createLogoIntro({ $, sfx, onReveal = () => {}, shouldPlay = () => true }) {
   const root = $('intro');
   const logo = $('intro-logo');
   const wordDeploy = $('intro-deploy');
@@ -82,10 +72,6 @@ export function createLogoIntro({ $, sfx, onReveal = () => {}, shouldPlay = () =
   const doersLogo = $('intro-doers-logo');
   const presentsEl = $('intro-presents');
   const sparks = createSparks(120, 26);
-  const slide = createChallengeSlide({ $ });
-  const black = $('intro-black');
-  let cto = false;     // esta reproducción lleva la pantalla del reto (solo la secuencia completa)
-  let blackShown = null;
   let phase = 'idle'; // 'press' (esperando una tecla) | 'play' | 'idle'
   let t0 = 0; let scale = 1; let lastNow = 0;
   let cell = 6; let cols = 0; let rows = 0; let col0 = 0; let row0 = 0; let natW = 0; let natH = 0;
@@ -94,34 +80,29 @@ export function createLogoIntro({ $, sfx, onReveal = () => {}, shouldPlay = () =
   let profile = null; // { bottom[x], xMin, xMax }: borde inferior del rótulo entero columna a columna (se mide una vez)
   let pre = 0;         // duración del preludio de DOERS DF de esta reproducción (0 = sin preludio)
   let preOver = true;
-  let quiet = false;   // las repeticiones automáticas van sin sonido (cada 10 s sería insoportable)
-  let lastEndAt = null; // cuándo terminó la última secuencia: la siguiente empieza repeatMs después de ESE momento (más espaciado)
-  let repeatMs = 0; let canRepeat = () => false;
+  let quiet = false;   // sin sonido (silent)
   let preShown = { opacity: null, text: null };
   let wave = 0;       // oleada de la lluvia del choque por la que va
   const lines = Array.from({ length: LINES * 2 }, () => ({ y: 0, len: 0, color: '#ffffff', thick: 1 })); // reparto fijo de cada intro
-  const fired = { s1: false, s2: false, hit: false, flash: false, swap: false, cto: false };
+  const fired = { s1: false, s2: false, hit: false, flash: false, swap: false };
 
   const sound = (name, args) => { if (quiet) return; try { sfx.play(name, args); } catch { /* sin audio: la intro sigue */ } };
   const setFlash = (opacity) => { if (opacity !== shown) { shown = opacity; flash.style.opacity = String(opacity); } };
-  const setBlack = (opacity) => { if (opacity !== blackShown) { blackShown = opacity; black.style.opacity = String(opacity); } };
 
   function finish() {
     phase = 'idle';
-    lastEndAt = performance.now();
     sparks.clear();
     root.hidden = true;
     root.classList.remove('revealed');
     logo.hidden = false;
     logo.style.transform = ''; logo.style.filter = '';
     doers.hidden = true; root.classList.remove('prelude'); pre = 0; preOver = true;
-    slide.hide(); cto = false; setBlack(0);
     setFlash(0);
     document.body.classList.remove('intro-on');
     done?.();
   }
 
-  // short = versión corta (al volver al lobby tras una partida). onDone avisa cuando acaba (o se salta).
+  // short = versión corta (al volver a la sala tras una partida). onDone avisa cuando acaba (o se salta).
   // prelude = antepone el logo de DOERS DF + "presents..." y el fundido a negro (solo en la versión completa). silent = sin sonido.
   function start({ short = false, onDone = null, prelude = false, silent = false } = {}) {
     quiet = silent;
@@ -131,9 +112,6 @@ export function createLogoIntro({ $, sfx, onReveal = () => {}, shouldPlay = () =
     scale = short ? SHORT : 1;
     pre = prelude && !short && doersLogo.naturalWidth ? PRE_MS : 0;
     preOver = pre === 0;
-    let ctoOff = false;
-    try { ctoOff = window.localStorage.getItem('doersforce.menu.ctoSlide') === '0'; } catch { /* da igual */ } // interruptor del menú (GRÁFICOS)
-    cto = pre > 0 && !ctoOff && withCto; slide.hide(); setBlack(0); // la versión pública no tiene la pantalla del reto
     // Una celda = un píxel del logo en pantalla, en enteros: grande, ocupando como mucho el 78 % del ancho y el 62 % del alto.
     cell = Math.max(1, Math.floor(Math.min((innerWidth * 0.78) / natW, (innerHeight * 0.62) / natH)));
     cols = Math.ceil(innerWidth / cell); rows = Math.ceil(innerHeight / cell);
@@ -230,12 +208,6 @@ export function createLogoIntro({ $, sfx, onReveal = () => {}, shouldPlay = () =
   }
 
   function update(now) {
-    // Repetición automática: con el lobby vacío, la secuencia completa vuelve a empezar repeatMs después de acabar la anterior (sin sonido). Si en ese momento no toca (hay
-    // jugadores, partida...), se vuelve a mirar en cada fotograma hasta que toque.
-    if (phase === 'idle') {
-      if (repeatMs && lastEndAt !== null && now - lastEndAt >= repeatMs && canRepeat()) start({ short: false, prelude: true });
-      return;
-    }
     if (phase !== 'play') return;
     if (!t0) { t0 = now; lastNow = now; }
     const raw = frozen ?? (now - t0) / scale; // tiempo desde el principio (frozen: solo para depurar, ver seek)
@@ -246,36 +218,19 @@ export function createLogoIntro({ $, sfx, onReveal = () => {}, shouldPlay = () =
     const t = raw - pre; // tiempo en la escala de la versión completa de la animación de DEPLOY BATTLE
     const dt = Math.min(0.1, (now - lastNow) / 1000); lastNow = now;
 
-    const tl = cto ? CTO : T; // con el reto, el flash hacia el lobby llega más tarde
-    if (t >= tl.swap) {
+    if (t >= T.swap) {
       if (!fired.swap) { // blanco total: debajo se cambia la intro por el lobby de verdad
         fired.swap = true;
         logo.hidden = true; ctx.clearRect(0, 0, cols, rows); sparks.clear();
-        slide.hide(); setBlack(0);
         root.classList.add('revealed');
         document.body.classList.remove('intro-on');
         sound('introReveal');
         onReveal();
       }
-      if (t >= tl.end) { finish(); return; }
-      setFlash(1 - Math.floor(clamp01((t - tl.swap) / (tl.end - tl.swap)) * 5) / 5); // el blanco se retira en 5 pasos
+      if (t >= T.end) { finish(); return; }
+      setFlash(1 - Math.floor(clamp01((t - T.swap) / (T.end - T.swap)) * 5) / 5); // el blanco se retira en 5 pasos
       return;
     }
-    // Pantalla del reto: DEPLOY BATTLE se funde a negro en 4 pasos, debajo aparece el reto y el negro se retira en otros 4.
-    if (cto && t >= CTO.fadeFrom) {
-      const steps = (from) => Math.min(4, Math.floor((t - from) / FADE_STEP) + 1);
-      setBlack(t < CTO.show ? steps(CTO.fadeFrom) / 4 : 1 - steps(CTO.show) / 4);
-      if (t >= CTO.show) {
-        if (!fired.cto) { fired.cto = true; logo.hidden = true; ctx.clearRect(0, 0, cols, rows); sparks.clear(); slide.show(cell); }
-        slide.update(t - CTO.show, sound);
-        if (t >= CTO.flash) { // flash blanco en 4 pasos hacia el lobby
-          if (!fired.flash) { fired.flash = true; sound('introFlash'); }
-          setFlash(Math.floor(clamp01((t - CTO.flash) / (CTO.swap - CTO.flash)) * 4) / 4);
-        }
-        return;
-      }
-    }
-
     // Las dos palabras entran deslizándose y frenan en seco al encajar.
     const pD = easeOut(clamp01((t - T.deployIn) / (T.deployOut - T.deployIn)));
     const pB = easeOut(clamp01((t - T.battleIn) / (T.battleOut - T.battleIn)));
@@ -303,7 +258,7 @@ export function createLogoIntro({ $, sfx, onReveal = () => {}, shouldPlay = () =
     sparks.step(dt);
     if (sparks.alive) sparks.draw(ctx);
 
-    if (!cto && t >= T.flash) { // flash blanco en 4 pasos hasta el blanco total
+    if (t >= T.flash) { // flash blanco en 4 pasos hasta el blanco total
       if (!fired.flash) { fired.flash = true; sound('introFlash'); }
       setFlash(Math.floor(clamp01((t - T.flash) / (T.swap - T.flash)) * 4) / 4);
     }
@@ -345,10 +300,9 @@ export function createLogoIntro({ $, sfx, onReveal = () => {}, shouldPlay = () =
     // Solo para depurar (window.__logoIntro en la consola y las capturas de prueba): para la intro en el instante `ms` (versión completa); release() la suelta.
     seek(ms) { if (phase !== 'play') start({ short: false }); frozen = ms; },
     seekFull(ms) { if (phase !== 'play') start({ short: false, prelude: true }); frozen = ms; }, // igual, con el preludio de DOERS DF (ms desde el principio de la secuencia)
-    configureRepeat({ everyMs, canRepeat: can }) { repeatMs = everyMs; canRepeat = can; },
     release() { frozen = null; },
     armPressStart,
-    // Sin pantalla de título ni intro (?intro=0): el lobby sale directo.
+    // Sin pantalla de empezar ni intro (?intro=0 o al volver de una sala): lo de debajo sale directo.
     disable() { phase = 'idle'; press.hidden = true; root.hidden = true; document.body.classList.remove('intro-on'); },
   };
 }

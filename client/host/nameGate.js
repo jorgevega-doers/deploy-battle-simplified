@@ -1,5 +1,5 @@
-// "¿CÓMO TE LLAMAS?" al entrar en una sala en tu pantalla (versión pública, 10-nov): solo, partida pública y sala privada. Ahí cada uno tiene su
-// teclado, así que se pregunta siempre, con el nombre de la última vez ya escrito (ENTER y listo). Mientras tanto el jugador ya ocupa su hueco
+// "¿CÓMO TE LLAMAS?" al pulsar JUGAR en el título (y en la sala, si el servidor no acepta el nombre). Cada uno tiene su teclado, así que se
+// pregunta siempre, con el nombre de la última vez ya escrito (ENTER y listo). Mientras tanto el jugador ya ocupa su hueco
 // (en la cola común no lo pierde) con ese nombre; al confirmar, se cambia si hace falta.
 // Con mando (10-nov), como en las recreativas: arriba/abajo cambian la letra (mantenido, más rápido), A pasa a la siguiente y, tras la tercera, al
 // botón (A en el botón entra), B vuelve a la anterior. pad(action) lo llama main.js con menuPad.js.

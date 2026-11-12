@@ -1,4 +1,4 @@
-// Configuración de los mandos físicos (sección 72): qué botón o eje es cada acción. Lógica pura (sin navegador), la usa gamepads.js.
+// Configuración de los mandos físicos: qué botón o eje es cada acción. Lógica pura (sin navegador), la usa gamepads.js.
 // El navegador da un orden "estándar" para los mandos que conoce; los genéricos llegan "en bruto" y su orden cambia según el sistema
 // (Windows / Linux), así que hay una configuración por defecto para genéricos y otra que se aprende desde el menú (pestaña MANDOS).
 
@@ -12,7 +12,7 @@ export const STICK_ACTIONS = new Set(['lx', 'ly', 'rx', 'ry']);
 
 // Botones por posición: unirse = los botones 8 y 9 a la vez, impulso = el 6, disparo = el 7. En los mandos "standard" (el navegador ya los ordena)
 // eso es SELECT + START, L2 y R2. En los GAME BOX JOYSTICK, que llegan en bruto, el orden es otro y COMPROBADO en Windows (29-oct): L2 + R2 = unirse
-// y LISTO, L1 = impulso, R1 = disparo. El stick derecho va en los ejes 2 y 5 en Windows o 2 y 3 en Linux (el de Linux, sin comprobar).
+// y JUGAR, L1 = acelerón, R1 = disparo. El stick derecho va en los ejes 2 y 5 en Windows o 2 y 3 en Linux (el de Linux, sin comprobar).
 export function defaultMapping(pad, userAgent = '') {
   const b = (i) => ({ t: 'b', i });
   const base = { start: b(9), select: b(8), dash: b(6), fire: b(7), lx: { i: 0, sign: 1 }, ly: { i: 1, sign: 1 }, rx: { i: 2, sign: 1 } };

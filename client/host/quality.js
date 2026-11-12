@@ -1,4 +1,4 @@
-// Calidad adaptativa (AGENTS.md, sección 19): se prioriza la calidad ALTA (nivel 0). Solo si el fotograma medio de una
+// Calidad adaptativa: se prioriza la calidad ALTA (nivel 0). Solo si el fotograma medio de una
 // ventana de 2 s supera 34 ms (menos de 30 FPS) baja UN nivel, a MEDIA (nivel 1: bloom a menos resolución), y ahí se queda
 // (BAJA, nivel 3, solo se elige a mano desde el menú). Nunca vuelve a subir durante la sesión: subir y bajar daría tirones a
 // mitad de partida. Niveles: 0 completo, 1 bloom a menos resolución, 2 además resolución de pantalla 1:1, 3 sin bloom.

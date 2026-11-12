@@ -1,6 +1,6 @@
-/* Pantalla principal de DEPLOY BATTLE (AGENTS.md, sección 56): logo animado a la izquierda y tarjeta del QR a la derecha, más la pantalla
-   de título ("PULSA UNA TECLA") y la intro con flash. Todo a pasos (steps) y con bordes duros: sin suavizados ni degradados blandos
-   (sección 17). main.js (fitLobbyCard) escala la fila y fija el tamaño del logo en múltiplos enteros de sus píxeles (variable --px). */
+/* Pantalla del juego (lo que no es la partida en sí): el logo animado del título, "HAZ CLIC PARA EMPEZAR" y la intro con flash, la sala de espera y
+   las ventanas que se abren encima (salir, pausa, nombre, configurar un mando). Todo a pasos (steps) y con bordes duros: sin suavizados ni degradados
+   blandos. main.js (fitLobbyCard) escala la sala de espera para que quepa en cualquier ventana. */
 
 /* ---- Logo del lobby: 4 capas apiladas (humo que "hierve", rótulo, destello y chispas) ---- */
 #lobby-row { display: flex; align-items: center; gap: 44px; transform-origin: center center; }
@@ -53,295 +53,91 @@ body.intro-on #topbar, body.intro-on .hud, body.intro-on #lobby, body.intro-on #
 #intro-logo { position: absolute; }
 #intro-logo img { position: absolute; left: 0; top: 0; width: 100%; height: 100%; image-rendering: pixelated; display: block; max-width: none; }
 #intro-flash { position: absolute; inset: 0; background: #ffffff; opacity: 0; pointer-events: none; }
-#intro-black { position: absolute; inset: 0; background: #000000; opacity: 0; pointer-events: none; } /* fundido a negro a pasos: DEPLOY BATTLE → reto */
 
-/* ---- Pantalla del reto (challengeSlide.js, sección 87): monigote del CTO, "RETA A NUESTRO CTO" y "Y GANA UN PREMIO INCREÍBLE" ----
-   Todo en celdas enteras (--cell = píxeles de pantalla por píxel lógico); las letras son lienzos de bigText.js ampliados sin suavizado. */
-#intro-cto { position: absolute; }
-#intro-cto[hidden] { display: none; }
-#intro-cto-avatar { position: absolute; image-rendering: pixelated; background: url('../../assets/sprites/cto-avatar.png') 0 0 no-repeat; } /* tira de fotogramas; challengeSlide.js elige el fotograma */
-.cto-group { position: absolute; transform-origin: left center; }
-.cto-line { position: absolute; }
-.cto-layer { position: absolute; inset: 0; }
-.cto-ch { position: absolute; top: 0; image-rendering: pixelated; }
-/* PREMIO: cada letra (su reborde y su relleno a la vez) da un salto corto a pasos, en ola de izquierda a derecha cada 1,8 s. */
-#intro-cto.live .cto-hop { animation: cto-hop 1.8s steps(1, end) infinite; animation-delay: calc(var(--n) * 0.09s); }
-@keyframes cto-hop {
-  0% { transform: translateY(calc(var(--cell) * -2)); } 5% { transform: translateY(calc(var(--cell) * -4)); }
-  10% { transform: translateY(calc(var(--cell) * -2)); } 15%, 100% { transform: translateY(0); }
-}
-/* Confeti constante por encima de PREMIO: cuadrados de la paleta que saltan y caen a los lados, cada uno con su ritmo. */
-.cto-confetti { position: absolute; top: 0; height: 0; pointer-events: none; }
-.cto-confetti i { position: absolute; bottom: 0; width: calc(var(--cell) * 2); height: calc(var(--cell) * 2); background: var(--c); opacity: 0; }
-#intro-cto.live .cto-confetti i { animation: cto-confetti var(--dur, 1.4s) steps(12, end) infinite; animation-delay: var(--d); }
-@keyframes cto-confetti {
-  0% { opacity: 1; transform: translate(0, 0); }
-  40% { opacity: 1; transform: translate(calc(var(--dx) * 0.5), calc(var(--cell) * -9)); }
-  85% { opacity: 1; transform: translate(var(--dx), calc(var(--cell) * -2)); }
-  86%, 100% { opacity: 0; transform: translate(var(--dx), calc(var(--cell) * -2)); }
-}
-.cto-confetti i:nth-child(1) { left: 0%; --c: #ff4fa3; --dx: calc(var(--cell) * -8); --d: 0s; --dur: 1.3s; }
-.cto-confetti i:nth-child(2) { left: 8%; --c: #ffb45c; --dx: calc(var(--cell) * -4); --d: 0.5s; --dur: 1.5s; }
-.cto-confetti i:nth-child(3) { left: 15%; --c: #ffffff; --dx: calc(var(--cell) * 3); --d: 0.2s; --dur: 1.2s; }
-.cto-confetti i:nth-child(4) { left: 23%; --c: #00f0ff; --dx: calc(var(--cell) * -6); --d: 0.8s; --dur: 1.4s; }
-.cto-confetti i:nth-child(5) { left: 30%; --c: #ff4fa3; --dx: calc(var(--cell) * 5); --d: 0.35s; --dur: 1.6s; }
-.cto-confetti i:nth-child(6) { left: 38%; --c: #ffd400; --dx: calc(var(--cell) * -3); --d: 1s; --dur: 1.3s; }
-.cto-confetti i:nth-child(7) { left: 46%; --c: #ffffff; --dx: calc(var(--cell) * 6); --d: 0.6s; --dur: 1.5s; }
-.cto-confetti i:nth-child(8) { left: 54%; --c: #00f0ff; --dx: calc(var(--cell) * -5); --d: 0.15s; --dur: 1.2s; }
-.cto-confetti i:nth-child(9) { left: 62%; --c: #ff4fa3; --dx: calc(var(--cell) * 4); --d: 0.9s; --dur: 1.4s; }
-.cto-confetti i:nth-child(10) { left: 70%; --c: #ffb45c; --dx: calc(var(--cell) * -7); --d: 0.4s; --dur: 1.6s; }
-.cto-confetti i:nth-child(11) { left: 77%; --c: #ffffff; --dx: calc(var(--cell) * 7); --d: 1.1s; --dur: 1.3s; }
-.cto-confetti i:nth-child(12) { left: 85%; --c: #ffd400; --dx: calc(var(--cell) * -2); --d: 0.7s; --dur: 1.5s; }
-.cto-confetti i:nth-child(13) { left: 92%; --c: #00f0ff; --dx: calc(var(--cell) * 8); --d: 0.25s; --dur: 1.2s; }
-.cto-confetti i:nth-child(14) { left: 98%; --c: #ff4fa3; --dx: calc(var(--cell) * 3); --d: 1.2s; --dur: 1.4s; }
 
-/* ---- HOME y LOBBY (29-oct) ----
-   HOME = nadie ha entrado: solo el logo del juego (con su animación en bucle), el QR y el Top 10; sin la barra superior (body.home-on).
-   LOBBY = alguien se ha conectado: UN rectángulo centrado de dos columnas con la misma altura: a la izquierda la tarjeta de CÓMO SE JUEGA (ocupa las
-   tres filas) y a la derecha, de arriba abajo, el tiempo de espera, los jugadores conectados (listos o no) y la tarjeta del QR con el Top 10. */
-body.home-on #topbar { visibility: hidden; }
-body.lobby-on .hud { visibility: hidden; } /* en el lobby no hay partida: nada de "esperando jugador" abajo (salen al empezar la partida) */
+/* ---- Sala de espera (main.js: renderWaiting; arcadeLobby.js: textos, botón e inactividad; controlsCard.js: ASÍ SE JUEGA) ----
+   Rejilla de 2 columnas de ancho fijo (600 + 600): arriba los jugadores y la cuenta atrás, debajo ASÍ SE JUEGA y debajo SALIR. Medidas fijas: al
+   empezar la cuenta atrás o entrar alguien no cambia nada de sitio ni de tamaño. */
+body.lobby-on .hud { visibility: hidden; } /* en la sala no hay partida: nada de "esperando jugador" abajo (salen al empezar la partida) */
+#lobby-row { transform-origin: center center; }
+#lobby.waiting #lobby-row { display: grid; grid-template-columns: 600px 600px; grid-template-rows: 230px auto auto; gap: 12px; align-items: stretch; justify-content: center; }
 #waiting[hidden] { display: none; }
-#lobby.waiting #lobby-logo { display: none; }
-/* Las DOS columnas con ancho fijo: antes la derecha era "auto" y su ancho dependía del texto "ESPERANDO A QUE TODOS PULSEN LISTO" (964 px esperando, 582 px al
-   empezar la cuenta atrás): al empezar la cuenta todo el bloque saltaba y se recolocaba. Ahora no cambia nada de sitio ni de tamaño (scripts/layout-jump.js lo mide). */
-#lobby.waiting #lobby-row { display: grid; grid-template-columns: 680px 640px; grid-template-rows: auto auto auto; gap: 12px; align-items: stretch; }
-#lobby.waiting #waiting { display: contents; } /* sus tarjetas son celdas de la rejilla del lobby */
-#lobby.waiting #wait-tutorial { grid-column: 1; grid-row: 1 / 4; }
-#lobby.waiting #wait-count { grid-column: 2; grid-row: 1; }
-#lobby.waiting #wait-players { grid-column: 2; grid-row: 2; }
-#lobby.waiting #lobby-card { grid-column: 2; grid-row: 3; }
-/* Cuenta atrás: tarjeta de alto fijo (no cambia al empezar la cuenta). */
-/* En columna y todo centrado: el número NO cambia de sitio al empezar la cuenta (antes iba a la izquierda con el aviso al lado y saltaba al centro al desaparecer el aviso). */
-#wait-count { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; padding: 8px 20px 10px; height: 188px; box-sizing: border-box; }
-#wait-count .ui-title { flex: none; text-align: center; margin-bottom: 4px; }
-#wait-count.only-num #wait-sub { visibility: hidden; } /* sigue reservando su hueco: nada se mueve */
-#wait-num { font-size: 96px; line-height: 0.95; font-weight: 700; color: var(--p2); text-shadow: 5px 5px 0 var(--ui-blue); min-width: 2ch; text-align: center; }
-#wait-num.idle { color: var(--ui-muted); text-shadow: none; }
-#wait-num.tick { animation: join-tick 1s steps(4) infinite; }
-#wait-sub { flex: none; font-size: 17px; letter-spacing: 1px; color: var(--white); line-height: 1.25; min-height: 1.25em; text-align: center; max-width: 100%; }
-@keyframes join-tick { 0% { transform: scale(1.18); } 40%, 100% { transform: scale(1); } }
-/* Jugadores conectados: 2 x 2 */
-#wait-players { padding: 8px 14px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px 10px; }
-.wp { display: flex; align-items: center; gap: 10px; padding: 4px 8px; border-left: 8px solid var(--c); background: #0a0d18; min-width: 0; }
-.wp .chip { background: var(--c); color: var(--ui-edge); font-weight: 700; font-size: 16px; padding: 0 6px; line-height: 1.4; }
-.wp .name { font-size: 30px; font-weight: 700; letter-spacing: 3px; line-height: 1.1; flex: 1; }
-.wp .state { font-size: 16px; letter-spacing: 1px; padding: 0 8px; line-height: 1.5; }
-.wp .state.ok { background: var(--p2); color: var(--ui-edge); font-weight: 700; animation: ready-blink 0.8s steps(2) infinite; }
-.wp .state.no { color: var(--ui-muted); border: 3px solid #2c3756; }
+#lobby.waiting #waiting { display: contents; } /* sus tarjetas son celdas de la rejilla */
+
+/* Jugadores: una fila por jugador (caben el nombre, TÚ y TECLADO / MANDO). */
+#wait-players { grid-column: 1; grid-row: 1; height: 230px; box-sizing: border-box; padding: 8px 14px; display: grid; grid-template-columns: 1fr; gap: 6px; align-content: center; }
+.wp { display: flex; align-items: center; gap: 10px; padding: 2px 8px; border-left: 8px solid var(--c); background: #0a0d18; min-width: 0; }
+.wp .chip { background: var(--c); color: var(--ui-edge); font-weight: 700; font-size: 14px; padding: 0 6px; line-height: 1.4; }
+.wp .name { font-size: 24px; font-weight: 700; letter-spacing: 2px; line-height: 1.1; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .wp.empty { opacity: 0.35; }
-.wp.empty .name { font-size: 15px; color: var(--ui-muted); letter-spacing: 1px; }
-/* Cómo se juega: columna alta; las tres tarjetas llenan el alto sobrante y las reglas van abajo. */
-#wait-tutorial { padding: 12px 20px 16px; display: flex; flex-direction: column; }
-#wait-tutorial .ui-title { font-size: 28px; margin: 0 auto 14px; }
-.tut-cols { flex: 1; display: grid; grid-template-columns: 1fr; grid-auto-rows: 1fr; gap: 12px; }
-.tut { display: grid; grid-template-columns: 172px 1fr; grid-template-rows: auto auto; column-gap: 20px; row-gap: 2px; align-content: center; padding: 8px 16px; background: #0a0d18; border-left: 8px solid var(--p1); animation: tut-focus 9s steps(1) infinite; }
-.tut:nth-child(2) { border-left-color: var(--p2); animation-delay: 3s; }
-.tut:nth-child(3) { border-left-color: var(--p4); animation-delay: 6s; }
-.tut b { font-size: 32px; color: var(--white); letter-spacing: 2px; align-self: end; }
-.tut span { font-size: 21px; color: #c9d3ff; line-height: 1.25; align-self: start; }
-@keyframes tut-focus { 0% { background: #141b33; } 33.4%, 100% { background: #0a0d18; } }
-.tut-rules { margin-top: 12px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; }
-.tut-rules span { font-size: 19px; letter-spacing: 1px; color: var(--p3); text-align: center; padding: 4px 8px; border: 3px solid #1d2742; }
-
-/* Cartel "SCAN QR CODE" parpadeante tipo recreativa (insertCoin.js): solo en el HOME, abajo en el centro. Parpadeo a saltos (encendido / apagado). */
-#insert-coin { display: none; position: fixed; left: 50%; top: 90%; transform: translateX(-50%); }
-#insert-coin svg { display: block; }
-body.home-on #insert-coin { display: block; animation: coin-blink 1.1s steps(1) infinite; }
-@keyframes coin-blink { 0% { opacity: 1; } 60% { opacity: 0; } }
-
-/* Réplicas del mando para el tutorial: mismo aspecto que los pads y el botón del móvil (client/play/index.html), en pequeño y con los colores de P1. */
-.mpad { grid-row: 1 / 3; position: relative; width: 150px; height: 150px; justify-self: center; align-self: center; display: flex; align-items: center; justify-content: center;
-  border: 6px solid transparent; border-image: var(--panel-img) 3 / 6px / 0 stretch; background-color: var(--ui-ink); background-clip: padding-box;
-  background-image: repeating-conic-gradient(var(--ui-ink-2) 0 25%, transparent 0 50%); background-size: 12px 12px; --pc: #6f8cff; --kn: #3346ff; --kn-hi: #8fa0ff; --kn-lo: #1c2bb0; }
-.mpad::before, .mpad::after { content: ''; position: absolute; background: #2c3756; }
-.mpad::before { left: 12%; right: 12%; top: calc(50% - 1px); height: 2px; }
-.mpad::after { top: 12%; bottom: 12%; left: calc(50% - 1px); width: 2px; }
-.mpad .tk { position: absolute; width: 10px; height: 10px; }
-.mpad .tk.tl { left: 4px; top: 4px; border-left: 3px solid var(--pc); border-top: 3px solid var(--pc); }
-.mpad .tk.tr { right: 4px; top: 4px; border-right: 3px solid var(--pc); border-top: 3px solid var(--pc); }
-.mpad .tk.bl { left: 4px; bottom: 4px; border-left: 3px solid var(--pc); border-bottom: 3px solid var(--pc); }
-.mpad .tk.br { right: 4px; bottom: 4px; border-right: 3px solid var(--pc); border-bottom: 3px solid var(--pc); }
-.mpad .mlabel { position: absolute; top: 9px; left: 50%; transform: translateX(-50%); white-space: nowrap; font-size: 11px; letter-spacing: 1px; padding: 0 4px; background: var(--ui-ink); color: var(--ui-muted); z-index: 1; }
-.mknob { width: 38%; height: 38%; position: relative; z-index: 3; background: var(--kn);
-  clip-path: polygon(25% 0, 75% 0, 75% 12.5%, 87.5% 12.5%, 87.5% 25%, 100% 25%, 100% 75%, 87.5% 75%, 87.5% 87.5%, 75% 87.5%, 75% 100%, 25% 100%, 25% 87.5%, 12.5% 87.5%, 12.5% 75%, 0 75%, 0 25%, 12.5% 25%, 12.5% 12.5%, 25% 12.5%);
-  box-shadow: inset 6px 6px 0 var(--kn-hi), inset -6px -6px 0 var(--kn-lo); }
-/* Pad de apuntar: stick más claro, arrastrado hacia arriba a la derecha, con la línea de tiro que sale de él */
-.maim { --kn: #6f8cff; --kn-hi: #d3dcff; --kn-lo: #3a4fd0; }
-.maim .mknob { transform: translate(30%, -30%); animation: aim-drag 2.4s steps(6) infinite; }
-.maim .maimline { position: absolute; left: 50%; top: 50%; width: 46%; height: 0; border-top: 4px dashed #fff; transform-origin: 0 0; transform: rotate(-45deg) translate(-4px, -2px); z-index: 2; animation: aim-line 2.4s steps(2) infinite; }
-@keyframes aim-drag { 0%, 100% { transform: translate(0, 0); } 40%, 70% { transform: translate(30%, -30%); } }
-@keyframes aim-line { 0%, 30% { opacity: 0; } 40%, 80% { opacity: 1; } 90%, 100% { opacity: 0; } }
-.mmove .mknob { animation: move-drag 3s steps(8) infinite; }
-@keyframes move-drag { 0%, 100% { transform: translate(0, 0); } 25% { transform: translate(-28%, 0); } 50% { transform: translate(0, 28%); } 75% { transform: translate(28%, 0); } }
-.mbtn { grid-row: 1 / 3; justify-self: center; align-self: center; width: 150px; height: 150px; min-height: 0; padding: 0; font-size: 22px; line-height: 1.1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; }
-.mbtn svg { width: 52%; height: auto; }
-
-/* ===== Versión pública (rama public, publicHost.js) ===== */
-.pub-only { display: none !important; }
-body.public .pub-only:not([hidden]) { display: revert !important; }
-body.public .tut.tut-pad { display: none !important; }
-body.public.show-pad .tut.tut-pad { display: grid !important; } /* solo si alguien juega con mando o hay uno conectado */
-body.public.show-pad .tut-cols { gap: 8px; }
-body.public.show-pad .tut .mpad { width: 118px; height: 118px; }
-body.public.show-pad .tut b { font-size: 26px; }
-body.public.show-pad .tut span { font-size: 18px; }
-.tut-pad { border-left-color: var(--p3) !important; animation: none !important; }
-.mgamepad { grid-row: 1 / 3; justify-self: center; align-self: center; }
-.mgamepad svg { width: 132px; height: 72px; display: block; image-rendering: pixelated; }
-/* Columna de la derecha: mapa (4 cuadros en columna), dificultad y marcador de la sala. Solo la anfitriona puede pulsar. */
-#public-side { display: flex; flex-direction: column; align-items: stretch; gap: 6px; padding: 12px 14px 14px; width: 210px; box-sizing: border-box; }
-#public-side[hidden] { display: none; }
-#public-side .ui-title { margin: 4px auto 6px; font-size: 15px; text-shadow: 2px 2px 0 var(--tc); }
-#public-side .ui-title::after { width: 30px; height: 3px; margin-top: 4px; }
-#side-maps .map-grid { grid-template-columns: 1fr; gap: 6px; }
-#side-maps .map-opt { height: 74px; }
-#side-levels { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
-#side-levels .ui-tab { font-family: var(--font-ui); font-size: 13px; padding: 4px 0 2px; text-align: center; cursor: pointer; color: var(--white); }
-#side-levels .ui-tab.danger { --tab-img: var(--tab-img-p2); }
-#side-hint { margin: 2px 0 0; font-size: 12px; text-align: center; color: var(--ui-muted); letter-spacing: 1px; }
-#public-side.locked .map-opt, #public-side.locked .side-level { cursor: default; }
-#public-side.locked .map-opt:not(.on) { opacity: 0.45; }
-#public-side.locked .map-opt:hover:not(.on) { border-color: #2a3150; color: var(--ui-muted); }
-#public-side.locked .side-level:not(.danger) { opacity: 0.45; }
-#side-wins { list-style: none; margin: 0; padding: 0; }
-#side-wins li { display: flex; justify-content: space-between; gap: 8px; padding: 2px 6px; font-size: 15px; }
-#side-wins li:nth-child(odd) { background: var(--ui-ink-2); }
-#side-wins li:first-child { color: var(--ui-amber); }
-#side-wins .score { color: var(--ui-muted); font-size: 12px; align-self: center; }
-#side-wins li:first-child .score { color: var(--ui-amber); }
-#top10-period { margin: -4px 0 6px; font-size: 13px; letter-spacing: 2px; color: var(--ui-amber); text-align: center; }
-#host-line { margin: 5px 0 0; font-size: 12px; letter-spacing: 1px; color: var(--ui-amber); text-align: center; max-width: 220px; }
-#host-line:empty { display: none !important; }
-#pad-hint { margin: 6px 0 0; font-size: 12px; letter-spacing: 1px; color: var(--p3); text-align: center; }
-/* En la espera, la columna lateral es una tercera columna de la rejilla (de arriba abajo). */
-body.public #lobby.waiting #lobby-row { grid-template-columns: 640px 600px 210px; }
-body.public #lobby.waiting #public-side { grid-column: 3; grid-row: 1 / 4; }
-/* Dispositivo de cada jugador en la lista de la espera (MÓVIL / MANDO) y "TÚ" en los de esta pantalla. */
+.wp.empty .name { color: var(--ui-muted); }
+/* Con qué juega cada jugador (TECLADO / MANDO) y "TÚ" en el de esta pantalla. */
 .wp .dev { font-size: 12px; letter-spacing: 1px; color: var(--ui-muted); border: 2px solid #2c3756; padding: 0 4px; line-height: 1.4; }
 .wp .you { font-size: 12px; letter-spacing: 1px; background: var(--white); color: var(--ui-edge); padding: 0 4px; line-height: 1.5; font-weight: 700; }
-/* Etiqueta del tanque de un jugador de ESTA pantalla (sala a distancia): borde blanco y marca "TÚ" encima. */
+/* NO CONFIGURADO: un mando conectado que el navegador no reconoce (abre su configuración, padSetup.js). */
+.wp .wp-setup { flex: none; margin-left: 6px; padding: 2px 6px; font-family: var(--font-ui); font-size: 11px; letter-spacing: 1px; color: var(--ui-edge); background: var(--ui-amber); border: 0; cursor: pointer; }
+/* Etiqueta del tanque del jugador de ESTA pantalla: borde blanco y marca "TÚ" encima. */
 .tank-label.mine { border-color: #ffffff; box-shadow: 3px 3px 0 var(--pc); }
 .tank-label.mine::before { content: 'TÚ'; position: absolute; left: 50%; top: -17px; transform: translateX(-50%); font-size: 12px; line-height: 1.3; padding: 0 4px; background: #ffffff; color: #05050c; }
-/* Aviso legal: discreto, abajo a la derecha. */
-#legal { position: fixed; right: 10px; bottom: 6px; z-index: 5; font-size: 12px; letter-spacing: 1px; color: var(--ui-muted); text-decoration: none; opacity: .7; }
-#legal:hover { opacity: 1; text-decoration: underline; }
-body:not(.lobby-on) #legal { display: none !important; }
-body.public .wp .name { font-size: 24px; letter-spacing: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } /* con MÓVIL / MANDO y TÚ al lado */
-body.public #wait-players { grid-template-columns: 1fr; gap: 4px; } /* una fila por jugador: caben el nombre, TÚ, MÓVIL / MANDO y LISTO */
-body.public .wp { padding: 2px 8px; }
-body.public .wp .chip { font-size: 14px; }
 
-/* ===== 6-nov (2): tamaños FIJOS de las tarjetas en la versión pública (iguales en el inicio y en el lobby) y menú visible ===== */
-body.public #dev-menu { display: flex; }
-body.public #dev-toggle { display: inline-block; font-size: 17px; }
-body.public #lobby-card { width: 600px; height: 560px; box-sizing: border-box; padding: 16px 22px; justify-content: center; }
-body.public #lobby-body { width: 100%; justify-content: center; align-items: center; gap: 30px; }
-body.public #top10 { min-width: 200px; }
-body.public #public-side { width: 240px; height: 560px; box-sizing: border-box; justify-content: flex-start; }
-body.public #side-maps .map-opt { height: 66px; }
-body.public #side-maps .thumb, body.public #side-maps .map-opt svg { width: 80px; height: 45px; }
-/* Botón de invitar: grande y visible (modo a distancia) */
-body.public #invite-btn { width: 100%; min-height: 58px; margin-top: 14px; font-size: 20px; letter-spacing: 2px; padding: 6px 12px; }
-/* Lobby: tres columnas de ancho fijo (640 | 600 | 240) y dos filas (200 | 560), como en el inicio */
-body.public #lobby.waiting #lobby-row { display: grid; grid-template-columns: 640px 600px 240px; grid-template-rows: 200px 560px; gap: 12px; align-items: stretch; }
-body.public #lobby.waiting #wait-players { grid-column: 1; grid-row: 1; height: 200px; box-sizing: border-box; grid-template-columns: 1fr; gap: 4px; align-content: center; }
-body.public #lobby.waiting #wait-count { grid-column: 2; grid-row: 1; height: 200px; }
-body.public #lobby.waiting #wait-tutorial { grid-column: 1; grid-row: 2; height: 560px; box-sizing: border-box; }
-body.public #lobby.waiting #lobby-card { grid-column: 2; grid-row: 2; }
-body.public #lobby.waiting #public-side { grid-column: 3; grid-row: 1 / 3; align-self: center; }
-body.public #lobby-card { justify-content: flex-start; padding-top: 14px; }
-body.public #lobby-card #mode-banner { margin-bottom: 4px; }
-body.public #invite-btn { font-size: 17px; letter-spacing: 1px; white-space: nowrap; min-height: 54px; margin-top: 10px; }
-body.public #lobby-qr p#play-url:empty, body.public #room-line { margin-top: 6px; }
-body.public #lobby.waiting #public-side { align-self: start; grid-row: 1 / 3; }
-body.public #wait-tutorial { padding: 10px 16px 12px; }
-body.public #wait-tutorial .ui-title { font-size: 24px; margin: 0 auto 8px; }
-body.public .tut-cols { gap: 8px; }
-body.public .tut { padding: 6px 12px; column-gap: 14px; grid-template-columns: 120px 1fr; }
-body.public .tut b { font-size: 26px; }
-body.public .tut span { font-size: 17px; }
-body.public .tut .mpad, body.public .tut .mbtn { width: 96px; height: 96px; }
-body.public .tut .mbtn { font-size: 13px; }
-body.public .tut-rules { margin-top: 8px; gap: 6px 10px; }
-body.public .tut-rules span { font-size: 15px; padding: 2px 6px; }
-body.public .tut .mlabel { top: 6px; font-size: 8px; letter-spacing: 0; padding: 0 3px; max-width: 92%; overflow: hidden; } /* miniatura de 96 px: la etiqueta cabe dentro */
+/* Cuenta atrás (600 x 230 siempre): título, número y frase centrados a la izquierda y el botón (JUGAR / CANCELAR) a la derecha. */
+#wait-count { grid-column: 2; grid-row: 1; height: 230px; box-sizing: border-box; display: grid; grid-template-columns: 1fr 250px; row-gap: 2px; column-gap: 20px;
+  align-content: center; align-items: center; justify-items: center; justify-content: flex-start; padding: 12px 22px; }
+#wait-count > .ui-title, #wait-num, #wait-sub { grid-column: 1; text-align: center; margin-left: auto; margin-right: auto; }
+#wait-count > .ui-title { flex: none; margin-bottom: 4px; }
+#wait-count > .ui-title::after { margin-left: auto; margin-right: auto; } /* la barrita, centrada bajo el título */
+#wait-num { font-size: 60px; line-height: 1; font-weight: 700; color: var(--p2); text-shadow: 5px 5px 0 var(--ui-blue); min-width: 2ch; }
+#wait-num:empty { display: none; }
+#wait-num.idle { color: var(--ui-muted); text-shadow: none; }
+#wait-num.tick { font-size: 84px; animation: join-tick 1s steps(4) infinite; } /* la cuenta atrás, grande y latiendo */
+@keyframes join-tick { 0% { transform: scale(1.18); } 40%, 100% { transform: scale(1); } }
+#wait-sub { flex: none; font-size: 15px; letter-spacing: 1px; color: var(--white); line-height: 1.25; min-height: 0; max-width: 100%; }
+#wait-sub.warn { color: var(--ui-amber); } /* ¿SIGUES AHÍ? (inactividad) */
+#quick-actions { grid-column: 2; grid-row: 1 / 4; align-self: center; margin: 0; width: 100%; }
+#quick-actions[hidden] { display: none; }
+#quick-actions .ui-btn { font-family: var(--font-ui); font-size: 20px; letter-spacing: 2px; min-width: 0; width: 100%; min-height: 56px; padding: 6px 18px; cursor: pointer; color: var(--white); }
+#quick-ready.cancel { --tab-img: var(--tab-img-p2); }
 
-/* 6-nov (3): dificultad de los bots en columna (uno debajo de otro) y cuadros de mapa algo más bajos para que la columna quepa en sus 560 */
-body.public #side-levels { grid-template-columns: 1fr; gap: 5px; }
-body.public #side-levels .ui-tab { font-size: 15px; padding: 5px 0 3px; }
-body.public #side-maps .map-opt { height: 60px; }
-body.public #side-maps .thumb, body.public #side-maps .map-opt svg { width: 72px; height: 40px; }
-body.public #side-maps .map-opt .q { font-size: 28px; line-height: 40px; height: 40px; }body.public #public-side { padding: 10px 14px 12px; gap: 5px; }
-body.public #public-side .ui-title { margin: 2px auto 4px; }
-body.public #side-maps .map-opt { height: 56px; gap: 1px; }
-body.public #side-levels .ui-tab { padding: 4px 0 2px; }
-body.public #side-hint { margin: 0; }
-body.public #side-maps .map-opt { height: 50px; }
-body.public #side-maps .thumb, body.public #side-maps .map-opt svg { width: 64px; height: 36px; }
-body.public #side-maps .map-opt .q { font-size: 24px; line-height: 36px; height: 36px; }
+/* ASÍ SE JUEGA: a todo el ancho, con su tamaño natural; los 3 pasos en fila. */
+#wait-tutorial { grid-column: 1 / 3; grid-row: 2; box-sizing: border-box; min-height: 0; padding: 10px 16px 12px; display: flex; flex-direction: column; gap: 12px; }
+#wait-tutorial .ui-title { font-size: 24px; margin: 0 auto 8px; }
+.tut-cols { flex: none; display: grid; grid-template-columns: 1fr; grid-template-rows: minmax(0, 1fr); grid-auto-rows: auto; gap: 8px 10px; min-height: 0; overflow: hidden; }
+.cc-set { display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: auto; grid-auto-rows: auto; gap: 16px; min-height: 0; }
+.tut { display: grid; grid-template-columns: 120px 1fr; grid-template-rows: auto auto; column-gap: 14px; row-gap: 2px; align-content: center; padding: 6px 12px; background: #0a0d18;
+  border-left: 8px solid var(--p1); animation: tut-focus 9s steps(1) infinite; }
+.tut:nth-child(2) { animation-delay: 3s; }
+.tut:nth-child(3) { animation-delay: 6s; }
+.cc-pad .tut { border-left-color: var(--p3); }
+@keyframes tut-focus { 0% { background: #141b33; } 33.4%, 100% { background: #0a0d18; } } /* se iluminan por turnos */
+.tut b { font-size: 26px; color: var(--white); letter-spacing: 2px; align-self: end; }
+.tut span { font-size: 17px; color: #c9d3ff; line-height: 1.25; align-self: start; }
+.cc-viz { grid-row: 1 / 3; justify-self: center; align-self: center; display: flex; align-items: center; justify-content: center; }
+.cc-note { grid-column: 1 / -1; margin: 0; font-size: 14px; letter-spacing: 1px; color: var(--ui-amber); text-align: center; }
+.cc-set .cc-padfix { grid-column: 1 / 4; margin: 2px 0 0; font-size: 13px; line-height: 1.25; letter-spacing: 1px; color: var(--ui-amber); text-align: center; }
+/* Teclas y ratón dibujados (las teclas "se pulsan" por turnos, a saltos). Las plantillas del HTML no se ven: controlsCard.js las copia en sus filas. */
+.kviz { display: none; }
+.cc-card .kviz { display: grid; grid-row: auto; }
+.cc-card .kviz.kpad { display: flex; gap: 4px; }
+.kviz .key { display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; box-sizing: border-box; font-size: 17px; font-weight: 700; color: var(--white);
+  background: #1a2140; border: 3px solid #05070d; box-shadow: inset -3px -3px 0 #0f1428, inset 3px 3px 0 #3a4570; }
+.cc-card .kpad .key { width: auto; min-width: 38px; height: 38px; padding: 0 4px; font-size: 15px; }
+.kwasd { grid-template-columns: repeat(3, 30px); grid-template-rows: repeat(2, 30px); gap: 3px; }
+.kwasd .kw { grid-column: 2; grid-row: 1; animation: key-tap 2s steps(1) infinite; }
+.kwasd .ka { grid-column: 1; grid-row: 2; animation: key-tap 2s steps(1) 0.5s infinite; }
+.kwasd .ks { grid-column: 2; grid-row: 2; animation: key-tap 2s steps(1) 1s infinite; }
+.kwasd .kd { grid-column: 3; grid-row: 2; animation: key-tap 2s steps(1) 1.5s infinite; }
+@keyframes key-tap { 0% { background: var(--p1); } 25%, 100% { background: #1a2140; } }
+.kmouse svg { width: 46px; height: 69px; display: block; image-rendering: pixelated; }
+.kspace .key.wide { width: 96px; font-size: 12px; letter-spacing: 1px; animation: key-tap 1.6s steps(1) infinite; }
+/* Tecla dentro de una frase: encapsulada, con el mismo aspecto que las teclas dibujadas. */
+.cc-row .kc { display: inline-block; font-style: normal; margin: 0 2px; padding: 1px 6px; color: var(--white); background: #1a2140; border: 2px solid #05070d; box-shadow: inset -2px -2px 0 #0f1428, inset 2px 2px 0 #3a4570; line-height: 1.2; }
 
-/* ===== 6-nov (4): columna lateral estrecha con miniaturas grandes, ranking a toda la altura y la misma tarjeta en 1 PANTALLA y A DISTANCIA ===== */
-body.public #public-side { width: 176px; padding: 10px 12px 12px; gap: 4px; }
-body.public #side-maps .map-grid { gap: 4px; }
-/* Miniatura a todo el ancho (16:9 como el mapa) y el nombre encima, abajo: más mapa visible sin más alto. */
-body.public #side-maps .map-opt { position: relative; height: auto; padding: 0; border-width: 2px; gap: 0; display: block; }
-body.public #side-maps .thumb, body.public #side-maps .map-opt svg { width: 100%; height: auto; aspect-ratio: 16 / 9; }
-body.public #side-maps .thumb { display: block; }
-body.public #side-maps .map-opt .q { width: 100%; height: auto; aspect-ratio: 16 / 9; font-size: 30px; line-height: 1; display: flex; align-items: center; justify-content: center; background: #0b0e1a; }
-body.public #side-maps .map-opt .name { position: absolute; left: 0; right: 0; bottom: 0; padding: 1px 4px; font-size: 11px; letter-spacing: 1px; text-align: left; background: rgba(5, 5, 12, 0.78); color: var(--white); }
-body.public #side-maps .map-opt .mood { left: 3px; top: 3px; }
-body.public #side-levels .ui-tab { font-size: 14px; padding: 3px 0 2px; }
-body.public #side-wins-box { margin-top: auto; } /* el podio siempre abajo del todo */
-body.public #side-wins li { font-size: 13px; padding: 1px 5px; }
-body.public #side-wins li.free { color: var(--ui-muted); }
-body.public #side-wins li.free .score { color: #3a4566; }
-/* Tarjeta del QR: el ranking ocupa toda la altura de su columna (10 filas siempre, repartidas) y va centrado en ella. */
-body.public #lobby-body { flex: 1; align-items: stretch; min-height: 0; }
-body.public #lobby-qr { justify-content: flex-start; }
-body.public #top10 { width: 226px; min-width: 0; display: flex; flex-direction: column; align-items: stretch; }
-body.public #top10 .ui-title { margin-bottom: 4px; }
-body.public #top10-list { flex: 1; display: flex; flex-direction: column; justify-content: space-between; }
-body.public #top10 li { font-size: 17px; padding: 3px 8px; }
-body.public #top10 li.free { color: #3a4566; }
-body.public #top10 li.free .pos { background: #1d2742; color: var(--ui-muted); }
-body.public #top10 li.free .score { color: #3a4566; }
-body.public #top10-note { margin: 6px 0 0; font-size: 11px; letter-spacing: 1px; text-align: center; color: var(--ui-muted); }
-/* El botón de invitar solo funciona A DISTANCIA, pero en 1 PANTALLA se reserva su hueco: la tarjeta es idéntica en los dos modos. */
-body.public #invite-btn[hidden] { display: block !important; visibility: hidden; }
-/* Rejilla del lobby con la columna lateral más estrecha. */
-body.public #lobby.waiting #lobby-row { grid-template-columns: 640px 600px 176px; }
-body.public #public-side { width: 164px; padding: 8px 10px 10px; gap: 3px; }
-body.public #lobby.waiting #lobby-row { grid-template-columns: 640px 600px 164px; }
-body.public #public-side .ui-title { margin: 1px auto 3px; font-size: 14px; }
-body.public #side-levels { gap: 3px; }
-body.public #side-levels .ui-tab { font-size: 13px; padding: 2px 0 1px; }
-body.public #side-wins li { font-size: 12px; padding: 0 4px; }
-body.public #side-maps .thumb, body.public #side-maps .map-opt svg, body.public #side-maps .map-opt .q { aspect-ratio: 16 / 8.5; }
-body.public #side-maps .thumb { background: #0b0e1a; }
-body.public #room-line, body.public #host-line { max-width: 300px; } /* una sola línea en los dos modos: la tarjeta no cambia */
-body.public #lobby.waiting #public-side { grid-row: 2; align-self: stretch; } /* junto a la tarjeta del QR y con su misma altura, como en el inicio */
+/* Debajo de las tarjetas: SALIR (al título). */
+#arcade-actions[hidden] { display: none !important; }
+#lobby.waiting #arcade-actions { grid-column: 1 / 3; grid-row: 3; display: flex; justify-content: center; gap: 16px; }
+#arcade-actions .ui-btn { font-family: var(--font-ui); font-size: 20px; letter-spacing: 2px; min-height: 52px; min-width: 200px; padding: 2px 22px; color: var(--white); cursor: pointer; }
 
-/* ===== 6-nov (5): podio de la sala DEBAJO del Top 10 (misma tarjeta, mismo estilo de fila, en fucsia) ===== */
-body.public #side-wins-box { margin-top: 10px; }
-body.public #side-wins-box .ui-title { --tc: #70003a; --bar: var(--p2); margin-bottom: 4px; }
-body.public #side-wins { list-style: none; margin: 0; padding: 0; }
-body.public #side-wins li { display: grid; grid-template-columns: 22px 1fr auto; align-items: center; gap: 10px; padding: 3px 8px; font-size: 17px; justify-content: stretch; }
-body.public #side-wins li .pos { background: var(--p2); color: var(--ui-edge); }
-body.public #side-wins li:first-child .pos { background: var(--p2); color: var(--ui-edge); }
-body.public #side-wins li .score { font-size: 13px; color: var(--ui-muted); }
-body.public #side-wins li:first-child, body.public #side-wins li:first-child .score { color: var(--p2); }
-body.public #side-wins li.free, body.public #side-wins li.free .score { color: #3a4566; }
-body.public #side-wins li.free .pos { background: #3a1430; color: var(--ui-muted); }
-body.public #top10-note { margin-top: 4px; }
-/* Columna lateral: solo mapa y dificultad. Miniaturas otra vez en 16:9 y la dificultad abajo, con botones más altos. */
-body.public #side-maps .thumb, body.public #side-maps .map-opt svg, body.public #side-maps .map-opt .q { aspect-ratio: 16 / 9; }
-body.public #side-maps .map-grid { gap: 6px; }
-body.public #public-side > .ui-title:nth-of-type(2) { margin-top: auto; }
-body.public #side-levels { gap: 6px; }
-body.public #side-levels .ui-tab { font-size: 16px; padding: 8px 0 6px; }
-
-/* ===== 6-nov (5): ventana de salir con Escape (leaveRoom.js) ===== */
+/* ---- "¿YA TE VAS?" (ESC en la sala; leaveRoom.js) ---- */
 #leave { position: fixed; inset: 0; z-index: 50; display: flex; align-items: center; justify-content: center; background: rgba(5, 5, 12, 0.78); }
 #leave[hidden] { display: none; }
 #leave .leave-card { width: min(560px, 90vw); padding: 22px 26px 20px; text-align: center; transform: scale(var(--s, 1)); }
@@ -351,139 +147,8 @@ body.public #side-levels .ui-tab { font-size: 16px; padding: 8px 0 6px; }
 #leave .ui-tab { font-family: var(--font-ui); font-size: 22px; padding: 10px 0 8px; cursor: pointer; color: var(--white); }
 #leave .ui-tab.danger { --tab-img: var(--tab-img-p2); }
 #leave .leave-keys { margin-top: 14px; font-size: 13px; letter-spacing: 1px; color: var(--ui-muted); }
-body.public #lobby-qr { flex: none; width: 300px; } /* la columna del QR mide siempre 300: el ranking se queda con el resto */
-body.public #top10 { flex: 1; width: auto; }
 
-/* ===== 10-nov: partida rápida (quickLobby.js) ===== */
-/* Miniaturas de teclado y ratón en "Así se juega" (solo en modo teclado; en el stand y con el móvil enganchado, las del móvil). */
-.kviz { display: none; }
-body.kbd-mode .tut .mpad, body.kbd-mode .tut .mbtn { display: none; }
-body.kbd-mode .tut .kviz { display: grid; grid-row: 1 / 3; justify-self: center; align-self: center; }
-.kviz .key { display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; box-sizing: border-box; font-size: 15px; font-weight: 700; color: var(--white);
-  background: #1a2140; border: 3px solid #05070d; box-shadow: inset -3px -3px 0 #0f1428, inset 3px 3px 0 #3a4570; }
-.kwasd { grid-template-columns: repeat(3, 30px); grid-template-rows: repeat(2, 30px); gap: 3px; }
-.kwasd .kw { grid-column: 2; grid-row: 1; animation: key-tap 2s steps(1) infinite; }
-.kwasd .ka { grid-column: 1; grid-row: 2; animation: key-tap 2s steps(1) 0.5s infinite; }
-.kwasd .ks { grid-column: 2; grid-row: 2; animation: key-tap 2s steps(1) 1s infinite; }
-.kwasd .kd { grid-column: 3; grid-row: 2; animation: key-tap 2s steps(1) 1.5s infinite; }
-@keyframes key-tap { 0% { background: var(--p1); } 25%, 100% { background: #1a2140; } } /* las teclas "se pulsan" por turnos, a saltos */
-.kmouse svg { width: 46px; height: 69px; display: block; image-rendering: pixelated; }
-.kspace .key.wide { width: 96px; font-size: 12px; letter-spacing: 1px; animation: key-tap 1.6s steps(1) infinite; }
-/* Botones de la búsqueda: LISTO / CANCELAR LISTO / JUGAR CON BOTS, dentro de la tarjeta de la cuenta atrás. */
-#quick-actions { display: flex; gap: 10px; margin-top: 4px; }
-#quick-actions[hidden] { display: none; }
-#quick-actions .ui-btn { font-family: var(--font-ui); font-size: 22px; letter-spacing: 2px; min-width: 230px; min-height: 52px; padding: 6px 18px; cursor: pointer; color: var(--white); }
-#quick-actions .ui-btn[hidden] { display: none; }
-#quick-bots, #quick-ready.cancel { --tab-img: var(--tab-img-p2); }
-body.quick #wait-count { justify-content: flex-start; gap: 4px; padding-top: 12px; }
-body.quick #wait-num { font-size: 64px; }
-/* Sin columna de anfitrión: la rejilla de la espera tiene dos columnas. */
-body.quick #lobby.waiting #lobby-row { grid-template-columns: 640px 600px; }
-body.quick #insert-coin { display: none !important; }
-body.quick #pad-hint { display: none !important; } /* partida rápida: cada pantalla es un jugador (teclado o su móvil) */
-
-/* ===== 10-nov (2): sala de espera pulida (quickLobby.js, nombres editables, mandos) ===== */
-/* Rejilla: la columna de mapa y bots solo existe con anfitrión (sala privada, solitario, pantalla compartida); en la pública, dos columnas. */
-body.quick:not(.no-side) #lobby.waiting #lobby-row { grid-template-columns: 640px 600px 164px; }
-body.no-side #lobby.waiting #lobby-row { grid-template-columns: 640px 600px; }
-/* Tarjeta de la cuenta atrás (600 x 200 siempre): una columna centrada o, si hay botón, texto a la izquierda y el botón a la derecha. */
-body.quick #wait-count { display: grid; grid-template-columns: 1fr; align-content: center; justify-items: center; row-gap: 2px; padding: 12px 22px; }
-body.quick #wait-count.with-actions { grid-template-columns: 1fr 240px; column-gap: 20px; justify-items: center; } /* título, número y frase centrados entre sí */
-body.quick #wait-count.with-actions > .ui-title, body.quick #wait-count.with-actions #wait-num, body.quick #wait-count.with-actions #wait-sub { grid-column: 1; text-align: center; margin-left: auto; margin-right: auto; }
-body.quick #wait-count.with-actions > .ui-title::after { margin-left: auto; margin-right: auto; } /* la barrita, centrada bajo el título */
-body.quick #wait-count #quick-actions { grid-column: 2; grid-row: 1 / 4; align-self: center; margin: 0; flex-direction: column; width: 100%; }
-body.quick #quick-actions .ui-btn { min-width: 0; width: 100%; font-size: 20px; min-height: 56px; }
-body.quick #wait-num { font-size: 60px; line-height: 1; }
-body.quick #wait-num:empty { display: none; }
-body.quick #wait-num.code { font-size: 54px; letter-spacing: 8px; color: var(--white); text-shadow: 4px 4px 0 var(--ui-blue); } /* el código de la sala privada, para dictarlo */
-body.quick #wait-sub { font-size: 15px; min-height: 0; }
-#quick-back { margin-top: 10px; width: 100%; min-height: 50px; font-family: var(--font-ui); font-size: 17px; letter-spacing: 1px; cursor: pointer; color: var(--white); }
-#quick-back[hidden] { display: none !important; }
-/* Fichas de jugador: EDITAR el nombre (tu ficha o la de un mando) y el editor en línea de 3 letras. */
-.wp .wp-edit, .wp .wp-ok { flex: none; font-family: var(--font-ui); font-size: 12px; letter-spacing: 1px; padding: 1px 7px; line-height: 1.6; cursor: pointer; color: var(--white); background: #1a2140; border: 2px solid #3a4570; }
-.wp .wp-edit:hover, .wp .wp-ok:hover { border-color: var(--c); }
-.wp .wp-ok { background: var(--c); color: var(--ui-edge); border-color: var(--c); }
-.wp .wp-input { width: 3.6em; font-family: var(--font-ui); font-size: 22px; letter-spacing: 4px; text-transform: uppercase; color: var(--white); background: #05070d; border: 3px solid var(--c); padding: 0 4px; outline: none; }
-.wp .wp-help { flex: none; font-size: 11px; letter-spacing: 1px; color: var(--c); }
-.wp.editing .name span { padding: 0 2px; }
-.wp.editing .name span.cur { background: var(--c); color: var(--ui-edge); animation: ready-blink 0.6s steps(2) infinite; }
-/* "¿Cuál soy?" (A en el mando): la ficha se ilumina en su color unos instantes, a saltos. */
-.wp.flash { animation: wp-flash 1.4s steps(1); }
-@keyframes wp-flash { 0%, 30%, 60% { background: var(--c); } 15%, 45%, 75%, 100% { background: #0a0d18; } }
-.wp.flash .name, .wp.flash .chip { color: var(--white); }
-body.quick-solo #side-wins-box { display: none !important; } /* jugando solo, el podio de la sala no dice nada */
-body.quick #wait-num.tick { font-size: 84px; } /* la cuenta atrás, grande */
-/* "Así se juega" con 4 tarjetas (pantalla compartida con mando): todo más compacto para que quepan las cuatro y las reglas en sus 560 de alto. */
-body.public.show-pad .tut-cols { gap: 6px; }
-body.public.show-pad .tut { padding: 4px 12px; grid-template-columns: 100px 1fr; }
-body.public.show-pad .tut .mpad, body.public.show-pad .tut .mbtn { width: 72px; height: 72px; }
-body.public.show-pad .tut .mbtn { font-size: 10px; gap: 2px; }
-body.public.show-pad .tut .mlabel { display: none; }
-body.public.show-pad .tut b { font-size: 22px; }
-body.public.show-pad .tut span { font-size: 14px; }
-body.public.show-pad .mgamepad svg { width: 96px; height: 52px; }
-body.public.show-pad .tut-rules span { font-size: 13px; }
-
-/* ===== 10-nov (3): "¿CÓMO TE LLAMAS?" al entrar en una sala en tu pantalla (nameGate.js) ===== */
-#name-gate { position: fixed; inset: 0; z-index: 45; display: flex; align-items: center; justify-content: center; background: rgba(5, 5, 12, 0.8); }
-#name-gate[hidden] { display: none; }
-#name-gate .gate-card { width: 420px; padding: 22px 26px 22px; display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; transform: scale(var(--s, 1)); }
-#name-gate .ui-title { font-size: 30px; }
-#name-gate p { margin: 0; font-size: 17px; color: #c9d1ee; }
-#name-gate .gate-input { width: 4.4em; font-family: var(--font-ui); font-size: 52px; letter-spacing: 10px; text-align: center; text-transform: uppercase; color: var(--white);
-  background: #05070d; border: 4px solid var(--p1); padding: 2px 0 2px 10px; outline: none; }
-#name-gate .gate-msg { min-height: 1.3em; font-size: 15px; color: var(--p2); }
-#name-gate .ui-tab { width: 100%; font-family: var(--font-ui); font-size: 22px; padding: 10px 0 8px; cursor: pointer; color: var(--white); --tab-img: var(--tab-img-p2); }
-#name-gate .ui-tab:disabled { opacity: 0.45; cursor: default; }
-
-/* ===== 10-nov (3): tarjeta ASÍ SE JUEGA según los controles de la partida (controlsCard.js) ===== */
-/* Un tipo de control: sus 3 pasos a todo el ancho (como antes). Dos: mitad y mitad, en pequeño. Siempre el mismo tamaño de tarjeta. */
-body.public .cc-card .tut-cols { display: grid; grid-template-columns: 1fr; grid-template-rows: minmax(0, 1fr); grid-auto-rows: auto; gap: 8px 10px; min-height: 0; overflow: hidden; }
-body.public .cc-card .tut-cols.cc-two { grid-template-columns: 1fr 1fr; }
-body.public .cc-set { display: grid; grid-template-rows: repeat(3, minmax(0, 1fr)); gap: 8px; min-height: 0; }
-body.public .cc-two .cc-set { grid-template-rows: auto repeat(3, minmax(0, 1fr)); gap: 6px; padding: 6px; background: #070a14; }
-body.public .cc-two .cc-set.on { box-shadow: 0 0 0 3px var(--p3); }
-body.public .cc-head { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 30px; font-size: 18px; letter-spacing: 2px; color: var(--white); }
-body.public .cc-head .mgamepad svg { width: 44px; height: 24px; }
-body.public .cc-head em { font-style: normal; font-size: 12px; letter-spacing: 1px; padding: 1px 5px; background: var(--p3); color: var(--ui-edge); }
-body.public .cc-set .tut { border-left-color: var(--p1); }
-body.public .cc-pad .tut { border-left-color: var(--p3); }
-body.public .cc-viz { grid-row: 1 / 3; justify-self: center; align-self: center; display: flex; align-items: center; justify-content: center; }
-body.public .cc-card .kviz { display: grid; grid-row: auto; }
-body.public .cc-card .kviz.kpad { display: flex; gap: 4px; }
-body.public .cc-card .kpad .key { width: auto; min-width: 38px; height: 38px; padding: 0 4px; font-size: 15px; }
-/* Mitad y mitad: dibujos y textos más pequeños para que quepan los 3 pasos de cada uno. */
-body.public .cc-two .tut { grid-template-columns: 62px 1fr; column-gap: 8px; padding: 4px 8px; animation: none; background: #0a0d18; }
-body.public .cc-two .tut b { font-size: 17px; letter-spacing: 1px; }
-body.public .cc-two .tut span { font-size: 13px; line-height: 1.2; }
-body.public .cc-two .mpad, body.public .cc-two .mbtn { width: 58px; height: 58px; border-width: 4px; }
-body.public .cc-two .mbtn { font-size: 9px; gap: 1px; }
-body.public .cc-two .mpad .mlabel { display: none; }
-body.public .cc-two .kviz .key { width: 18px; height: 18px; font-size: 10px; border-width: 2px; }
-body.public .cc-two .kwasd { grid-template-columns: repeat(3, 18px); grid-template-rows: repeat(2, 18px); gap: 2px; }
-body.public .cc-two .kmouse svg { width: 28px; height: 42px; }
-body.public .cc-two .kspace .key.wide { width: 58px; font-size: 8px; }
-body.public .cc-two .kpad .key { min-width: 26px; height: 26px; font-size: 11px; padding: 0 2px; }
-body.public .cc-note { grid-column: 1 / -1; margin: 0; font-size: 14px; letter-spacing: 1px; color: var(--ui-amber); text-align: center; }
-
-/* JUGAR CON BOTS debajo del QR (en el hueco que antes tenía el botón de invitar; reservado aunque no se vea: la tarjeta no salta)
-   y COPIA EL ENLACE E INVITA junto al código de la sala, en la tarjeta de la cuenta atrás (quickLobby.js). */
-body.public #qr-bots { width: 100%; min-height: 54px; margin-top: 10px; font-family: var(--font-ui); font-size: 17px; letter-spacing: 1px; white-space: nowrap; padding: 6px 12px; cursor: pointer; color: var(--white); }
-body.quick #qr-bots[hidden] { display: block !important; visibility: hidden; }
-body.quick #quick-actions #invite-btn { margin-top: 0; white-space: normal; font-size: 17px; line-height: 1.15; }
-body.quick #quick-actions #invite-btn[hidden] { display: none !important; }
-/* El espaciado entre letras deja un hueco tras la última: se compensa para que el código y el reloj queden centrados de verdad bajo su título. */
-body.quick #wait-num.code { margin-right: -8px; }
-/* Columna de mapa y dificultad: quién elige (anfitrión con corona, o votación en la partida pública) y los votos de cada opción. */
-#side-host { margin: 0 0 4px; font-size: 12px; letter-spacing: 1px; color: var(--ui-amber); text-align: center; line-height: 1.3; }
-#side-host[hidden] { display: none; }
-.crown { width: 21px; height: 15px; display: inline-block; vertical-align: -1px; image-rendering: pixelated; flex: none; }
-#side-host .crown { width: 14px; height: 10px; }
-.wp .crown { margin-right: 6px; align-self: center; }
-body.public #side-maps .map-opt[data-votes]:not([data-votes=""])::after { content: attr(data-votes); position: absolute; right: 0; top: 0; padding: 1px 4px; font-size: 10px; letter-spacing: 1px; background: var(--p3); color: var(--ui-edge); }
-body.public #side-maps .map-opt.mine, body.public #side-levels .side-level.mine { outline: 3px solid var(--p3); outline-offset: -3px; }
-#side-levels .side-level .votes { margin-left: 4px; color: var(--p3); }
-/* ===== 10-nov (4): menú de PAUSA (pauseMenu.js), mismo estilo que "¿YA TE VAS?" ===== */
+/* ---- Menú de PAUSA (pauseMenu.js), mismo estilo que "¿YA TE VAS?" ---- */
 #pause { position: fixed; inset: 0; z-index: 50; display: flex; align-items: center; justify-content: center; background: rgba(5, 5, 12, 0.72); }
 #pause[hidden] { display: none; }
 #pause .leave-card { width: min(560px, 90vw); padding: 22px 26px 20px; text-align: center; transform: scale(var(--s, 1)); }
@@ -496,48 +161,40 @@ body.public #side-maps .map-opt.mine, body.public #side-levels .side-level.mine 
 #pause .leave-keys { margin-top: 14px; font-size: 13px; letter-spacing: 1px; color: var(--ui-muted); }
 #pause-banner { position: fixed; left: 50%; top: 18%; transform: translateX(-50%) scale(var(--s, 1)); z-index: 40; padding: 12px 22px; font-size: 24px; letter-spacing: 2px; color: var(--white); text-align: center; }
 #pause-banner[hidden] { display: none; }
-/* La línea de quién elige cabe en una fila y la columna no se sale de la altura de la tarjeta del QR (560). */
-body.public #side-host { font-size: 11px; letter-spacing: 0; white-space: nowrap; overflow: hidden; text-overflow: clip; margin: 0 0 2px; }
-body.public #side-levels .ui-tab { padding: 5px 0 4px; }
-body.public #side-maps .map-grid { gap: 4px; }
-/* ===== 10-nov (6): configurar un mando que el navegador no reconoce (padSetup.js) ===== */
-#pad-setup { position: fixed; left: 50%; bottom: 6%; transform: translateX(-50%) scale(var(--s, 1)); transform-origin: bottom center; z-index: 55; width: 560px; padding: 16px 22px 18px; text-align: center; }
+
+/* ---- "¿CÓMO TE LLAMAS?" (nameGate.js): al pulsar JUGAR en el título y si el servidor no acepta el nombre ---- */
+#name-gate { position: fixed; inset: 0; z-index: 45; display: flex; align-items: center; justify-content: center; background: rgba(5, 5, 12, 0.8); }
+#name-gate[hidden] { display: none; }
+#name-gate .gate-card { width: 420px; padding: 22px 26px 22px; display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; transform: scale(var(--s, 1)); }
+#name-gate .ui-title { font-size: 30px; }
+#name-gate p { margin: 0; font-size: 17px; color: #c9d1ee; }
+#name-gate .gate-input { width: 4.4em; font-family: var(--font-ui); font-size: 52px; letter-spacing: 10px; text-align: center; text-transform: uppercase; color: var(--white);
+  background: #05070d; border: 4px solid var(--p1); padding: 2px 0 2px 10px; outline: none; }
+#name-gate .gate-msg { min-height: 1.3em; font-size: 15px; color: var(--p2); }
+#name-gate .ui-tab { width: 100%; font-family: var(--font-ui); font-size: 22px; padding: 10px 0 8px; cursor: pointer; color: var(--white); --tab-img: var(--tab-img-p2); }
+#name-gate .ui-tab:disabled { opacity: 0.45; cursor: default; }
+#name-gate .ui-tab.focus { outline: 4px solid var(--p3); outline-offset: 3px; }
+#name-gate .gate-pad { margin: 2px 0 0; font-size: 12px; letter-spacing: 1px; color: var(--ui-muted); }
+#name-gate .gate-input::selection { background: var(--p2); color: var(--white); }
+
+/* ---- Configurar un mando que el navegador no reconoce (padSetup.js): dibujo, "PULSA X", puntos de progreso y el aviso ---- */
+#pad-setup { position: fixed; left: 50%; bottom: 6%; transform: translateX(-50%) scale(var(--s, 1)); transform-origin: bottom center; z-index: 55; width: 420px; padding: 14px 20px 16px; text-align: center; }
 #pad-setup[hidden] { display: none; }
 #pad-setup .ui-title { font-size: 26px; margin: 0 auto 8px; }
 #pad-setup .ps-intro { margin: 0; font-size: 16px; line-height: 1.35; color: #c9d1ee; }
-#pad-setup .ps-step { margin: 14px 0 0; font-size: 34px; letter-spacing: 2px; color: var(--white); text-shadow: 3px 3px 0 var(--ui-blue); }
+#pad-setup .ps-step { margin: 8px 0 0; font-size: 40px; letter-spacing: 3px; color: var(--white); text-shadow: 3px 3px 0 var(--ui-blue); }
 #pad-setup .ps-why { margin: 4px 0 0; font-size: 15px; color: var(--p3); letter-spacing: 1px; }
 #pad-setup .ps-count { margin: 8px 0 0; font-size: 13px; color: var(--ui-muted); letter-spacing: 2px; }
 #pad-setup .ps-skip { margin-top: 12px; padding: 6px 18px 4px; font-family: var(--font-ui); font-size: 14px; cursor: pointer; color: var(--white); }
-/* La X para cerrar la configuración del mando y el botón NO CONFIGURADO de la ficha (padSetup.js) */
+/* La X para cerrar la configuración del mando */
 #pad-setup .ps-close { position: absolute; right: 8px; top: 6px; width: 32px; height: 32px; padding: 0; font-family: var(--font-ui); font-size: 26px; line-height: 1; color: var(--ui-muted); background: none; border: 2px solid #2a3150; cursor: pointer; }
 #pad-setup .ps-close:hover { color: var(--white); border-color: var(--p2); }
-.wp .wp-setup { flex: none; margin-left: 6px; padding: 2px 6px; font-family: var(--font-ui); font-size: 11px; letter-spacing: 1px; color: var(--ui-edge); background: var(--ui-amber); border: 0; cursor: pointer; }
-/* Volver a configurar el mando manteniendo un botón (padSetup.js) */
+/* Volver a configurar el mando manteniendo un botón */
 #pad-setup .ps-redo { margin: 10px 0 0; font-size: 12px; letter-spacing: 1px; color: var(--ui-amber); }
 #pad-setup .ps-actions { display: flex; justify-content: center; gap: 10px; margin-top: 12px; }
 #pad-setup .ps-actions .ui-tab { margin: 0; padding: 6px 16px 4px; font-family: var(--font-ui); font-size: 14px; cursor: pointer; color: var(--white); }
 #pad-hold { position: fixed; left: 50%; top: 14%; transform: translateX(-50%) scale(var(--s, 1)); z-index: 56; padding: 10px 20px; font-size: 20px; letter-spacing: 2px; color: var(--white); text-align: center; }
 #pad-hold[hidden] { display: none; }
-/* Aviso de reconfigurar el mando, dentro de sus controles (controlsCard.js) */
-body.public .cc-set { grid-auto-rows: auto; }
-body.public .cc-padfix { margin: 0; font-size: 13px; line-height: 1.25; letter-spacing: 1px; color: var(--ui-amber); text-align: center; }
-body.public .cc-two .cc-padfix { font-size: 11px; }
-/* "¿CÓMO TE LLAMAS?" con mando (nameGate.js): el botón elegido y la ayuda */
-#name-gate .ui-tab.focus { outline: 4px solid var(--p3); outline-offset: 3px; }
-#name-gate .gate-pad { margin: 2px 0 0; font-size: 12px; letter-spacing: 1px; color: var(--ui-muted); }
-#name-gate .gate-input::selection { background: var(--p2); color: var(--white); }
-/* ===== 10-nov (11): aviso encapsulado con icono de alerta (alertIcon.js) y configuración del mando visual (padSetup.js) ===== */
-.alert-box { display: flex; align-items: center; gap: 8px; margin: 0; padding: 5px 9px; background: #1e1a06; border: 2px solid #6b5a00; color: var(--ui-amber); font-size: 12px; line-height: 1.25; letter-spacing: 1px; text-align: left; }
-.alert-box .alert-ico { flex: none; width: 18px; height: 16px; image-rendering: pixelated; }
-body.public .cc-padfix.alert-box { margin-top: 2px; }
-body.public .cc-two .cc-padfix.alert-box { font-size: 10px; padding: 4px 6px; gap: 6px; }
-body.public .cc-two .cc-padfix .alert-ico { width: 14px; height: 12px; }
-#pad-hint .alert-box { display: inline-flex; margin: 6px auto 0; }
-#pad-hint { display: flex; flex-direction: column; align-items: center; }
-.dev-hint .alert-box { margin: 4px 0; }
-/* Configurar el mando: dibujo, "PULSA X", puntos de progreso y el aviso; nada más. */
-#pad-setup { width: 420px; padding: 14px 20px 16px; }
 #pad-setup .ps-pad { display: block; width: 288px; height: 180px; margin: 6px auto 0; image-rendering: pixelated; }
 #pad-setup .ps-pad .pb { fill: #1a2140; }
 #pad-setup .ps-pad .pd { fill: #0b0e1a; }
@@ -545,12 +202,13 @@ body.public .cc-two .cc-padfix .alert-ico { width: 14px; height: 12px; }
 #pad-setup .ps-pad .pp.done { fill: #3346ff; }
 #pad-setup .ps-pad .pp.now { fill: #00f0ff; animation: ps-blink 0.5s steps(1) infinite; }
 @keyframes ps-blink { 50% { fill: #ffffff; } }
-#pad-setup .ps-step { margin: 8px 0 0; font-size: 40px; letter-spacing: 3px; color: var(--white); text-shadow: 3px 3px 0 var(--ui-blue); }
 #pad-setup .ps-dots { display: flex; justify-content: center; gap: 8px; margin: 10px 0 12px; }
 #pad-setup .ps-dots i { width: 12px; height: 12px; background: #2a3150; }
 #pad-setup .ps-dots i.done { background: #3346ff; }
 #pad-setup .ps-dots i.now { background: #00f0ff; }
 #pad-setup .ps-redo.alert-box { justify-content: center; }
-/* Con mando: cómo se eligen mapa y dificultad (publicHost.js) */
-#side-pad { margin: 4px 0 0; font-size: 11px; letter-spacing: 1px; color: var(--p3); text-align: center; }
-#side-pad[hidden] { display: none; }
+
+/* ---- Aviso encapsulado con icono de alerta (alertIcon.js) ---- */
+.alert-box { display: flex; align-items: center; gap: 8px; margin: 0; padding: 5px 9px; background: #1e1a06; border: 2px solid #6b5a00; color: var(--ui-amber); font-size: 12px; line-height: 1.25; letter-spacing: 1px; text-align: left; }
+.alert-box .alert-ico { flex: none; width: 18px; height: 16px; image-rendering: pixelated; }
+.dev-hint .alert-box { margin: 4px 0; }

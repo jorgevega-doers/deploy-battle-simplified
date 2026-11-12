@@ -1,4 +1,4 @@
-// Mando conectado al PC en las salas en tu pantalla (versión pública, 10-nov): el jugador de esta pantalla puede jugar con teclado y ratón O con
+// Mando conectado al PC: el jugador de esta pantalla puede jugar con teclado y ratón O con
 // un mando, y cambia solo: en cuanto toca el mando, manda el mando; en cuanto toca el teclado o el ratón, vuelve el teclado (keyboardPlayer.js).
 // Aquí solo se LEE el mando (el primero que tenga algo pulsado): sticks, gatillos y START. No envía nada al servidor.
 // Por qué un umbral alto para "tocar": un stick barato con deriva no puede quitarle el control al teclado sin que nadie lo toque.

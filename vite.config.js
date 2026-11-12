@@ -1,4 +1,4 @@
-// Vite: build y desarrollo del frontend (host, mando y pantalla final).
+// Vite: build y desarrollo del frontend (la pantalla del juego y las páginas sueltas).
 // El servidor de juego (Express + Socket.io) NO lo gestiona Vite: corre aparte en el puerto 3000.
 import { defineConfig } from 'vite';
 import { resolve } from 'node:path';
@@ -16,10 +16,9 @@ export default defineConfig({
       // Multi-page: una entrada HTML por pantalla.
       input: {
         host: resolve(clientRoot, 'host/index.html'),
-        play: resolve(clientRoot, 'play/index.html'),
         end: resolve(clientRoot, 'end/index.html'),
-        home: resolve(clientRoot, 'home/index.html'),   // elegir modo (online)
-        'db-admin': resolve(clientRoot, 'db-admin/index.html'), // versión pública: contraseña de desarrollador
+        home: resolve(clientRoot, 'home/index.html'),   // página del móvil (allí no se juega)
+        'db-admin': resolve(clientRoot, 'db-admin/index.html'), // contraseña de desarrollador
         licencias: resolve(clientRoot, 'licencias/index.html'), // créditos y licencias de terceros (fuentes y librerías)
       },
     },

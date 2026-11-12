@@ -1,4 +1,4 @@
-// Mando para menús (versión pública, 10-nov): arriba / abajo (cruceta o stick izquierdo; mantenido, se repite y cada vez más rápido), A y B.
+// Mando para menús: arriba / abajo (cruceta o stick izquierdo; mantenido, se repite y cada vez más rápido), A y B.
 // Usa la configuración del mando si la tiene (padSetup.js: su A y su B). Lo usa, por ejemplo, el "¿CÓMO TE LLAMAS?" (letra a letra).
 // read(now) -> lista de acciones de este fotograma: 'up' | 'down' | 'a' | 'b'. Qué NO hace: no decide qué hace cada acción.
 import { isPressed, axisValue, defaultMapping } from './gamepadMap.js';

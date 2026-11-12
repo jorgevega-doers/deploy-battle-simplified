@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" type="image/png" href="../../assets/logo/favicon.png">
-  <title>DEPLOY BATTLE · Host</title>
+  <title>DEPLOY BATTLE</title>
   <link rel="stylesheet" href="../theme.css">
   <link rel="stylesheet" href="../ui.css">
   <style>
@@ -17,19 +17,12 @@
     #view2d[hidden] { display: none; }
     #view2d canvas { max-height: 90vh; max-width: 94vw; aspect-ratio: 16 / 9; }
 
-
-    /* Barra superior: logo + cronómetro + título, siempre visibles (AGENTS.md, sección 4). */
+    /* Barra superior: logo + cronómetro + título, siempre visibles. */
     /* La interfaz se diseña para 1080 p y se ENCOGE entera con la ventana: --s (lo calcula main.js, entre 0,5 y 1) escala la barra
        y las fichas conservando sus proporciones, así el cronómetro no salta de línea ni el texto queda justo en su caja. */
     #topbar { position: fixed; top: 10px; left: 50%; transform: translateX(-50%) scale(var(--s, 1)); transform-origin: top center; white-space: nowrap; display: flex; align-items: center; gap: 15px; padding: 2px 14px; z-index: 6; }
-    #topbar .logo { font-family: var(--font-body); font-weight: 800; font-size: 30px; letter-spacing: -0.5px; line-height: 1; }
-    #topbar .logo sup { font-size: 10px; margin-left: 1px; vertical-align: top; position: relative; top: 2px; }
     #topbar .sep { width: 2px; align-self: stretch; margin: 6px 0; background: #2c3756; }
     #timer { font-size: 44px; font-weight: 700; min-width: 3.6ch; text-align: center; line-height: 1.1; text-shadow: 2px 2px 0 var(--ui-blue); } /* la barra es un 25 % más pequeña que el diseño original */
-    #topbar .title { font-size: 18px; line-height: 1.15; color: var(--ui-muted); }
-    #topbar .title b { color: var(--white); font-weight: 700; }
-    /* Logo compacto del juego (sin humo ni brillo) en lugar del texto; a 1x para que sus píxeles no se deformen. */
-    /* Con la interfaz muy encogida (--s < 0,72, ventana pequeña) se usa la versión mini: la grande, reducida, se deformaría. */
     /* El logo completo del juego (assets/logo/deploy-battle.png, 200 x 107), reducido con suavizado: es el mismo que el del lobby. */
     #topbar .title-logo { display: block; height: 63px; width: auto; image-rendering: auto; user-select: none; -webkit-user-drag: none; }
 
@@ -45,9 +38,7 @@
     .hud .chip { background: var(--pc); color: var(--ui-edge); font-weight: 700; font-size: 14px; padding: 0 4px; line-height: 1.4; }
     .hud .name { font-size: 27px; font-weight: 700; letter-spacing: 2px; line-height: 1.1; }
     .hud .name.wait { font-size: 16px; color: var(--ui-muted); letter-spacing: 1px; }
-    .hud .ready { margin-left: auto; background: var(--pc); color: var(--ui-edge); font-weight: 700; font-size: 15px; padding: 0 6px; line-height: 1.4; animation: ready-blink 0.8s steps(2) infinite; }
-    #hud-p2 .ready { margin-left: 0; margin-right: auto; }
-    @keyframes ready-blink { 50% { filter: brightness(1.3); } }
+
     .hud .ping { margin-left: auto; font-size: 12px; color: var(--ui-muted); }
     #hud-p2 .ping { margin-left: 0; margin-right: auto; }
     .hud .hearts { display: flex; gap: 6px; margin: 8px 0 3px; min-height: 24px; }
@@ -56,11 +47,10 @@
     .hud .fx:empty { display: none; }
     /* Ficha de los 3 bots (modo de un jugador): una fila por bot con su color. */
     .hud.bots::before { background: var(--p2); }
-    /* Combate de 3 o 4 tanques (2 o más jugadores): cada panel lista sus tanques en filas (izquierda P1 y P3, derecha P2 y P4; en equipos, un equipo por lado). */
+    /* Combate de 3 o 4 jugadores: cada panel lista sus tanques en filas (izquierda P1 y P3, derecha P2 y P4). */
     #hud-p1.multi .botrow { flex-direction: row; }
     #hud-p1.multi .botrow .hearts { margin: 0 0 0 auto; flex-direction: row; }
-    .hud .botrow .ready { background: var(--bc); color: var(--ui-edge); font-weight: 700; font-size: 12px; padding: 0 5px; line-height: 1.4; animation: ready-blink 0.8s steps(2) infinite; }
-    .hud .teamtag { font-size: 12px; color: var(--ui-muted); letter-spacing: 1px; margin-top: 2px; text-align: center; }
+
     .hud .botrow { display: flex; align-items: center; gap: 10px; margin-top: 5px; flex-direction: row-reverse; }
     .hud .botrow .chip { background: var(--bc); color: var(--ui-edge); font-weight: 700; font-size: 13px; padding: 0 4px; line-height: 1.4; }
     .hud .botrow .name { font-size: 22px; font-weight: 700; letter-spacing: 2px; line-height: 1.1; }
@@ -80,44 +70,26 @@
     .fx-chip.last .fx-icon { animation-duration: 0.22s; }
     @keyframes fx-blink { 50% { visibility: hidden; } }
 
-    /* Capa que oscurece la escena con una trama de píxeles detrás de cualquier tarjeta que tape el juego (QR, cuenta atrás, resultado). */
+    /* Capa que oscurece la escena con una trama de píxeles detrás de cualquier tarjeta que tape el juego (sala de espera, resultado). */
     .dim {
       position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
       background-image: repeating-conic-gradient(var(--ui-edge) 0 25%, transparent 0 50%); background-size: 4px 4px;
     }
     .dim[hidden] { display: none; }
-    /* Con la partida de fondo del salvapantallas se ve el juego detrás del QR: sin la trama que oscurece la escena. */
-    .dim.attract { background-image: none; }
 
-    /* Lobby: escanear para jugar + Top 10 */
+    /* Sala de espera (sus tarjetas, en lobby.css) */
     #lobby { z-index: 3; }
-    /* Tarjeta compacta (26-oct, "más pequeña"): arriba el modo de juego activo y debajo el QR con el botón de modo y el Top 10. */
-    #lobby-card { padding: 14px 22px 16px; display: flex; flex-direction: column; align-items: center; gap: 11px; }
-    #lobby-body { display: flex; gap: 26px; }
-    /* Títulos de las tarjetas del host: NO son botones (la pieza azul con borde es solo de los botones y de las pestañas del menú). Texto con sombra dura
-       y una barra corta debajo, como los títulos del mando ("ANTES DE JUGAR"). El color de la barra y la sombra sigue al modo (azul, fucsia en solitario). */
+
+    /* Títulos de las tarjetas: NO son botones (la pieza azul con borde es solo de los botones y de las pestañas del menú). Texto con sombra dura
+       y una barra corta debajo. */
     .ui-title { --tc: var(--ui-blue); --bar: var(--ui-blue-hi); display: block; margin: 0 auto 10px; padding: 0; text-align: center; font-weight: 700; font-size: 20px; letter-spacing: 1px; line-height: 1.15; color: var(--white); text-shadow: 3px 3px 0 var(--tc); }
     .ui-title::after { content: ''; display: block; width: 44px; height: 4px; margin: 6px auto 0; background: var(--bar); }
-    #lobby-card .ui-title { margin-bottom: 8px; font-size: 15px; text-shadow: 2px 2px 0 var(--tc); }
-    #lobby-card .ui-title::after { width: 34px; height: 3px; margin-top: 4px; }
-    #lobby-card #mode-banner { margin-bottom: 0; font-size: 18px; letter-spacing: 2px; } /* el modo, lo más claro posible */
-    #lobby-card.solo #mode-banner, #lobby-card.joining #mode-banner { --tc: #70003a; --bar: var(--p2); } /* solitario y cuenta atrás de entrada en fucsia, multijugador en azul */
-    #qr { display: block; border: 4px solid var(--white); image-rendering: pixelated; width: 300px !important; height: 300px !important; } /* tamaño FIJO y grande (el lobby entero se escala siempre igual, ver fitLobbyCard); !important: la librería del QR fija su tamaño en línea */
-    /* Solo se enseña un aviso (conectando el túnel o sin túnel); el enlace del QR no se muestra. */
-    #play-url { font-size: 11px; line-height: 1.5; color: var(--ui-muted); max-width: 190px; margin: 8px 0 0; }
-    #play-url:empty { display: none; }
-    /* Columna del QR centrada: la pestaña, el QR y el botón de modo comparten eje. El botón es fucsia (la pieza de P2). */
-    #lobby-qr { display: flex; flex-direction: column; align-items: center; }
-    #invite-btn { margin-top: 8px; font-family: var(--font-ui); font-size: 13px; letter-spacing: 1px; color: var(--white); cursor: pointer; min-height: 32px; padding: 2px 10px; }
+
     #fatal { position: fixed; inset: 0; z-index: 20; display: grid; place-items: center; background: rgba(5, 5, 12, .92); text-align: center; padding: 24px; }
     #fatal[hidden] { display: none; }
     #fatal p { margin: 0 0 18px; font-size: 26px; letter-spacing: 2px; }
     #fatal a { color: var(--white); font-size: 18px; }
-    #emergency { position: fixed; inset: 0; z-index: 30; display: grid; place-items: center; background: #05050c; text-align: center; }
-    #emergency[hidden] { display: none; }
-    #emergency p { margin: 0; font-size: 56px; letter-spacing: 4px; color: var(--p2); }
-    #emergency .sub { margin-top: 14px; font-size: 22px; color: var(--ui-muted); letter-spacing: 3px; }
-    #fatal-new { font-size: 22px; margin: 0 0 18px; padding: 4px 22px; min-height: 52px; }
+
     #net-banner { position: fixed; top: 10px; left: 50%; transform: translateX(-50%); z-index: 19; padding: 6px 18px; font-size: 20px; letter-spacing: 2px; color: var(--p4); }
     #net-banner[hidden] { display: none; }
     /* Sin WebGL (máquina virtual sin gráfica 3D, GPU averiada): el juego no arranca y esta pantalla dice por qué. Tapa todo. */
@@ -127,12 +99,7 @@
     #gl-error p { margin: 0; max-width: 900px; font-size: 22px; line-height: 1.4; color: #c9d1ee; }
     #gl-error code { color: var(--ui-amber); }
     #gl-error #gl-error-detail { font-size: 15px; color: var(--ui-muted); }
-    #room-line { margin: 7px 0 0; font-size: 12px; letter-spacing: 1px; color: var(--white); text-align: center; max-width: 200px; }
-    #room-line:empty { display: none; }
-    #room-line.dev { color: #ff4fa3; }
-    #mode-hint { margin: 5px 0 0; font-size: 11px; color: var(--ui-muted); text-align: center; max-width: 190px; }
-    #top10 { min-width: 200px; }
-    /* El reparto del lobby (logo a la izquierda, tarjeta a la derecha), las capas del logo, la pantalla de título y la intro viven en lobby.css. */
+
     .map-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
     .map-opt { min-width: 0; height: 78px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; padding: 4px;
       background: var(--ui-ink-2); border: 2px solid #2a3150; color: var(--ui-muted); font-family: var(--font-ui); font-size: 12px; letter-spacing: 1px; cursor: pointer; }
@@ -144,14 +111,6 @@
     .map-opt:hover { border-color: #6f8cff; color: var(--white); }
     .map-opt.on { border-color: #ff0080; color: var(--white); box-shadow: 3px 3px 0 #0003ad; background: #1a1230; } /* el elegido: borde fucsia */
     .map-opt .now { color: #ffd400; }
-    #top10 ol { list-style: none; margin: 0; padding: 0; }
-    #top10 li { display: grid; grid-template-columns: 22px 1fr auto; align-items: center; gap: 10px; padding: 2px 8px; font-size: 16px; font-weight: 600; }
-    #top10 li:nth-child(odd) { background: var(--ui-ink-2); }
-    #top10 li .pos { background: var(--ui-blue); color: var(--white); text-align: center; font-size: 12px; font-weight: 700; line-height: 19px; }
-    #top10 li:first-child .pos { background: var(--ui-amber); color: var(--ui-edge); }
-    #top10 li .score { color: var(--ui-muted); font-weight: 500; }
-    #top10 li:first-child .score { color: var(--ui-amber); }
-    #top10 li.empty { display: block; font-size: 13px; color: var(--ui-muted); background: none; max-width: 190px; }
 
     /* Cartel central (cuenta atrás y resultado): la escena se oscurece con una trama de píxeles y el texto va en un panel. */
     #banner { text-align: center; z-index: 4; pointer-events: none; }
@@ -195,21 +154,9 @@
 
     #fps[hidden] { display: none; }
     #fps { position: fixed; top: 10px; right: 10px; z-index: 6; padding: 0 6px; font-size: 16px; color: var(--ui-muted); }
-    /* Menú de pruebas (TEMPORAL): un cuadradito casi invisible arriba a la izquierda que despliega el botón del test. */
-    /* El menú no se ve por defecto: se abre y se cierra con la tecla M (main.js) o pulsando fuera. */
-    #dev-menu { position: fixed; top: 6px; left: 6px; z-index: 9; display: none; flex-direction: column; align-items: flex-start; gap: 6px; }
-    #dev-menu.open { display: flex; }
-    #dev-toggle { display: none; }
-    /* Siempre visible (también sobre la trama del QR), pequeño y con el mismo estilo de pestaña que el resto. */
-    #dev-toggle {
-      /* Línea más alta y algo de relleno arriba: la tilde de la "Ú" de MENÚ se sale por arriba de la caja de una línea normal. */
-      font-family: var(--font-ui); font-size: 15px; letter-spacing: 1px; line-height: 1.7; padding: 3px 8px 0; cursor: pointer; color: var(--white);
-      border: 4px solid transparent; border-image: var(--tab-img) 3 fill / 4px / 0 stretch; background: none; opacity: .85;
-    }
-    #dev-menu:hover #dev-toggle, #dev-menu.open #dev-toggle { opacity: 1; }
-    /* Triángulo de píxeles (la fuente pixel no tiene la flecha ▾): dentro de la línea, sin sobresalir. */
-    .dev-arrow { display: inline-block; width: 8px; height: 6px; margin-left: 6px; vertical-align: middle; background: currentColor; clip-path: polygon(0 0, 100% 0, 50% 100%); }
-    #dev-menu.open .dev-arrow { transform: scaleY(-1); }
+    /* Menú de ajustes: no se ve por defecto; se abre y se cierra con la tecla M (main.js) y se cierra pulsando fuera. */
+    #dev-menu { position: fixed; top: 6px; left: 6px; z-index: 9; display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
+
     /* Ajustes y pruebas, como los de un videojuego: pestañas arriba y, debajo, los controles de la pestaña elegida (devMenu.js). */
     #dev-panel { display: none; flex-direction: column; gap: 10px; padding: 10px 12px; width: 460px; max-width: calc(100vw - 20px); max-height: calc(100vh - 60px); overflow-y: auto; }
     #dev-menu.open #dev-panel { display: flex; }
@@ -226,28 +173,7 @@
     #dev-panel .ui-tab.checked::before { content: ''; display: inline-block; width: 15px; height: 12px; margin-right: 8px; background: #ffffff; clip-path: polygon(0 50%, 20% 50%, 20% 67%, 40% 67%, 40% 83%, 40% 83%, 80% 0, 100% 0, 100% 17%, 60% 100%, 20% 100%, 20% 83%, 0 83%); }
     #dev-panel .dev-title { font-size: 13px; letter-spacing: 1px; color: var(--ui-muted); margin: 6px 0 -2px; }
     #dev-panel .dev-hint { font-size: 12px; color: var(--ui-muted); line-height: 1.4; margin-top: 4px; }
-    /* Campo de texto del menú (dirección de Google Sheets): bordes duros, fondo oscuro y texto blanco. */
-    #dev-panel .dev-input { display: block; width: 100%; box-sizing: border-box; margin: 6px 0 0; padding: 6px 8px; font-family: var(--font-ui); font-size: 13px; color: var(--white); background: #05070d; border: 2px solid #2c3756; border-radius: 0; outline: none; }
-    /* Desplegable de Google Sheets (cerrado por defecto, "DELICADO"): borde fucsia de píxeles duros, sin blur. */
-    #dev-panel .dev-fold { margin-top: 6px; border: 2px solid var(--p2); background: #0b0e1a; }
-    #dev-panel .dev-fold > summary { cursor: pointer; padding: 6px 8px; font-size: 13px; letter-spacing: 1px; line-height: 1.3; color: var(--p2); list-style: none; }
-    #dev-panel .dev-fold > summary::-webkit-details-marker { display: none; }
-    #dev-panel .dev-fold > summary::before { content: '+ '; }
-    #dev-panel .dev-fold[open] > summary::before { content: '- '; }
-    #dev-panel .dev-fold-body { display: flex; flex-direction: column; gap: 8px; padding: 2px 8px 8px; }
-    #dev-panel .dev-input:focus { border-color: var(--ui-blue-hi); }
-    #dev-panel .dev-input:disabled { opacity: .5; }
-    /* Ventana de confirmación de ELIMINAR TODOS LOS DATOS: trama oscura detrás y panel centrado (sin desenfoque ni bordes redondeados). */
-    .wipe-overlay { position: fixed; inset: 0; z-index: 200; display: flex; align-items: center; justify-content: center; background: rgba(5, 5, 12, .82); }
-    .wipe-box { width: min(560px, 92vw); padding: 18px 22px 20px; font-family: var(--font-ui); color: var(--white); }
-    .wipe-title { font-size: 26px; color: var(--p2); text-shadow: 3px 3px 0 #70003a; margin-bottom: 10px; }
-    .wipe-box p { font-size: 14px; line-height: 1.45; margin: 0 0 10px; color: #c9d1ee; }
-    .wipe-box .dev-input { display: block; width: 100%; box-sizing: border-box; padding: 8px 10px; font-family: var(--font-ui); font-size: 18px; color: var(--white); background: #05070d; border: 2px solid var(--p2); border-radius: 0; outline: none; text-transform: uppercase; }
-    .wipe-box .wipe-status { min-height: 1.4em; margin-top: 8px; color: var(--ui-amber); word-break: break-all; }
-    .wipe-box .dev-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    .wipe-box .ui-tab { cursor: pointer; font-family: var(--font-ui); text-align: center; }
-    .wipe-box .ui-tab:disabled { opacity: .4; cursor: default; }
-    .wipe-box .ui-tab.danger { --tab-img: var(--tab-img-p2); }
+
     /* Fila de ajuste: nombre, deslizador y valor. El deslizador es un riel oscuro con un cuadrado azul (sin redondeos). */
     #dev-panel .dev-row { display: grid; grid-template-columns: 96px 1fr 52px; align-items: center; gap: 10px; font-size: 15px; }
     #dev-panel .dev-value { text-align: right; color: var(--ui-muted); }
@@ -258,12 +184,7 @@
     #dev-panel input[type=range]::-moz-range-thumb { width: 12px; height: 16px; background: var(--ui-blue-hi); border: 2px solid var(--ui-edge); border-radius: 0; }
     #debug { position: fixed; top: 52px; left: 10px; margin: 0; padding: 4px 8px; font-family: monospace; font-size: 12px; color: var(--white); z-index: 7; }
     #debug[hidden] { display: none; }
-    #reset-overlay { position: fixed; left: 25%; right: 25%; bottom: 120px; padding: 6px 14px 12px; font-size: 24px; z-index: 8; }
-    #reset-overlay[hidden] { display: none; }
-    #reset-overlay p { margin: 0 0 8px; }
-    #reset-track { height: 12px; background: var(--ui-ink-2); border: 2px solid var(--ui-edge); }
-    #reset-bar { height: 100%; width: 0; background: var(--ui-blue-hi); }
-  </style>
+</style>
 </head>
 <body class="host intro-on">
   <canvas id="scene"></canvas>
@@ -271,7 +192,7 @@
   <div id="labels"></div>
 
   <div id="topbar" class="ui-panel">
-    <img class="doers-logo" data-px="2" src="../../assets/logo/logo-doers-small.png" alt="doers DF" draggable="false">
+    <a href="https://doersdf.com/es" target="_blank" rel="noopener" title="Conoce DOERS DF" style="line-height: 0"><img class="doers-logo" data-px="2" src="../../assets/logo/logo-doers-small.png" alt="doers DF" draggable="false"></a>
     <span class="sep"></span>
     <span id="timer">--:--</span>
     <span class="sep"></span>
@@ -281,121 +202,42 @@
   <div class="hud ui-panel" id="hud-p1"></div>
   <div class="hud ui-panel" id="hud-p2"></div>
 
+  <!-- Sala de espera (main.js: renderWaiting; arcadeLobby.js: textos, botón e inactividad; controlsCard.js: ASÍ SE JUEGA) -->
   <div id="lobby" class="dim">
-  <!-- HOME: cartel "SCAN QR CODE" parpadeante abajo en el centro (insertCoin.js; tamaño en fitLobbyCard) -->
-  <div id="insert-coin" aria-label="SCAN QR CODE"></div>
   <div id="lobby-row">
-  <div id="lobby-logo">
-    <!-- Capas del logo (lobby.css / lobbyLogo.js): humo que hierve, rótulo, destello diagonal y chispas -->
-    <div id="logo-stack">
-      <div class="lg lg-smoke"></div>
-      <img id="logo-body" class="lg" src="../../assets/logo/deploy-battle-body.png" alt="DEPLOY BATTLE" draggable="false">
-      <div class="lg lg-glint"></div>
-      <canvas id="logo-sparks" class="lg lg-sparks"></canvas>
-    </div>
-  </div>
-  <!-- Pantalla de espera (hay jugadores en el lobby): cuenta atrás, quién está listo y mini tutorial. Sustituye al logo (main.js: renderWaiting) -->
   <div id="waiting" hidden>
     <div id="wait-count" class="ui-panel">
       <div class="ui-title" id="wait-title">LA PARTIDA EMPIEZA EN</div>
       <div id="wait-num">--</div>
       <div id="wait-sub"></div>
-      <!-- Partida rápida (quickLobby.js): esta pantalla es también el mando de su jugador -->
-      <div id="quick-actions" class="pub-only" hidden>
-        <button id="quick-ready" class="ui-btn" type="button">LISTO</button>
-        <button id="quick-bots" class="ui-btn" type="button" hidden>JUGAR CON BOTS</button>
+      <div id="quick-actions" hidden>
+        <button id="quick-ready" class="ui-btn" type="button">JUGAR</button>
       </div>
     </div>
     <div id="wait-players" class="ui-panel"></div>
     <div id="wait-tutorial" class="ui-panel">
-      <div class="ui-title">CÓMO SE JUEGA</div>
+      <div class="ui-title">ASÍ SE JUEGA</div>
       <div class="tut-cols">
-        <!-- Réplicas pequeñas de lo que se ve en el mando (client/play/index.html): mismos pads, marcas de esquina, stick y botón -->
-        <div class="tut">
-          <div class="mpad mmove" aria-hidden="true"><i class="tk tl"></i><i class="tk tr"></i><i class="tk bl"></i><i class="tk br"></i><span class="mlabel">MOVER</span><div class="mknob"></div></div>
-          <div class="kviz kwasd" aria-hidden="true"><span class="key kw">W</span><span class="key ka">A</span><span class="key ks">S</span><span class="key kd">D</span></div>
-          <b>1 · MUEVE</b><span>PAD IZQUIERDO DEL MÓVIL</span>
+        <!-- Dibujos de las teclas y el ratón: controlsCard.js los copia en sus filas -->
+        <div class="kviz kwasd" aria-hidden="true"><span class="key kw">W</span><span class="key ka">A</span><span class="key ks">S</span><span class="key kd">D</span></div>
+        <div class="kviz kmouse" aria-hidden="true">
+          <svg viewBox="0 0 12 18" shape-rendering="crispEdges"><path fill="#2a3150" d="M2 0h8v1h1v1h1v14h-1v1h-1v1H2v-1H1v-1H0V2h1V1h1z"/><path fill="#ff4fa3" d="M2 2h3v5H2z"/><path fill="#6f7ba8" d="M7 2h3v5H7z"/><path fill="#05050c" d="M6 1h0v7H5V1z"/><path fill="#c9d1ee" d="M5 2h1v3H5z"/></svg>
         </div>
-        <div class="tut">
-          <div class="mpad maim" aria-hidden="true"><i class="tk tl"></i><i class="tk tr"></i><i class="tk bl"></i><i class="tk br"></i><span class="mlabel">APUNTA Y SUELTA</span><div class="maimline"></div><div class="mknob"></div></div>
-          <div class="kviz kmouse" aria-hidden="true">
-            <svg viewBox="0 0 12 18" shape-rendering="crispEdges"><path fill="#2a3150" d="M2 0h8v1h1v1h1v14h-1v1h-1v1H2v-1H1v-1H0V2h1V1h1z"/><path fill="#ff4fa3" d="M2 2h3v5H2z"/><path fill="#6f7ba8" d="M7 2h3v5H7z"/><path fill="#05050c" d="M6 1h0v7H5V1z"/><path fill="#c9d1ee" d="M5 2h1v3H5z"/></svg>
-          </div>
-          <b>2 · DISPARA</b><span>APUNTA CON EL PAD DERECHO Y SUELTA (O TOCA)</span>
-        </div>
-        <div class="tut">
-          <div class="mbtn ui-btn" aria-hidden="true">
-            <svg viewBox="0 0 12 8" shape-rendering="crispEdges" fill="currentColor"><path d="M0 0h2v1h1v1h1v1h1v2H4v1H3v1H2v1H0V7h1V6h1V5h1V3H2V2H1V1H0zM6 0h2v1h1v1h1v1h1v2h-1v1H9v1H8v1H6V7h1V6h1V5h1V3H8V2H7V1H6z"/></svg>
-            ACELERÓN
-          </div>
-          <div class="kviz kspace" aria-hidden="true"><span class="key wide">ESPACIO</span></div>
-          <b>3 · ACELERÓN</b><span>PULSA EL BOTÓN GRANDE: UN ACELERÓN PARA ESQUIVAR</span>
-        </div>
-        <!-- Versión pública: controles con mando (se enseña si alguien juega con mando o hay uno conectado) -->
-        <div class="tut tut-pad pub-only">
-          <div class="mgamepad" aria-hidden="true">
-            <svg viewBox="0 0 22 12" shape-rendering="crispEdges"><path fill="#2a3150" d="M3 1h16v1h1v1h1v6h-1v1h-1v1h-3v-1h-1V9H7v1H6v1H3v-1H2V9H1V3h1V2h1z"/><path fill="#6f8cff" d="M4 4h1v1h1v1H5v1H4V6H3V5h1z"/><path fill="#ff4fa3" d="M16 4h2v2h-2zM14 6h2v2h-2z"/><path fill="#8e9abd" d="M9 4h1v1H9zM12 4h1v1h-1z"/></svg>
-          </div>
-          <b>CON MANDO</b><span>STICK IZQ. MUEVE · STICK DER. APUNTA · R1 / RB DISPARA · L1 / LB ACELERÓN · START = JUGAR</span>
-        </div>
+        <div class="kviz kspace" aria-hidden="true"><span class="key wide">ESPACIO</span></div>
       </div>
     </div>
-    <!-- Versión arcade (arcadeLobby.js): debajo de las tarjetas, salir al título -->
+    <!-- Debajo de las tarjetas: salir al título (arcadeLobby.js) -->
     <div id="arcade-actions" hidden>
       <button id="arcade-exit" class="ui-btn" type="button">SALIR</button>
     </div>
   </div>
-  <div id="lobby-card" class="ui-panel">
-    <!-- Modo de juego activo, bien visible arriba (main.js: renderLobbyMode) -->
-    <div id="mode-banner" class="ui-title">ESPERANDO JUGADORES</div>
-    <div id="lobby-body">
-    <div id="lobby-qr">
-      <div class="ui-title">ESCANEA PARA JUGAR</div>
-      <canvas id="qr" width="300" height="300"></canvas>
-      <p id="play-url"></p>
-      <p id="room-line"></p>
-      <p id="host-line" class="pub-only"></p>
-      <p id="mode-hint"></p>
-      <!-- Versión pública: los mandos del PC también juegan (gamepads.js) -->
-      <p id="pad-hint" class="pub-only">¿MANDO EN EL PC? PULSA START</p>
-      <!-- Sala online: copia el enlace para que el rival abra la segunda pantalla (main.js: renderRoom) -->
-      <button id="invite-btn" class="ui-btn" type="button" hidden>COPIAR ENLACE PARA INVITAR</button>
-      <!-- Salas en tu pantalla: jugar contra los bots mientras esperas (quickLobby.js) -->
-      <button id="qr-bots" class="ui-btn pub-only" type="button" hidden>JUGAR CON BOTS</button>
-      <!-- Salas en tu pantalla: el móvil se quedó tu mando; con esto vuelves al teclado (quickLobby.js) -->
-      <button id="quick-back" class="ui-btn pub-only" type="button" hidden>VOLVER AL TECLADO</button>
-    </div>
-    <div id="top10">
-      <div class="ui-title" id="top10-tab">TOP 10</div>
-      <div id="top10-period" class="pub-only"></div>
-      <ol id="top10-list"></ol>
-      <p id="top10-note" class="pub-only">JUEGA TÚ SOLO CONTRA 3 BOTS PARA ENTRAR</p>
-      <!-- Versión pública: podio de la sala debajo del ranking, con el mismo estilo pero en fucsia -->
-      <div id="side-wins-box" class="pub-only">
-        <div class="ui-title">PODIO DE LA SALA</div>
-        <ol id="side-wins"></ol>
-      </div>
-    </div>
-    </div>
-  </div>
-  <!-- Versión pública (publicHost.js): mapa y dificultad (los elige la pantalla anfitriona) y el marcador de la sala -->
-  <div id="public-side" class="ui-panel" hidden>
-    <!-- Quién elige: el anfitrión (con su corona) o, en la partida pública, todos votando (publicHost.js: sideHead) -->
-    <p id="side-host" hidden></p>
-    <div class="ui-title">MAPA</div>
-    <div id="side-maps"></div>
-    <div class="ui-title">DIFICULTAD</div>
-    <div id="side-levels"></div>
-    <!-- Con mando: cómo se elige (publicHost.js: padHelp) -->
-    <p id="side-pad" hidden>←→ MAPA · ↑↓ DIFICULTAD</p>
-  </div>
   </div>
   </div>
 
-  <!-- Pantalla de título (el navegador no deja sonar hasta el primer gesto) e intro del logo (logoIntro.js). ?intro=0 las salta. Oculta hasta que la pide logoIntro.armPressStart (en la versión pública, si ya se vio la intro, no sale: así no parpadea al cargar). -->
-  <div id="press-start" hidden><p class="ps-text">PULSA UNA TECLA</p><p class="ps-sub">PARA EMPEZAR</p></div>
+  <!-- "HAZ CLIC PARA EMPEZAR" (el navegador no deja sonar hasta el primer gesto) e intro del logo (logoIntro.js). ?intro=0 las salta. -->
+  <div id="press-start" hidden><p class="ps-text">HAZ CLIC PARA EMPEZAR</p><p class="ps-sub">O PULSA UNA TECLA</p></div>
   <div id="intro" hidden>
-    <!-- Preludio (solo en la secuencia completa): logo de DOERS DF + "presents..." sobre negro, y fundido a negro antes de la animación de DEPLOY BATTLE -->
+    <!-- Preludio (solo en la secuencia completa): logo de DOERS DF + "presents..." sobre negro antes de la animación de DEPLOY BATTLE -->
     <div id="intro-doers" hidden><img id="intro-doers-logo" src="../../assets/logo/logo-doers.png" alt="" draggable="false"><p id="intro-presents"></p></div>
     <canvas id="intro-fx"></canvas>
     <div id="intro-logo">
@@ -405,53 +247,56 @@
       <img id="intro-battle" src="../../assets/logo/deploy-battle-battle-letters.png" alt="" draggable="false">
       <img id="intro-deploy" src="../../assets/logo/deploy-battle-deploy-letters.png" alt="" draggable="false">
     </div>
-    <!-- Pantalla del reto (challengeSlide.js): retrato del CTO (tira de fotogramas de scripts/avatar-pixel.js, en lobby.css) y las letras grandes, que se pintan al montarla -->
-    <div id="intro-cto" hidden><div id="intro-cto-avatar" role="img" aria-label="Nuestro CTO"></div></div>
-    <div id="intro-black"></div>
     <div id="intro-flash"></div>
   </div>
 
-  <div id="fatal" hidden><div><p id="fatal-msg"></p><button id="fatal-new" class="ui-btn" type="button" hidden>CREAR SALA NUEVA</button><br><a id="fatal-home" href="/">VOLVER AL INICIO</a></div></div>
-  <div id="emergency" hidden><div><p>REINICIANDO TODO…</p><p class="sub">PARTIDA · SALA · MANDOS · CONEXIONES · TÚNEL</p></div></div>
+  <div id="fatal" hidden><div><p id="fatal-msg"></p><a id="fatal-home" href="/">VOLVER AL INICIO</a></div></div>
   <div id="net-banner" class="ui-panel" hidden>RECONECTANDO CON EL SERVIDOR…</div>
   <div id="gl-error" hidden>
     <h1>SIN WEBGL</h1>
     <p>ESTE EQUIPO NO PUEDE DIBUJAR EL JUEGO EN 3D: EL NAVEGADOR NO TIENE ACELERACIÓN GRÁFICA (WEBGL).</p>
-    <p>ABRE <code>chrome://gpu</code> Y MIRA LA LÍNEA «WEBGL». SI ES UNA MÁQUINA VIRTUAL, ACTIVA LA ACELERACIÓN 3D (VIRTUALBOX: CONTROLADOR VMSVGA, HABILITAR ACELERACIÓN 3D, 128 MB DE VÍDEO) E INSTALA LOS GUEST ADDITIONS. DESPUÉS VUELVE A ARRANCAR CON <code>./iniciar.sh</code>.</p>
+    <p>ABRE <code>chrome://gpu</code> Y MIRA LA LÍNEA «WEBGL». SI ES UNA MÁQUINA VIRTUAL, ACTIVA LA ACELERACIÓN 3D (VIRTUALBOX: CONTROLADOR VMSVGA, HABILITAR ACELERACIÓN 3D, 128 MB DE VÍDEO) E INSTALA LOS GUEST ADDITIONS.</p>
     <p id="gl-error-detail"></p>
   </div>
 
-  <!-- Versión arcade (boot.js): pantalla de título. Logo animado, una frase, JUGAR e INSERT COIN, sobre la ciudad del juego. -->
+  <!-- Pantalla de título (boot.js): logo animado (lobbyLogo.js: humo, rótulo, destello y chispas), una frase, JUGAR e INSERT COIN, sobre la ciudad del juego. -->
   <div id="title" hidden>
     <canvas id="title-bg"></canvas>
     <div id="title-main">
-      <div id="title-logo"></div>
+      <div id="title-logo">
+        <div id="lobby-logo">
+          <div id="logo-stack">
+            <div class="lg lg-smoke"></div>
+            <img id="logo-body" class="lg" src="../../assets/logo/deploy-battle-body.png" alt="DEPLOY BATTLE" draggable="false">
+            <div class="lg lg-glint"></div>
+            <canvas id="logo-sparks" class="lg lg-sparks"></canvas>
+          </div>
+        </div>
+      </div>
       <p id="title-desc">Dispara con tu tanque, haz rebotar las balas y acaba con tus rivales.<br>Juega contra gente de cualquier lugar o contra los bots.</p>
       <div id="title-mid">
         <button id="title-play" class="ui-btn" type="button">JUGAR</button>
-        <p id="title-hint">CLIC · ENTER · A EN EL MANDO</p>
+        <p id="title-hint">PULSA ENTER O A EN EL MANDO</p>
         <p id="title-msg" role="status"></p>
       </div>
       <div id="title-coin" aria-label="INSERT COIN"></div>
     </div>
   </div>
-  <!-- Versión arcade: pie siempre visible con el logo de DOERS (arriba no va) y los enlaces. -->
+  <!-- Pie (en el título y en la sala de espera) con el logo de DOERS y los enlaces. -->
   <footer id="site-foot">
     <a class="foot-doers" href="https://doersdf.com/" target="_blank" rel="noopener noreferrer" aria-label="doers DF"><img class="doers-logo" data-px="1" src="../../assets/logo/logo-doers-small.png" alt="doers DF" draggable="false"></a>
     <nav><a href="/end/" target="_blank" rel="noopener">SOBRE DOERS</a><a href="https://doersdf.com/es/aviso-legal" target="_blank" rel="noopener noreferrer">AVISO LEGAL</a><a href="/licencias/" target="_blank" rel="noopener">LICENCIAS</a></nav>
   </footer>
   <div id="crosshair" hidden></div>
-  <!-- Versión arcade: en la partida, siempre a la vista cómo salir (ESC abre la pausa con SALIR DE LA PARTIDA; el botón hace lo mismo) -->
+  <!-- En la partida, siempre a la vista cómo salir (ESC abre la pausa con SALIR DE LA PARTIDA; el botón hace lo mismo) -->
   <button id="exit-btn" type="button" aria-label="Salir de la partida (ESC)">
     <svg viewBox="0 0 12 12" shape-rendering="crispEdges" fill="currentColor" aria-hidden="true"><path d="M1 1h5v1H2v8h4v1H1zM8 3h1v1h1v1h1v2h-1v1H9v1H8V8H5V7h3V5H5V4h3z"/></svg>
     <span>SALIR</span><kbd>ESC</kbd>
   </button>
 
   <div id="fps" class="ui-panel" hidden>-- FPS</div>
-  <a id="legal" class="pub-only" href="https://doersdf.com/es/aviso-legal" target="_blank" rel="noopener noreferrer">AVISO LEGAL</a>
-  <!-- TEMPORAL: botón de pruebas con dos bots (client/host/testBots.js); quitar antes del evento -->
+  <!-- Menú de ajustes (tecla M; devMenu.js) -->
   <div id="dev-menu">
-    <button id="dev-toggle" type="button" aria-label="Menú de pruebas" aria-expanded="false">MENÚ<span class="dev-arrow" aria-hidden="true"></span></button>
     <div id="dev-panel" class="ui-panel"></div>
   </div>
 
@@ -459,10 +304,6 @@
   <div id="arcade"></div>
   <div id="flash"></div>
   <pre id="debug" class="ui-panel" hidden></pre>
-  <div id="reset-overlay" class="ui-panel" hidden>
-    <p>MANTÉN R PARA REINICIAR TODO… <span id="reset-seconds"></span></p>
-    <div id="reset-track"><div id="reset-bar"></div></div>
-  </div>
   <script type="module" src="./boot.js"></script>
 </body>
 </html>

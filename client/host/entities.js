@@ -16,7 +16,7 @@ import { createTniTank, createTniShots } from './tniFx.js';
 // Disparos: núcleo claro + halo semitransparente del color del jugador (los de explosión, con el halo más grande).
 // Tonos por debajo del umbral del bloom para que no deslumbren.
 const TANK_GLOW = 0.32;       // brillo propio del tanque (lo despega del fondo; el destello de impacto sube a 0,9)
-const AIM_BOUNCES = 2;       // la línea de apuntado enseña como mucho 2 rebotes (AGENTS.md, sección 5)
+const AIM_BOUNCES = 2;       // la línea de apuntado enseña como mucho 2 rebotes
 const AIM_DASH = 0.32;        // longitud de cada trazo de la línea de apuntado, en celdas
 const AIM_GAP = 0.22;         // hueco entre trazos
 const AIM_WIDTH = 0.11;       // ancho de cada trazo, en celdas
@@ -69,7 +69,7 @@ export function createEntities(scene, arena, textures, overlay = {}) {
     const shield = new Mesh(shieldGeometry, shieldMaterial); // burbuja del power-up de escudo (octogonal, como los anillos)
     shield.position.y = 0.4;
     shield.visible = false;
-    // Easter egg de TNI (sección 88): su propio tanque, escondido hasta que un jugador se llame así.
+    // Easter egg de TNI: su propio tanque, escondido hasta que un jugador se llame así.
     const tni = createTniTank();
     group.add(body, turret, pivot, halo, shield, tni.body);
     pivot.add(tni.barrel);
@@ -184,7 +184,7 @@ export function createEntities(scene, arena, textures, overlay = {}) {
     scene.add(mesh);
     return mesh;
   };
-  // Visibilidad del disparo (sección 61): núcleo más grande, contorno oscuro (casco invertido) que lo separa de cualquier fondo, halo más ancho y un
+  // Visibilidad del disparo: núcleo más grande, contorno oscuro (casco invertido) que lo separa de cualquier fondo, halo más ancho y un
   // charco de luz aditivo sobre el suelo que late, del color del jugador. 4 llamadas de dibujo para todos los disparos.
   const cores = makeProjectileMesh(0.23, new MeshBasicMaterial({ color: 0xffffff }));
   const outlines = makeProjectileMesh(0.23, new MeshBasicMaterial({ color: 0x05050c, side: BackSide }));
@@ -479,9 +479,9 @@ export function createEntities(scene, arena, textures, overlay = {}) {
 
     // Iniciales de los jugadores para las etiquetas sobre los tanques.
     setNames(names) { markers.setNames(names); },
-    setMine(flags) { markers.setMine(flags); }, // versión pública: los tanques de los jugadores de esta pantalla
-    setHumans(n) { aimers = n; }, // cuántos tanques son de jugadores (los primeros); sin plan (salvapantallas) se enseñan todos
-    // Easter egg de TNI (sección 88): flags[i] = el tanque i es de TNI (cambia su aspecto y sus disparos).
+    setMine(flags) { markers.setMine(flags); }, // el tanque del jugador de esta pantalla (TÚ)
+    setHumans(n) { aimers = n; }, // cuántos tanques son de jugadores (los primeros); sin plan se enseñan todos
+    // Easter egg de TNI: flags[i] = el tanque i es de TNI (cambia su aspecto y sus disparos).
     setTni(flags) {
       tanks.forEach((tank, i) => {
         const on = Boolean(flags[i]);

@@ -1,4 +1,4 @@
-// Secuenciador de la música de fondo (AGENTS.md, sección 44): toca en bucle las notas que escribe musicScore.js con instrumentos
+// Secuenciador de la música de fondo: toca en bucle las notas que escribe musicScore.js con instrumentos
 // sintetizados (bombo, palmas, hi-hats, bajo rodante filtrado, acordes de fondo, arpegio de pluck, golpes de acorde, golpe metálico
 // y una melodía tímida: techno industrial pero acogedor). Programa las
 // notas con 250 ms de antelación sobre el RELOJ DE AUDIO (no con temporizadores sueltos), así el ritmo no se descuadra aunque la
