@@ -1,8 +1,8 @@
-// Pruebas de la lógica de la pantalla final (lectura segura del resultado y enlaces con UTM).
+// Pruebas de la lógica de la pantalla final (lectura segura del resultado y enlaces).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { parseResult } from '../client/end/result.js';
-import { withUtm, LINKS, detectPlatform, androidIntent, openHref } from '../client/end/links.js';
+import { LINKS, detectPlatform, androidIntent, openHref } from '../client/end/links.js';
 import { buildVCard, CONTACT, VCARD_PATH } from '../shared/vcard.js';
 import { createApp } from '../server/app.js';
 import { ICON_NAMES, ICON_SIZE, iconGrid, iconRuns } from '../client/end/icons.js';
@@ -29,19 +29,11 @@ test('los campos opcionales inválidos se descartan sin romper el resto', () => 
   assert.deepEqual(r, { initials: 'ABC', score: 100, rank: null, lives: null, accuracy: null, outcome: null, slot: null });
 });
 
-test('los enlaces web llevan parámetros UTM y mailto/tel se dejan igual', () => {
-  const url = new URL(withUtm('https://doersdf.com', 'web'));
-  assert.equal(url.searchParams.get('utm_source'), 'arena');
-  assert.equal(url.searchParams.get('utm_medium'), 'qr');
-  assert.equal(url.searchParams.get('utm_content'), 'web');
-  assert.equal(withUtm('mailto:hola@ejemplo.com', 'email'), 'mailto:hola@ejemplo.com');
-  assert.equal(withUtm('tel:+34600000000', 'phone'), 'tel:+34600000000');
-});
-
-test('un enlace con parámetros previos los conserva', () => {
-  const url = new URL(withUtm('https://doersdf.com/contacto?lang=es', 'web'));
-  assert.equal(url.searchParams.get('lang'), 'es');
-  assert.equal(url.searchParams.get('utm_source'), 'arena');
+test('los enlaces salen tal cual (sin parámetros de campaña) y mailto/tel también', () => {
+  assert.equal(openHref({ ...LINKS.web, id: 'web' }, 'ios'), 'https://doersdf.com/');
+  assert.equal(openHref({ href: 'https://doersdf.com/contacto?lang=es', id: 'x' }, 'other'), 'https://doersdf.com/contacto?lang=es');
+  assert.equal(openHref({ href: 'mailto:hola@ejemplo.com', id: 'email' }, 'android'), 'mailto:hola@ejemplo.com');
+  assert.equal(openHref({ href: 'tel:+34600000000', id: 'phone' }, 'ios'), 'tel:+34600000000');
 });
 
 test('los botones de /end (versión arcade): automatización (principal), web y LinkedIn; sin contacto, reunión ni Instagram', () => {
@@ -62,7 +54,7 @@ test('detecta la plataforma del móvil', () => {
 });
 
 test('en Android LinkedIn se abre con un intent a su aplicación y, si no está, cae a la web', () => {
-  const web = withUtm(LINKS.linkedin.href, 'linkedin');
+  const web = LINKS.linkedin.href;
   const href = openHref({ ...LINKS.linkedin, id: 'linkedin' }, 'android');
   assert.ok(href.startsWith('intent://www.linkedin.com/company/doersdf/#Intent;scheme=https;package=com.linkedin.android;'));
   assert.ok(href.includes(`S.browser_fallback_url=${encodeURIComponent(web)}`), 'la web como alternativa');
@@ -75,11 +67,9 @@ test('en Android LinkedIn se abre con un intent a su aplicación y, si no está,
 test('en iOS y en el resto las redes usan la dirección web (los enlaces universales abren la app)', () => {
   for (const platform of ['ios', 'other']) {
     const href = openHref({ ...LINKS.linkedin, id: 'linkedin' }, platform);
-    assert.ok(href.startsWith('https://www.linkedin.com/company/doersdf/home/'));
-    assert.equal(new URL(href).searchParams.get('utm_content'), 'linkedin');
+    assert.equal(href, 'https://www.linkedin.com/company/doersdf/home/');
   }
   assert.ok(openHref({ ...LINKS.web, id: 'web' }, 'android').startsWith('https://doersdf.com/'), 'la web nunca va por intent');
-  assert.equal(openHref({ href: 'https://x.es/?a', noUtm: true, id: 'x' }, 'ios'), 'https://x.es/?a', 'un enlace noUtm no lleva UTM');
 });
 
 test('cada botón de contacto tiene su icono y todos los iconos son rejillas del tamaño correcto y no están vacíos', () => {

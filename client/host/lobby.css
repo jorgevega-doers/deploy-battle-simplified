@@ -200,8 +200,8 @@ body.lobby-on .hud { visibility: hidden; } /* en la sala no hay partida: nada de
 #pad-setup .ps-pad .pd { fill: #0b0e1a; }
 #pad-setup .ps-pad .pp { fill: #3a4570; }
 #pad-setup .ps-pad .pp.done { fill: #3346ff; }
-#pad-setup .ps-pad .pp.now { fill: #00f0ff; animation: ps-blink 0.5s steps(1) infinite; }
-@keyframes ps-blink { 50% { fill: #ffffff; } }
+#pad-setup .ps-pad .pp.now { fill: #00f0ff; animation: ps-pad-blink 0.5s steps(1) infinite; }
+@keyframes ps-pad-blink { 50% { fill: #ffffff; } } /* nombre propio: con el mismo nombre que el de "HAZ CLIC PARA EMPEZAR" lo pisaba y ese texto no parpadeaba */
 #pad-setup .ps-dots { display: flex; justify-content: center; gap: 8px; margin: 10px 0 12px; }
 #pad-setup .ps-dots i { width: 12px; height: 12px; background: #2a3150; }
 #pad-setup .ps-dots i.done { background: #3346ff; }
